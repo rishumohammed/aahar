@@ -1,0 +1,185 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 180 10% 96%; /* #F4F7F7 */
+    --foreground: 180 28% 15%; /* #1A2E2E */
+
+    --card: 0 0% 100%;
+    --card-foreground: 180 28% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 180 28% 15%;
+
+    --primary: 180 85% 26%; /* #0A7B7B */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 10 32% 56%; /* #B5766A */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 180 15% 34%; /* #4A6464 */
+    --muted-foreground: 180 10% 60%;
+
+    --accent: 180 85% 26%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 180 15% 89%; /* #DDE8E8 */
+    --input: 180 15% 89%;
+    --ring: 180 85% 26%;
+
+    --radius: 0.5rem;
+
+    /* Dynamic Admin Theme Variables */
+    --admin-primary: #2563eb;
+    --admin-primary-hover: #1d4ed8;
+    --admin-primary-light: #eff6ff;
+    --admin-primary-light-hover: #dbeafe;
+    --admin-primary-text: #1d4ed8;
+    --admin-primary-border: #bfdbfe;
+  }
+
+  .dark {
+    --background: 180 28% 10%;
+    --foreground: 0 0% 98%;
+
+    --card: 180 28% 10%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 180 28% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 180 85% 26%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 10 32% 56%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 180 15% 34%;
+    --muted-foreground: 180 10% 60%;
+
+    --accent: 180 85% 26%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 180 15% 20%;
+    --input: 180 15% 20%;
+    --ring: 180 85% 26%;
+
+    /* Dynamic Admin Theme Variables - Dark Mode */
+    --admin-primary: #3b82f6;
+    --admin-primary-hover: #60a5fa;
+    --admin-primary-light: #1e3a8a;
+    --admin-primary-light-hover: #1e40af;
+    --admin-primary-text: #93c5fd;
+    --admin-primary-border: #2563eb;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .clip-hero-cut {
+    clip-path: polygon(0 100%, 100% 100%, 100% 0);
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* AAHAR UI Components */
+  .badge {
+    @apply px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border;
+  }
+  .badge-pending {
+    @apply bg-amber-50 text-amber-700 border-amber-200;
+  }
+  .badge-success {
+    @apply bg-emerald-50 text-emerald-700 border-emerald-200;
+  }
+  .badge-error {
+    @apply bg-rose-50 text-rose-700 border-rose-200;
+  }
+  .badge-cert {
+    @apply bg-aahar-teal/10 text-aahar-teal border-aahar-teal/20;
+  }
+  .badge-expired {
+    @apply bg-aahar-rose/10 text-aahar-rose border-aahar-rose/20;
+  }
+  .badge-stay {
+    @apply bg-blue-50 text-blue-700 border-blue-200;
+  }
+
+  .btn-primary {
+    @apply bg-aahar-dark text-white font-black uppercase tracking-widest px-6 py-3 rounded-xl hover:scale-105 transition-all disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply bg-white text-aahar-dark border border-aahar-border font-black uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-aahar-wash transition-all;
+  }
+  .btn-ghost {
+    @apply text-aahar-body font-bold hover:text-aahar-teal transition-colors;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-[10px];
+  }
+  .btn-danger {
+    @apply bg-rose-500 text-white font-black uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-rose-600 transition-all;
+  }
+
+  .input {
+    @apply w-full px-4 py-3 rounded-xl border border-aahar-border bg-white outline-none focus:ring-2 focus:ring-aahar-teal transition-all text-sm font-medium;
+  }
+  .input-label {
+    @apply text-[10px] font-black uppercase tracking-[0.15em] text-aahar-body/60 pl-1 mb-1.5 block;
+  }
+
+  .card {
+    @apply bg-white border border-aahar-border rounded-[2rem] shadow-sm;
+  }
+
+  .tab-nav {
+    @apply flex gap-6 border-b border-aahar-wash;
+  }
+  .tab-link {
+    @apply px-1 pb-3 text-xs font-black uppercase tracking-widest text-aahar-body/40 border-b-2 border-transparent transition-all;
+  }
+  .tab-link-active {
+    @apply text-aahar-teal border-aahar-teal;
+  }
+
+  /* Google Places Autocomplete Custom Styling */
+  .pac-container {
+    @apply !rounded-[1.5rem] !border-border !shadow-2xl !mt-2 !font-sans !p-2 !z-[9999];
+  }
+  .pac-item {
+    @apply !border-none !px-4 !py-3 !rounded-xl !cursor-pointer hover:!bg-aahar-wash transition-colors;
+  }
+  .pac-item-query {
+    @apply !text-sm !font-bold !text-aahar-dark;
+  }
+  .pac-matched {
+    @apply !text-aahar-teal;
+  }
+  .pac-icon {
+    @apply !hidden;
+  }
+  .pac-item:hover .pac-item-query {
+    @apply !text-aahar-teal;
+  }
+}

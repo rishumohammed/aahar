@@ -1,0 +1,525 @@
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum UserRole {
+  super_admin
+  admin
+  auditor
+  owner
+  hotel_manager
+  consumer
+}
+
+
+
+
+
+
+
+enum MealPlan {
+  ep
+  cp
+  map
+  ap
+}
+
+enum ApplicationStatus {
+  draft
+  submitted
+  under_review
+  gap_analysis
+  audit_scheduled
+  audit_complete
+  approved
+  rejected
+  certified
+}
+
+enum AuditTrack {
+  fnb
+  accommodation
+}
+
+enum CertStatus {
+  active
+  expiring
+  expired
+  suspended
+  revoked
+}
+
+enum EnquiryStatus {
+  sent
+  viewed
+  quoted
+  confirmed
+  declined
+  expired
+}
+
+enum DocumentStatus {
+  pending
+  approved
+  rejected
+  expired
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  phone        String?
+  role         UserRole @default(consumer)
+  avatar       String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurants  Restaurant[]
+  hotels       Hotel[]
+  applications Application[]
+  audits       Audit[]       @relation("AuditorAudits")
+  enquiries    Enquiry[]     @relation("GuestEnquiries")
+  messages     EnquiryMessage[]
+  notifications Notification[]
+  payments     Payment[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Restaurant {
+  id           String             @id @default(cuid())
+  name         String
+  slug         String             @unique
+  ownerId      String
+  owner        User               @relation(fields: [ownerId], references: [id])
+  description  String?
+  category     String             @default("casual_dining")
+  cuisineType  Json?
+  dietary      String             @default("mixed")
+  priceRange   String             @default("₹₹")
+  address      String
+  city         String
+  area         String?
+  lat          Float?
+  lng          Float?
+  phone        String
+  email        String?
+  website      String?
+  openingHours Json?
+  amenities    Json?
+  photos       Json?
+  googleRating Float?
+  isVerified   Boolean            @default(false)
+  isActive     Boolean            @default(true)
+  isFeatured   Boolean            @default(false)
+  isSponsored  Boolean            @default(false)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  menu         MenuSection[]
+  certification Certification?   @relation("RestaurantCert")
+  applications Application[]
+  tableBookings TableBooking[]
+  orders       Order[]
+  tables       RestaurantTable[]
+
+  @@index([city])
+  @@index([slug])
+  @@index([isVerified])
+}
+
+model MenuSection {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String
+  order        Int        @default(0)
+  items        MenuItem[]
+  createdAt    DateTime   @default(now())
+}
+
+model MenuItem {
+  id          String      @id @default(cuid())
+  sectionId   String
+  section     MenuSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  price       Float
+  dietary     String      @default("veg")
+  image       String?
+  isAvailable Boolean     @default(true)
+  order       Int         @default(0)
+  createdAt   DateTime    @default(now())
+  orderItems  OrderItem[]
+}
+
+model TableBooking {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  guestName    String
+  guestPhone   String
+  guestEmail   String?
+  date         DateTime
+  timeSlot     String
+  guests       Int
+  status       String     @default("pending")
+  notes        String?
+  createdAt    DateTime   @default(now())
+
+  @@index([restaurantId])
+  @@index([date])
+}
+
+model Hotel {
+  id                  String       @id @default(cuid())
+  name                String
+  slug                String       @unique
+  managerId           String
+  manager             User         @relation(fields: [managerId], references: [id])
+  description         String?
+  propertyType        String @default("boutique_hotel")
+  starRating          Int          @default(3)
+  address             String
+  city                String
+  area                String?
+  lat                 Float?
+  lng                 Float?
+  phone               String
+  email               String?
+  website             String?
+  checkInTime         String       @default("14:00")
+  checkOutTime        String       @default("11:00")
+  cancellationPolicy  String?
+  mealPlans           Json?
+  amenities           Json?
+  photos              Json?
+  googleRating        Float?
+  linkedRestaurantId  String?
+  isVerified          Boolean      @default(false)
+  isActive            Boolean      @default(true)
+  isFeatured          Boolean      @default(false)
+  isSponsored         Boolean      @default(false)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  roomTypes    RoomType[]
+  enquiries    Enquiry[]
+  certification Certification? @relation("HotelCert")
+  applications Application[]
+
+  @@index([city])
+  @@index([slug])
+  @@index([isVerified])
+}
+
+model RoomType {
+  id           String   @id @default(cuid())
+  hotelId      String
+  hotel        Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  bedConfig    String
+  maxOccupancy Int      @default(2)
+  priceFrom    Float
+  priceNote    String?
+  view         String?
+  amenities    Json?
+  totalRooms   Int      @default(1)
+  photos       Json?
+  isPopular    Boolean  @default(false)
+  isAvailable  Boolean  @default(true)
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  enquiries    Enquiry[]
+
+  @@index([hotelId])
+}
+
+model Application {
+  id           String            @id @default(cuid())
+  businessType AuditTrack
+  restaurantId String?
+  restaurant   Restaurant?       @relation(fields: [restaurantId], references: [id])
+  hotelId      String?
+  hotel        Hotel?            @relation(fields: [hotelId], references: [id])
+  applicantId  String
+  applicant    User              @relation(fields: [applicantId], references: [id])
+  status       ApplicationStatus @default(draft)
+  notes        String?
+  adminNotes   String?
+  documents    Document[]
+  audit        Audit?
+  certification Certification?  @relation("ApplicationCert")
+  payments     Payment[]
+  submittedAt  DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([status])
+  @@index([applicantId])
+}
+
+model Document {
+  id            String         @id @default(cuid())
+  applicationId String
+  application   Application    @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  name          String
+  type          String
+  url           String
+  size          Int?
+  status        DocumentStatus @default(pending)
+  expiresAt     DateTime?
+  uploadedAt    DateTime       @default(now())
+
+  @@index([applicationId])
+}
+
+model Audit {
+  id            String      @id @default(cuid())
+  applicationId String      @unique
+  application   Application @relation(fields: [applicationId], references: [id])
+  auditorId     String
+  auditor       User        @relation("AuditorAudits", fields: [auditorId], references: [id])
+  track         AuditTrack
+  scheduledAt   DateTime
+  completedAt   DateTime?
+  checklist     Json?
+  totalScore    Float?
+  recommendation String?
+  auditorNotes  String?
+  sitePhotos    Json?
+  status        String      @default("scheduled")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([auditorId])
+  @@index([status])
+}
+
+model Certification {
+  id            String     @id @default(cuid())
+  certNumber    String     @unique
+  type          AuditTrack
+  applicationId String     @unique
+  application   Application @relation("ApplicationCert", fields: [applicationId], references: [id])
+  restaurantId  String?    @unique
+  restaurant    Restaurant? @relation("RestaurantCert", fields: [restaurantId], references: [id])
+  hotelId       String?    @unique
+  hotel         Hotel?     @relation("HotelCert", fields: [hotelId], references: [id])
+  issuedAt      DateTime   @default(now())
+  expiresAt     DateTime
+  status        CertStatus @default(active)
+  qrCodeUrl     String?
+  pdfUrl        String?
+  hygieneScore  Float?
+  revokedAt     DateTime?
+  revokedReason String?
+  auditLog      Json?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([certNumber])
+  @@index([status])
+}
+
+model Enquiry {
+  id                  String        @id @default(cuid())
+  hotelId             String
+  hotel               Hotel         @relation(fields: [hotelId], references: [id])
+  guestId             String
+  guest               User          @relation("GuestEnquiries", fields: [guestId], references: [id])
+  roomTypeId          String?
+  roomType            RoomType?     @relation(fields: [roomTypeId], references: [id])
+  checkIn             DateTime
+  checkOut            DateTime
+  adults              Int           @default(2)
+  children            Int           @default(0)
+  mealPlan            MealPlan?
+  specialRequirements String?
+  status              EnquiryStatus @default(sent)
+  quoteAmount         Float?
+  bookingLink         String?
+  expiresAt           DateTime
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  messages EnquiryMessage[]
+  payments Payment[]
+
+  @@index([hotelId])
+  @@index([guestId])
+  @@index([status])
+}
+
+model EnquiryMessage {
+  id         String   @id @default(cuid())
+  enquiryId  String
+  enquiry    Enquiry  @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  senderId   String
+  sender     User     @relation(fields: [senderId], references: [id])
+  content    String
+  isSystem   Boolean  @default(false)
+  sentAt     DateTime @default(now())
+
+  @@index([enquiryId])
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       String
+  title      String
+  message    String
+  isRead     Boolean  @default(false)
+  actionUrl  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+model Payment {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  applicationId String?
+  application   Application? @relation(fields: [applicationId], references: [id])
+  enquiryId     String?
+  enquiry       Enquiry?     @relation(fields: [enquiryId], references: [id])
+  amount        Float
+  currency      String      @default("INR")
+  status        String      @default("pending")
+  provider      String      @default("razorpay")
+  providerOrderId  String?
+  providerPaymentId String?
+  description   String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum OrderStatus {
+  pending
+  preparing
+  served
+  completed
+  cancelled
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  tableNumber  String
+  status       OrderStatus @default(pending)
+  totalAmount  Float
+  customerName String?
+  customerPhone String?
+  notes        String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  items        OrderItem[]
+
+  @@index([restaurantId])
+  @@index([status])
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  quantity   Int
+  price      Float
+  notes      String?
+}
+
+model RestaurantTable {
+  id           String   @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  tableNumber  String
+  seatingCapacity Int   @default(4)
+  qrCodeUrl    String?
+  status       String   @default("active") // active, occupied, reserved
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([restaurantId, tableNumber])
+}
+
+model BusinessLead {
+  id              String   @id @default(cuid())
+  enquiryType     String   // "list_business" | "get_certified"
+  entityType      String   // "restaurant" | "hotel"
+  entityName      String
+  address         String
+  location        String
+  city            String
+  district        String
+  state           String
+  applicantName   String
+  email           String
+  phone           String
+  secondaryPhone  String?
+  status          String   @default("pending") // pending, contacted, converted, rejected
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([enquiryType])
+}
+
+
+model MasterData {
+  id        String   @id @default(cuid())
+  type      String   // 'AMENITY_RESTAURANT', 'AMENITY_HOTEL', 'CATEGORY_RESTAURANT', 'CATEGORY_HOTEL', 'DIETARY'
+  key       String   @unique
+  label     String
+  icon      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Standard {
+  id        String      @id @default(cuid())
+  name      String
+  version   String
+  division  String      // fnb | accommodation
+  status    String      @default("active") // active | draft | archived
+  criteria  Criterion[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Criterion {
+  id         String   @id @default(cuid())
+  standardId String
+  standard   Standard @relation(fields: [standardId], references: [id], onDelete: Cascade)
+  section    String
+  criterion  String
+  weight     Int
+}
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
+}
