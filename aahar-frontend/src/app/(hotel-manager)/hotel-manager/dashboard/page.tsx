@@ -144,7 +144,6 @@ export default function HotelManagerDashboardPage() {
  <div className={cn("p-3 rounded-full", stat.bg)}>
  <stat.icon className={cn("h-6 w-6", stat.color)} />
  </div>
- <Badge variant="secondary"className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Real-time</Badge>
  </div>
  <div>
  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{stat.label}</p>

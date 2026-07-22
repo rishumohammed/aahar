@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { Switch } from "@/components/ui/switch";
 
 const CATEGORY_LABELS: Record<string, string> = {
   "CATEGORY_RESTAURANT": "Restaurant Categories",
@@ -22,6 +23,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   "DIETARY": "Dietary Types",
   "AMENITY_RESTAURANT": "Restaurant Amenities",
   "AMENITY_HOTEL": "Hotel Amenities",
+  "DOCUMENT_RESTAURANT": "Restaurant Documents",
+  "DOCUMENT_HOTEL": "Hotel Documents",
 };
 
 export default function MasterDataInnerPage({ params }: { params: { type: string } }) {
@@ -137,7 +140,15 @@ export default function MasterDataInnerPage({ params }: { params: { type: string
                   <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-5">
                       <div className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                        {item.icon && <span>{item.icon}</span>}
+                        {decodedType.startsWith("DOCUMENT") ? (
+                          item.icon === "true" && (
+                            <Badge variant="outline" className="text-[10px] bg-slate-50 text-slate-500 border-slate-200">
+                              Requires Expiry
+                            </Badge>
+                          )
+                        ) : (
+                          item.icon && <span className="text-xl">{item.icon}</span>
+                        )}
                         {item.label}
                       </div>
                     </td>
@@ -224,6 +235,19 @@ export default function MasterDataInnerPage({ params }: { params: { type: string
                 />
                 <p className="text-[10px] font-medium text-slate-400 leading-tight">This is the readable name that will appear in dropdowns across the Aahar portals.</p>
               </div>
+
+              {decodedType.startsWith("DOCUMENT") ? (
+                <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                  <div>
+                    <label className="text-sm font-semibold text-slate-800">Requires Expiry Date</label>
+                    <p className="text-[10px] font-medium text-slate-500 mt-0.5">Prompt the owner to enter an expiration date for this document.</p>
+                  </div>
+                  <Switch 
+                    checked={formData.icon === "true"}
+                    onCheckedChange={(c) => setFormData({ ...formData, icon: c ? "true" : "false" })}
+                  />
+                </div>
+              ) : null}
 
               <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-100">
                 <Button type="button" variant="ghost" onClick={() => setShowModal(false)} className="mt-4 font-semibold text-slate-600">

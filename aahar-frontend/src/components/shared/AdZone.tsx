@@ -4,14 +4,39 @@ interface AdZoneProps {
   size?: "300x250" | "300x600" | "fluid";
   label?: string;
   className?: string;
+  promotion?: any;
 }
 
-export default function AdZone({ size = "fluid", label = "ADVERTISEMENT", className }: AdZoneProps) {
+export default function AdZone({ size = "fluid", label = "ADVERTISEMENT", className, promotion }: AdZoneProps) {
   const sizeStyles = {
     "300x250": "w-[300px] h-[250px]",
     "300x600": "w-[300px] h-[600px]",
     fluid: "w-full min-h-[100px]",
   };
+
+  if (promotion && promotion.imageUrl) {
+    const content = (
+      <img 
+        src={promotion.imageUrl} 
+        alt={promotion.title} 
+        className={cn("object-cover w-full h-full", sizeStyles[size], className)}
+      />
+    );
+    
+    if (promotion.linkUrl) {
+      return (
+        <a href={promotion.linkUrl} target="_blank" rel="noreferrer" className={cn("block overflow-hidden rounded-lg hover:opacity-95 transition-opacity shadow-sm border border-slate-100", sizeStyles[size], className)}>
+          {content}
+        </a>
+      );
+    }
+    
+    return (
+      <div className={cn("overflow-hidden rounded-lg shadow-sm border border-slate-100", sizeStyles[size], className)}>
+        {content}
+      </div>
+    );
+  }
 
   return (
     <div

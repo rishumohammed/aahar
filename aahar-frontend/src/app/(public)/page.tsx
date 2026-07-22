@@ -11,11 +11,11 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import TrustProcess from "@/components/home/TrustProcess";
 import { NearbySection } from "@/components/home/NearbySection";
-import { blogApi } from "@/lib/api";
+import { blogApi, promotionApi } from "@/lib/api";
 
 export default async function HomePage() {
   // Fetch featured restaurants and hotels in parallel
-  const [restaurantsRes, hotelsRes, newRes, blogsRes] = await Promise.allSettled([
+  const [restaurantsRes, hotelsRes, newRes, blogsRes, promotionsRes] = await Promise.allSettled([
     searchApi.search({ mode: "eat", certified: "true", limit: 6, sort: "featured" })
       .then(r => r.data.data.restaurants),
     searchApi.search({ mode: "stay", certified: "true", limit: 4, sort: "featured" })
@@ -27,12 +27,15 @@ export default async function HomePage() {
       ),
     blogApi.list({ limit: 3 })
       .then(r => r.data.data),
+    promotionApi.list({ isActive: true })
+      .then(r => r.data.data),
   ]);
 
   const restaurants = restaurantsRes.status === "fulfilled" ? restaurantsRes.value : [];
   const hotels      = hotelsRes.status === "fulfilled"      ? hotelsRes.value      : [];
   const newItems    = newRes.status === "fulfilled"         ? newRes.value         : [];
-  const blogs       = blogsRes.status === "fulfilled"       ? (blogsRes.value as any) : [];
+  const blogs       = blogsRes.status === "fulfilled"       ? (blogsRes.value.items || blogsRes.value || []) : [];
+  const promotions  = promotionsRes.status === "fulfilled"  ? (promotionsRes.value || []) : [];
 
   return (
     <div className="flex flex-col min-h-screen bg-aahar-wash">
@@ -126,8 +129,8 @@ export default async function HomePage() {
 
             {/* AdZone Row */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <AdZone size="fluid" label="SPONSORED" className="h-32 md:col-span-3" />
-              <AdZone size="300x250" label="PROMOTION" className="h-32 w-full" />
+              <AdZone size="fluid" label="SPONSORED" className="h-[250px] md:col-span-3" promotion={promotions.find((p: any) => p.position === 'fluid')} />
+              <AdZone size="300x250" label="PROMOTION" className="h-[250px] w-full" promotion={promotions.find((p: any) => p.position === '300x250')} />
             </div>
 
             {/* Certified Hotels */}
@@ -244,10 +247,7 @@ export default async function HomePage() {
             </h3>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button asChild className="bg-white text-aahar-teal hover:bg-white/90 rounded-full px-8 font-bold">
-                <Link href="/enquiry?type=restaurant">List your restaurant</Link>
-              </Button>
-              <Button asChild className="bg-white text-aahar-teal hover:bg-white/90 rounded-full px-8 font-bold">
-                <Link href="/enquiry?type=hotel">List your hotel/resort</Link>
+                <Link href="/enquiry">List your restaurant / hotel</Link>
               </Button>
               <Button asChild className="bg-aahar-rose text-white hover:bg-aahar-rose/90 rounded-full px-8 font-bold border-0 shadow-lg shadow-aahar-rose/20">
                 <Link href="/enquiry">Get AAHAR certified</Link>

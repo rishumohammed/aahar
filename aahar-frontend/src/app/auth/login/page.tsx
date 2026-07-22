@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useAuthStore } from "@/store/authStore";
-import { ShieldCheck, Lock, Mail, Loader2, ArrowRight } from "lucide-react";
+import { ShieldCheck, Lock, Mail, Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -27,6 +27,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,13 +92,20 @@ export default function LoginPage() {
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-aahar-body/30" />
               <Input 
-                type="password" 
+                type={showPassword ? "text" : "password"} 
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="pl-11 py-6 rounded-2xl border-aahar-border focus:ring-aahar-teal bg-white text-sm"
+                className="pl-11 pr-11 py-6 rounded-2xl border-aahar-border focus:ring-aahar-teal bg-white text-sm"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-aahar-body/40 hover:text-aahar-teal transition-colors"
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
             </div>
           </div>
 
@@ -126,6 +134,7 @@ export default function LoginPage() {
           <div className="grid grid-cols-2 gap-3">
             {[
               { label: "System Admin", email: "admin@aahar.in", pass: "Admin@123", color: "bg-aahar-dark" },
+              { label: "Auditor", email: "auditor@aahar.in", pass: "Audit@123", color: "bg-amber-500" },
               { label: "Business Owner", email: "owner@spicegarden.in", pass: "Owner@123", color: "bg-aahar-teal" },
               { label: "Hotel Manager", email: "manager@malabarretreat.in", pass: "Manager@123", color: "bg-aahar-rose" },
               { label: "Guest User", email: "guest@gmail.com", pass: "Guest@123", color: "bg-blue-500" },

@@ -24,6 +24,8 @@ import orderRoutes        from "./routes/order.routes.js";
 import leadRoutes         from "./routes/lead.routes.js";
 import masterRoutes       from "./routes/master.routes.js";
 import settingsRoutes     from "./routes/settings.routes.js";
+import blogRoutes         from "./routes/blog.routes.js";
+import promotionRoutes    from "./routes/promotion.routes.js";
 import path from "path";
 
 const app = express();
@@ -69,6 +71,8 @@ app.use("/api/orders",        orderRoutes);
 app.use("/api/leads",         leadRoutes);
 app.use("/api/master",        masterRoutes);
 app.use("/api/settings",      settingsRoutes);
+app.use("/api/blogs",         blogRoutes);
+app.use("/api/promotions",    promotionRoutes);
 
 // Error Handler
 app.use((err: any, req: any, res: any, next: any) => {
@@ -77,3 +81,4 @@ app.use((err: any, req: any, res: any, next: any) => {
 });
 
 export default app;
+// trigger restart

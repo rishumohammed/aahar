@@ -66,8 +66,9 @@ export default function EnquiryInboxPage() {
  const fetchEnquiries = async () => {
  try {
  const res = await enquiryApi.list();
- setEnquiries(res.data.data);
- if (res.data.data.length > 0) setSelectedEnquiryId(res.data.data[0].id);
+ const items = res.data.data?.items || [];
+ setEnquiries(items);
+ if (items.length > 0) setSelectedEnquiryId(items[0].id);
  } catch (e) {
  console.error(e);
  } finally {

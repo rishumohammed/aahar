@@ -33,7 +33,8 @@ export const createAudit = async (req: any, res: any) => {
       id: c.id,
       section: c.section,
       criterion: c.criterion,
-      weight: c.weight
+      weight: c.weight,
+      isCritical: c.isCritical
     }));
 
     const audit = await prisma.audit.create({
@@ -109,12 +110,12 @@ export const getAudit = async (req: any, res: any) => {
 // PATCH /api/audits/:id/submit  (auditor submits completed audit)
 export const submitAudit = async (req: any, res: any) => {
   try {
-    const { checklist, auditorNotes, sitePhotos, recommendation } = req.body;
+    const { checklist, auditorNotes, sitePhotos, recommendation, lat, lng } = req.body;
 
     if (!checklist || !Array.isArray(checklist))
       return badRequest(res, "checklist array is required");
-    if (!recommendation || !["approve","reject","re_audit"].includes(recommendation))
-      return badRequest(res, "recommendation must be approve, reject, or re_audit");
+    if (!recommendation || !["approve","reject","re_audit","needs_corrections"].includes(recommendation))
+      return badRequest(res, "recommendation must be approve, reject, re_audit, or needs_corrections");
 
     const totalScore = calculateScore(checklist);
 
@@ -124,6 +125,8 @@ export const submitAudit = async (req: any, res: any) => {
         checklist:    checklist as any,
         auditorNotes: auditorNotes || null,
         sitePhotos:   sitePhotos   || [],
+        lat:          lat          || null,
+        lng:          lng          || null,
         recommendation: recommendation as any,
         totalScore,
         completedAt: new Date(),
@@ -132,12 +135,55 @@ export const submitAudit = async (req: any, res: any) => {
       include: { application:true }
     });
 
-    // Update application status
+    // Update application status based on recommendation
+    const newStatus = recommendation === "needs_corrections" ? "pending_corrections" : "audit_complete";
+    
     await prisma.application.update({
       where: { id: audit.applicationId },
-      data:  { status: "audit_complete" } as any
+      data:  { status: newStatus } as any
     });
 
     return ok(res, audit, `Audit submitted — score: ${totalScore}/5`);
+  } catch (e) { return serverError(res, e); }
+};
+
+// GET /api/audits/:id/report
+export const downloadAuditReport = async (req: any, res: any) => {
+  try {
+    const audit = await prisma.audit.findUnique({
+      where: { id: req.params.id },
+      include: {
+        auditor: { select: { name: true } },
+        application: {
+          include: {
+            restaurant: true,
+            hotel: true
+          }
+        }
+      }
+    });
+
+    if (!audit) return notFound(res, "Audit not found");
+    if (audit.status !== "submitted") return badRequest(res, "Audit has not been submitted yet");
+
+    const entity = audit.application.restaurant ?? audit.application.hotel;
+
+    // Dynamic import to avoid circular dependencies if any
+    const { generateAuditReportPDF } = await import("../services/auditReport.service.js");
+
+    const pdfBuffer = await generateAuditReportPDF({
+      applicationId: audit.applicationId,
+      businessName: entity?.name || "Unknown Business",
+      businessType: audit.track,
+      auditorName: audit.auditor.name,
+      date: new Date(audit.completedAt || audit.updatedAt).toLocaleDateString(),
+      totalScore: audit.totalScore || 0,
+      recommendation: audit.recommendation || "N/A",
+      checklist: (audit.checklist as any) || [],
+    });
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="AuditReport_${audit.id}.pdf"`);
+    res.send(pdfBuffer);
   } catch (e) { return serverError(res, e); }
 };

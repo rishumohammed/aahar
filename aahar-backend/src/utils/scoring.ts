@@ -4,11 +4,19 @@ export interface ChecklistItem {
   criterion: string;
   weight: number;
   score?: number;
+  comment?: string;
+  evidenceUrl?: string;
+  isCritical?: boolean;
 }
 
 export const calculateScore = (checklist: ChecklistItem[]): number => {
   const scoredItems = checklist.filter(i => i.score !== undefined);
   if (scoredItems.length === 0) return 0;
+  
+  // Real-world check: if any critical item has a score of 0, the entire audit fails (score 0)
+  const hasCriticalFailure = scoredItems.some(i => i.isCritical && i.score === 0);
+  if (hasCriticalFailure) return 0;
+
   const weightedSum = scoredItems.reduce((acc, i) => acc + (i.score! * i.weight), 0);
   const totalWeight = scoredItems.reduce((acc, i) => acc + i.weight, 0);
   return Math.round((weightedSum / totalWeight) * 10) / 10;

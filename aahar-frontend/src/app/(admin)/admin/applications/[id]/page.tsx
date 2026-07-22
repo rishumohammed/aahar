@@ -45,8 +45,6 @@ export default function ApplicationDetailPage() {
   const [action, setAction] = useState<"approve" | "reject" | "review" | null>(null);
   const [notes, setNotes] = useState("");
   const [working, setWorking] = useState(false);
-  const [credentialsOpen, setCredentialsOpen] = useState(false);
-  const [credentials, setCredentials] = useState<any>(null);
 
   useEffect(() => {
     fetchApp();
@@ -93,15 +91,17 @@ export default function ApplicationDetailPage() {
     }
   };
 
-  const handleResetPassword = async () => {
+
+
+  const handleReopenAudit = async () => {
+    if (!app.audit) return;
     setWorking(true);
     try {
-      const res = await adminApi.resetPassword(app.applicantId);
-      setCredentials(res.data.data);
-      setCredentialsOpen(true);
-      toast.success("Owner credentials reset successfully");
+      await adminApi.reopenAudit(app.audit.id);
+      toast.success("Audit unlocked and reverted to in_progress");
+      await fetchApp();
     } catch (e) {
-      toast.error("Failed to reset credentials");
+      toast.error("Failed to reopen audit");
     } finally {
       setWorking(false);
     }
@@ -121,7 +121,15 @@ export default function ApplicationDetailPage() {
   );
 
   const entityName = app.restaurant?.name ?? app.hotel?.name ?? app.businessName ?? "Unknown";
-  const entityCity = app.restaurant?.city ?? app.hotel?.city ?? app.city ?? "";
+  const entityCity = [
+    app.restaurant?.address ?? app.hotel?.address ?? app.address,
+    app.restaurant?.city ?? app.hotel?.city ?? app.city,
+    app.restaurant?.state ?? app.hotel?.state ?? app.state,
+    app.pincode
+  ].filter(Boolean).join(", ") || "No location provided";
+  
+  const profileImage = app.restaurant?.photos?.logo ?? app.hotel?.photos?.logo ?? null;
+  const googleLink = app.restaurant?.googleLocationLink ?? app.hotel?.googleLocationLink ?? null;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
@@ -139,20 +147,39 @@ export default function ApplicationDetailPage() {
 
       {/* Header Card */}
       <div className="flex flex-col md:flex-row gap-6 items-start justify-between bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
-        <div>
-          <div className="flex items-center gap-3 mb-3">
-            <Badge className="bg-purple-50 text-purple-700 hover:bg-purple-100 border-0">
-              {app.businessType === "fnb" ? "F&B Division" : "Accommodation"}
-            </Badge>
-            <Badge variant="outline" className="uppercase text-[10px] tracking-widest bg-slate-50 border-slate-200 text-slate-600 font-bold">
-              {app.status.replace(/_/g, " ")}
-            </Badge>
+        <div className="flex flex-col sm:flex-row items-start gap-6">
+          {/* Profile Image / Logo */}
+          <div className="w-24 h-24 sm:w-28 sm:h-28 bg-slate-50 rounded-2xl overflow-hidden shrink-0 border border-slate-100 flex items-center justify-center shadow-sm">
+            {profileImage ? (
+              <img src={profileImage} alt={entityName} className="w-full h-full object-cover" />
+            ) : (
+              <Building className="w-10 h-10 text-slate-300" />
+            )}
           </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">{entityName}</h1>
-          <p className="text-slate-500 mt-2 flex items-center gap-2 font-medium">
-            <MapPin className="w-4 h-4" />
-            {entityCity}
-          </p>
+          
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <Badge className="bg-purple-50 text-purple-700 hover:bg-purple-100 border-0">
+                {app.businessType === "fnb" ? "F&B Division" : "Accommodation"}
+              </Badge>
+              <Badge variant="outline" className="uppercase text-[10px] tracking-widest bg-slate-50 border-slate-200 text-slate-600 font-bold">
+                {app.status.replace(/_/g, " ")}
+              </Badge>
+            </div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">{entityName}</h1>
+            <div className="text-slate-500 mt-3 flex flex-col gap-2 text-sm font-medium">
+              <div className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
+                <span>{entityCity}</span>
+              </div>
+              {googleLink && (
+                <a href={googleLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-admin-primary hover:underline ml-6">
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  View on Google Maps
+                </a>
+              )}
+            </div>
+          </div>
         </div>
         
         <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 min-w-[250px] w-full md:w-auto">
@@ -172,6 +199,11 @@ export default function ApplicationDetailPage() {
             {app.status === "audit_complete" && (
               <Button onClick={() => setAction("approve")} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
                 Confirm & Issue License
+              </Button>
+            )}
+            {(app.audit?.status === "submitted" || app.audit?.status === "completed" || app.audit?.status === "reviewed") && !["certified", "rejected"].includes(app.status) && (
+              <Button variant="outline" onClick={handleReopenAudit} disabled={working} className="w-full mt-2 font-bold text-amber-600 border-amber-200 hover:bg-amber-50">
+                Unlock / Reopen Audit
               </Button>
             )}
             {!["certified", "rejected"].includes(app.status) && (
@@ -237,17 +269,6 @@ export default function ApplicationDetailPage() {
                           {label}
                         </dt>
                         <dd className="text-sm font-semibold text-slate-900">{value ?? "—"}</dd>
-                        {label === "Primary Email" && (
-                          <Button 
-                            variant="link" 
-                            size="sm" 
-                            onClick={handleResetPassword} 
-                            disabled={working}
-                            className="px-0 h-auto text-xs mt-1 text-admin-primary flex items-center gap-1"
-                          >
-                            <KeyRound className="w-3 h-3" /> Reset Credentials
-                          </Button>
-                        )}
                       </div>
                     ))}
                   </dl>
@@ -507,55 +528,6 @@ export default function ApplicationDetailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Credentials Dialog */}
-      <Dialog open={credentialsOpen} onOpenChange={setCredentialsOpen}>
-        <DialogContent className="sm:max-w-md bg-white rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-black text-slate-900 flex items-center gap-2">
-              <KeyRound className="w-5 h-5 text-admin-primary" />
-              Owner Credentials Reset
-            </DialogTitle>
-          </DialogHeader>
-          {credentials && (
-            <div className="py-2 space-y-4">
-              <p className="text-sm text-slate-600">
-                The password for the owner account has been reset to the system default. Please copy and share these details securely with the owner.
-              </p>
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                <div>
-                  <Label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Login Email</Label>
-                  <div className="flex items-center justify-between bg-white px-3 py-2 border border-slate-200 rounded-lg">
-                    <span className="text-sm font-semibold">{credentials.email}</span>
-                    <Button variant="ghost" size="sm" onClick={() => {
-                      navigator.clipboard.writeText(credentials.email);
-                      toast.success("Email copied");
-                    }} className="h-6 w-6 p-0 text-slate-400 hover:text-slate-900">
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Temporary Password</Label>
-                  <div className="flex items-center justify-between bg-white px-3 py-2 border border-slate-200 rounded-lg">
-                    <span className="text-sm font-semibold">{credentials.password}</span>
-                    <Button variant="ghost" size="sm" onClick={() => {
-                      navigator.clipboard.writeText(credentials.password);
-                      toast.success("Password copied");
-                    }} className="h-6 w-6 p-0 text-slate-400 hover:text-slate-900">
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={() => setCredentialsOpen(false)} className="w-full bg-slate-900 text-white hover:bg-slate-800">
-                  Acknowledge & Close
-                </Button>
-              </DialogFooter>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
     </div>
   );

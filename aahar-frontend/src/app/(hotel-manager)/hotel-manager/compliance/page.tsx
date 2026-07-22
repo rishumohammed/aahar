@@ -19,6 +19,7 @@ import { Button } from"@/components/ui/button";
 import { Card } from"@/components/ui/card";
 import { Badge } from"@/components/ui/badge";
 import { cn } from"@/lib/utils";
+import { ComplianceChatDialog } from "@/components/shared/ComplianceChatDialog";
 
 // ── Constants ───────────────────────────────────────────────
 const RING_RADIUS = 54;
@@ -38,11 +39,9 @@ export default function HotelComplianceDashboard() {
  accessibility: 0,
  guestExperience: 0
  });
- const [certification, setCertification] = useState({
- expiresAt: addDays(new Date(), 45).toISOString(),
- status:"active"
- });
+ const [certification, setCertification] = useState<any>(null);
  const [hotelName, setHotelName] = useState("Your Hotel");
+ const [applicationId, setApplicationId] = useState<string | null>(null);
  const [loading, setLoading] = useState(true);
 
  useEffect(() => {
@@ -57,7 +56,8 @@ export default function HotelComplianceDashboard() {
  if (statsRes.data?.data?.certification) {
  setCertification(statsRes.data.data.certification);
  }
- setHotelName(statsRes.data?.data?.hotelName ||"Your Hotel");
+ setHotelName(statsRes.data?.data?.hotelName || "Your Hotel");
+ setApplicationId(statsRes.data?.data?.applicationId || null);
  } catch (e) {
  console.error("Failed to load compliance data", e);
  } finally {
@@ -78,7 +78,7 @@ export default function HotelComplianceDashboard() {
  }, [scores.overall]);
 
  // ── Computations ──────────────────────────────────────────
- const daysRemaining = Math.ceil((new Date(certification.expiresAt).getTime() - new Date().getTime()) / 86400000);
+ const daysRemaining = certification ? Math.ceil((new Date(certification.expiresAt).getTime() - new Date().getTime()) / 86400000) : 0;
  
  const countdownColor = daysRemaining > 60 ?"text-emerald-500": daysRemaining > 30 ?"text-amber-500":"text-rose-500";
  const countdownBg = daysRemaining > 60 ?"bg-emerald-50": daysRemaining > 30 ?"bg-amber-50":"bg-rose-50";
@@ -123,7 +123,7 @@ export default function HotelComplianceDashboard() {
  <div className="space-y-10">
  
  {/* Top Score Section */}
- <Card className="p-10 rounded-lg border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-12">
+ <Card className="p-10 rounded-xl border-slate-200 shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row items-center gap-12">
  
  {/* Score Ring */}
  <div className="relative flex flex-col items-center">
@@ -143,7 +143,7 @@ export default function HotelComplianceDashboard() {
  strokeLinecap="round"
  />
  </svg>
- <div className="absolute inset-0 flex flex-col items-center justify-center rotate-90">
+ <div className="absolute inset-0 flex flex-col items-center justify-center">
  <span className="text-3xl font-bold text-slate-800 leading-none">{scores.overall.toFixed(1)}</span>
  <span className="text-xs font-semibold uppercase text-slate-500/40 tracking-wider mt-1">Out of 5.0</span>
  </div>
@@ -186,7 +186,7 @@ export default function HotelComplianceDashboard() {
  </Badge>
  </div>
  
- <Card className="rounded-lg border-slate-200 overflow-hidden shadow-sm">
+ <Card className="rounded-xl border-slate-200 overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
  {sortedActions.length === 0 ? (
  <div className="p-8 text-center text-slate-500/60 font-medium">
  No pending corrective actions. Everything is in order!
@@ -259,7 +259,7 @@ export default function HotelComplianceDashboard() {
  {/* Audit Timeline */}
  <section className="space-y-6">
  <h2 className="text-xl font-bold text-slate-800 tracking-tight uppercase">Audit Timeline</h2>
- <Card className="p-8 rounded-lg border-slate-200 shadow-sm">
+ <Card className="p-8 rounded-xl border-slate-200 shadow-md hover:shadow-lg transition-shadow duration-300">
  {timeline.length === 0 ? (
  <div className="p-8 text-center text-slate-500/60 font-medium">
  No timeline history available yet.
@@ -310,38 +310,60 @@ export default function HotelComplianceDashboard() {
  {/* Right Column: Widgets */}
  <aside className="space-y-8">
  {/* Renewal Countdown */}
- <Card className={cn("p-8 rounded-lg border-slate-200 shadow-xl text-center space-y-6", countdownBg)}>
- <div className="space-y-2">
- <h3 className={cn("text-6xl font-bold tracking-tighter", countdownColor)}>
- {daysRemaining}
- </h3>
- <p className="text-xs font-semibold uppercase tracking-wider text-slate-500/60">Days until renewal</p>
- </div>
- 
- <div className="p-4 bg-white/60 rounded-md border border-white space-y-1">
- <p className="text-[10px] font-bold text-slate-500/40 uppercase tracking-wider">Certificate Expiry</p>
- <p className="text-sm font-bold text-slate-800">{format(parseISO(certification.expiresAt),"dd MMM yyyy")}</p>
- </div>
+  {certification ? (
+  <Card className={cn("p-8 rounded-xl border-slate-200 shadow-xl text-center space-y-6 hover:shadow-2xl transition-shadow duration-300", countdownBg)}>
+  <div className="space-y-2">
+  <h3 className={cn("text-6xl font-bold tracking-tighter", countdownColor)}>
+  {daysRemaining}
+  </h3>
+  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500/60">Days until renewal</p>
+  </div>
+  
+  <div className="p-4 bg-white/60 rounded-xl border border-white space-y-1 shadow-sm">
+  <p className="text-[10px] font-bold text-slate-500/40 uppercase tracking-wider">Certificate Expiry</p>
+  <p className="text-sm font-bold text-slate-800">{format(parseISO(certification.expiresAt),"dd MMM yyyy")}</p>
+  </div>
 
- {daysRemaining < 30 ? (
- <Button type="button" className="w-full bg-rose-500 text-white rounded-md py-7 font-bold uppercase tracking-wider shadow-xl shadow-rose-500/20 hover:scale-105 active:scale-95 transition-all">
- Start Renewal Now
- </Button>
- ) : (
- <div className="p-4 flex items-center gap-3 text-left">
- <div className="p-2 bg-emerald-500/10 rounded-md">
- <CheckCircle2 className="h-5 w-5 text-emerald-500"/>
- </div>
- <div>
- <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">Status Safe</p>
- <p className="text-xs font-semibold text-slate-500/60 mt-0.5">Maintain standards for next audit.</p>
- </div>
- </div>
- )}
- </Card>
+  {daysRemaining < 30 ? (
+  <Button type="button" className="w-full bg-rose-500 text-white rounded-xl py-7 font-bold uppercase tracking-wider shadow-lg shadow-rose-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+  Start Renewal Now
+  </Button>
+  ) : (
+  <div className="p-4 flex items-center gap-3 text-left">
+  <div className="p-2 bg-emerald-500/10 rounded-lg">
+  <CheckCircle2 className="h-5 w-5 text-emerald-500"/>
+  </div>
+  <div>
+  <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">Status Safe</p>
+  <p className="text-xs font-semibold text-slate-500/60 mt-0.5">Maintain standards for next audit.</p>
+  </div>
+  </div>
+  )}
+  </Card>
+  ) : (
+  <Card className="p-8 rounded-xl border-slate-200 shadow-xl text-center space-y-6 bg-slate-50 hover:shadow-2xl transition-shadow duration-300">
+  <div className="space-y-2">
+  <h3 className="text-4xl font-bold tracking-tighter text-slate-400">PENDING</h3>
+  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500/60">Certification Status</p>
+  </div>
+  <div className="p-4 bg-white/60 rounded-xl border border-white space-y-1 shadow-sm">
+  <p className="text-[10px] font-bold text-slate-500/40 uppercase tracking-wider">Audit Not Completed</p>
+  <p className="text-sm font-bold text-slate-800">No active certificate</p>
+  </div>
+  <div className="p-4 flex items-center gap-3 text-left">
+  <div className="p-2 bg-slate-200/50 rounded-lg">
+  <AlertCircle className="h-5 w-5 text-slate-400"/>
+  </div>
+  <div>
+  <p className="text-xs font-semibold uppercase tracking-wider text-slate-600">Action Required</p>
+  <p className="text-xs font-semibold text-slate-500/60 mt-0.5">Please complete an audit.</p>
+  </div>
+  </div>
+  </Card>
+  )}
 
  {/* Compliance Tips */}
- <Card className="p-8 rounded-lg border-slate-200 shadow-sm space-y-6 bg-slate-50/10">
+ <Card className="p-8 rounded-xl border-slate-200 shadow-md hover:shadow-lg transition-shadow duration-300 space-y-6 bg-slate-50/10">
  <div className="flex items-center gap-3">
  <div className="p-2.5 rounded-md bg-white shadow-sm">
  <Info className="h-5 w-5 text-admin-primary"/>
@@ -369,11 +391,9 @@ export default function HotelComplianceDashboard() {
  </Card>
 
  {/* Contact Auditor */}
- <div className="p-6 bg-slate-900 rounded-lg text-center space-y-4">
+ <div className="p-6 bg-slate-900 rounded-xl text-center space-y-4 shadow-xl">
  <p className="text-white font-bold text-sm">Need help with compliance?</p>
- <Button type="button" className="w-full bg-admin-primary text-white rounded-md py-6 font-bold shadow-lg shadow-admin-primary/20 hover:bg-admin-primary/90 transition-all">
- Message Auditor
- </Button>
+ <ComplianceChatDialog applicationId={applicationId} />
  </div>
  </aside>
  </div>

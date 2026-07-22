@@ -36,6 +36,7 @@ enum ApplicationStatus {
   gap_analysis
   audit_scheduled
   audit_complete
+  pending_corrections
   approved
   rejected
   certified
@@ -88,8 +89,10 @@ model User {
   audits       Audit[]       @relation("AuditorAudits")
   enquiries    Enquiry[]     @relation("GuestEnquiries")
   messages     EnquiryMessage[]
+  applicationMessages ApplicationMessage[]
   notifications Notification[]
   payments     Payment[]
+  blogPosts    BlogPost[]
 
   @@index([email])
   @@index([role])
@@ -118,6 +121,7 @@ model Restaurant {
   amenities    Json?
   photos       Json?
   googleRating Float?
+  googleLocationLink String?
   isVerified   Boolean            @default(false)
   isActive     Boolean            @default(true)
   isFeatured   Boolean            @default(false)
@@ -204,6 +208,7 @@ model Hotel {
   amenities           Json?
   photos              Json?
   googleRating        Float?
+  googleLocationLink  String?
   linkedRestaurantId  String?
   isVerified          Boolean      @default(false)
   isActive            Boolean      @default(true)
@@ -262,6 +267,7 @@ model Application {
   audit        Audit?
   certification Certification?  @relation("ApplicationCert")
   payments     Payment[]
+  messages     ApplicationMessage[]
   submittedAt  DateTime?
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
@@ -299,6 +305,8 @@ model Audit {
   recommendation String?
   auditorNotes  String?
   sitePhotos    Json?
+  lat           Float?
+  lng           Float?
   status        String      @default("scheduled")
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -320,7 +328,7 @@ model Certification {
   issuedAt      DateTime   @default(now())
   expiresAt     DateTime
   status        CertStatus @default(active)
-  qrCodeUrl     String?
+  qrCodeUrl     String?    @db.Text
   pdfUrl        String?
   hygieneScore  Float?
   revokedAt     DateTime?
@@ -373,6 +381,20 @@ model EnquiryMessage {
   sentAt     DateTime @default(now())
 
   @@index([enquiryId])
+}
+
+model ApplicationMessage {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  senderId      String
+  sender        User        @relation(fields: [senderId], references: [id])
+  content       String      @db.Text
+  attachmentUrl String?
+  isSystem      Boolean     @default(false)
+  sentAt        DateTime    @default(now())
+
+  @@index([applicationId])
 }
 
 model Notification {
@@ -455,7 +477,7 @@ model RestaurantTable {
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   tableNumber  String
   seatingCapacity Int   @default(4)
-  qrCodeUrl    String?
+  qrCodeUrl    String?  @db.Text
   status       String   @default("active") // active, occupied, reserved
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -515,6 +537,7 @@ model Criterion {
   section    String
   criterion  String
   weight     Int
+  isCritical Boolean  @default(false)
 }
 
 model SiteSetting {
@@ -522,4 +545,41 @@ model SiteSetting {
   key       String   @unique
   value     Json
   updatedAt DateTime @updatedAt
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String?  @db.Text
+  content     String   @db.LongText
+  coverImage  String?
+  category    String   @default("news")
+  readingTime String?
+  status      String   @default("draft") // draft | published
+  isFeatured  Boolean  @default(false)
+  tags        Json?
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([authorId])
+}
+
+model Promotion {
+  id        String   @id @default(cuid())
+  title     String
+  imageUrl  String
+  linkUrl   String?
+  position  String   // e.g., "fluid", "300x250"
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([position])
+  @@index([isActive])
 }

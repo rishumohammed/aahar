@@ -22,7 +22,7 @@ export default function ConsumerEnquiriesPage() {
 
   useEffect(() => {
     enquiryApi.list()
-      .then(res => setEnquiries(res.data.data))
+      .then(res => setEnquiries(res.data.data?.items || []))
       .finally(() => setLoading(false));
   }, []);
 

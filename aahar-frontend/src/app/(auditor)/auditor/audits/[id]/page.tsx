@@ -21,18 +21,38 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ComplianceChatDialog } from "@/components/shared/ComplianceChatDialog";
 
 export default function AuditChecklistPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [audit, setAudit] = useState<any>(null);
   const [scores, setScores] = useState<Record<string, number>>({});
-  const [notes, setNotes] = useState<Record<string, string>>({});
+  const [comments, setComments] = useState<Record<string, string>>({});
   const [auditorNotes, setAuditorNotes] = useState("");
-  const [recommendation, setRecommendation] = useState<"approve" | "reject" | "re_audit" | "">("");
+  const [recommendation, setRecommendation] = useState<"approve" | "reject" | "re_audit" | "needs_corrections" | "">("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
+
+  // Load from local storage if available
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedScores = localStorage.getItem(`audit_scores_${id}`);
+      const savedComments = localStorage.getItem(`audit_comments_${id}`);
+      if (savedScores) setScores(JSON.parse(savedScores));
+      if (savedComments) setComments(JSON.parse(savedComments));
+    }
+  }, [id]);
+
+  // Save to local storage on change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (Object.keys(scores).length > 0) localStorage.setItem(`audit_scores_${id}`, JSON.stringify(scores));
+      if (Object.keys(comments).length > 0) localStorage.setItem(`audit_comments_${id}`, JSON.stringify(comments));
+    }
+  }, [scores, comments, id]);
 
   useEffect(() => {
     auditorApi.get(id)
@@ -40,14 +60,23 @@ export default function AuditChecklistPage() {
       const d = res.data;
       setAudit(d.data);
       if (d.data.checklist) {
+        // Only load API scores if local storage is empty or audit is already read-only
+        const isReadOnlyState = d.data.status === "submitted" || d.data.status === "completed" || d.data.status === "reviewed";
         const existingScores: Record<string, number> = {};
-        const existingNotes: Record<string, string> = {};
+        const existingComments: Record<string, string> = {};
         d.data.checklist.forEach((item: any) => {
           if (item.score !== undefined) existingScores[item.id] = item.score;
-          if (item.notes) existingNotes[item.id] = item.notes;
+          if (item.comment) existingComments[item.id] = item.comment;
         });
-        setScores(existingScores);
-        setNotes(existingNotes);
+        
+        if (isReadOnlyState) {
+          setScores(existingScores);
+          setComments(existingComments);
+        } else {
+          setScores(prev => Object.keys(prev).length > 0 ? prev : existingScores);
+          setComments(prev => Object.keys(prev).length > 0 ? prev : existingComments);
+        }
+
         if (d.data.recommendation) setRecommendation(d.data.recommendation);
         if (d.data.auditorNotes) setAuditorNotes(d.data.auditorNotes);
       }
@@ -74,23 +103,7 @@ export default function AuditChecklistPage() {
     </div>
   );
 
-  if (audit.status === "submitted") return (
-    <div className="max-w-md mx-auto p-12 text-center bg-white rounded-lg border border-slate-200 shadow-md space-y-6 mt-16 animate-in zoom-in-95">
-      <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 mx-auto">
-        <CheckCircle2 className="h-8 w-8" />
-      </div>
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Audit Finalized</h2>
-        <p className="text-slate-500 text-sm">
-          Score: <span className="text-admin-text font-bold">{audit.totalScore}/5</span> · 
-          Recommendation: <span className="uppercase text-slate-700 font-bold">{audit.recommendation}</span>
-        </p>
-      </div>
-      <Button onClick={() => router.push("/auditor/dashboard")} className="bg-admin-primary hover:bg-admin-hover text-white rounded-lg px-8 py-3 w-full">
-        Back to Dashboard
-      </Button>
-    </div>
-  );
+  const isReadOnly = audit.status === "submitted" || audit.status === "completed" || audit.status === "reviewed";
 
   const checklist = audit.checklist ?? [];
   const sections = [...new Set(checklist.map((i: any) => i.section))] as string[];
@@ -113,11 +126,28 @@ export default function AuditChecklistPage() {
     }
 
     setSaving(true);
+    
+    // Get Geolocation
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        await processSubmit(lat, lng);
+      },
+      async (error) => {
+        console.warn("Geolocation failed or denied, submitting without GPS data", error);
+        await processSubmit(null, null);
+      },
+      { timeout: 10000 }
+    );
+  };
+
+  const processSubmit = async (lat: number | null, lng: number | null) => {
     try {
       const filledChecklist = checklist.map((item: any) => ({
         ...item,
         score: scores[item.id],
-        notes: notes[item.id] ?? null,
+        comment: comments[item.id] ?? null,
       }));
 
       await auditorApi.submit(id, {
@@ -125,7 +155,13 @@ export default function AuditChecklistPage() {
         auditorNotes,
         recommendation,
         sitePhotos: [],
+        lat,
+        lng
       });
+
+      // Clear local storage
+      localStorage.removeItem(`audit_scores_${id}`);
+      localStorage.removeItem(`audit_comments_${id}`);
 
       router.push("/auditor/dashboard?submitted=true");
     } finally {
@@ -154,8 +190,9 @@ export default function AuditChecklistPage() {
           </div>
         </div>
         
-        {/* Progress Card */}
-        <div className="p-4 bg-white border border-slate-200 shadow-sm rounded-lg min-w-[280px]">
+        <div className="flex flex-col gap-4 items-end">
+          {/* Progress Card */}
+          <div className="p-4 bg-white border border-slate-200 shadow-sm rounded-lg min-w-[280px]">
           <div className="flex justify-between items-end mb-2">
             <div>
               <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Audit Progress</div>
@@ -166,8 +203,35 @@ export default function AuditChecklistPage() {
           <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
             <div className="h-full bg-admin-primary transition-all duration-700" style={{ width: `${progressPct}%` }} />
           </div>
+          </div>
+          
+          <ComplianceChatDialog 
+            applicationId={audit?.applicationId} 
+            trigger={
+              <Button variant="outline" className="w-full bg-white text-admin-text border-slate-200 shadow-sm hover:bg-slate-50 gap-2">
+                <MessageSquare className="h-4 w-4 text-admin-primary" />
+                Message Property
+              </Button>
+            } 
+          />
         </div>
       </div>
+
+      {isReadOnly && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+            <div>
+              <h3 className="text-sm font-bold text-emerald-800">Audit Finalized & Submitted</h3>
+              <p className="text-xs text-emerald-600 mt-0.5">This report is locked for editing. You are viewing it in read-only mode.</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 block mb-1">Final Score: {audit.totalScore}/5</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">{audit.recommendation}</span>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
@@ -231,6 +295,11 @@ export default function AuditChecklistPage() {
                       <Badge variant="secondary" className="text-[10px] font-medium text-slate-600 bg-slate-100">
                         Weight: {item.weight}/5
                       </Badge>
+                      {item.isCritical && (
+                        <Badge variant="destructive" className="text-[10px] font-medium bg-red-500">
+                          CRITICAL
+                        </Badge>
+                      )}
                       <span className="text-xs text-slate-400">ID: {item.id.slice(-6).toUpperCase()}</span>
                     </div>
                   </div>
@@ -241,14 +310,17 @@ export default function AuditChecklistPage() {
                       {[0, 1, 2, 3, 4, 5].map(score => (
                         <button 
                           key={score}
+                          disabled={isReadOnly}
                           onClick={() => setScores(prev => ({ ...prev, [item.id]: score }))}
                           className={cn(
-                            "w-10 h-10 rounded-full text-sm font-semibold transition-all transform active:scale-95 border",
+                            "w-10 h-10 rounded-full text-sm font-semibold transition-all transform border",
+                            !isReadOnly && "active:scale-95 hover:border-admin-primary hover:bg-slate-50",
+                            isReadOnly && "cursor-default opacity-90",
                             scores[item.id] === score
                               ? score >= 4 ? "bg-admin-primary text-white border-admin-primary shadow-sm"
                                 : score >= 3 ? "bg-amber-500 text-white border-amber-500 shadow-sm"
                                 : "bg-red-500 text-white border-red-500 shadow-sm"
-                              : "bg-white border-slate-200 text-slate-600 hover:border-admin-primary hover:bg-slate-50"
+                              : "bg-white border-slate-200 text-slate-600"
                           )}
                         >
                           {score}
@@ -266,10 +338,11 @@ export default function AuditChecklistPage() {
                 <div className="relative">
                   <MessageSquare className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
-                    className="w-full pl-11 pr-4 py-2.5 text-sm rounded-md bg-slate-50 border border-slate-200 focus:bg-white focus:border-admin-primary focus:ring-1 focus:ring-admin-primary/20 outline-none text-slate-700 transition-colors"
+                    className="w-full pl-11 pr-4 py-2.5 text-sm rounded-md bg-slate-50 border border-slate-200 focus:bg-white focus:border-admin-primary focus:ring-1 focus:ring-admin-primary/20 outline-none text-slate-700 transition-colors disabled:opacity-70 disabled:bg-slate-100"
                     placeholder="Physical evidence observations or remediation requirements..."
-                    value={notes[item.id] ?? ""}
-                    onChange={e => setNotes(prev => ({ ...prev, [item.id]: e.target.value }))}
+                    value={comments[item.id] ?? ""}
+                    onChange={e => setComments(prev => ({ ...prev, [item.id]: e.target.value }))}
+                    disabled={isReadOnly}
                   />
                 </div>
               </Card>
@@ -280,15 +353,16 @@ export default function AuditChecklistPage() {
           <div className="p-6 bg-white border border-slate-200 rounded-lg shadow-sm space-y-2 mt-6">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">Overall Inspection Narrative</label>
             <textarea
-              className="w-full bg-slate-50 border border-slate-200 rounded-md p-4 text-sm font-medium outline-none focus:border-admin-primary focus:ring-1 focus:ring-admin-primary/20 transition-all min-h-[120px] resize-none text-slate-800 placeholder:text-slate-400"
+              className="w-full bg-slate-50 border border-slate-200 rounded-md p-4 text-sm font-medium outline-none focus:border-admin-primary focus:ring-1 focus:ring-admin-primary/20 transition-all min-h-[120px] resize-none text-slate-800 placeholder:text-slate-400 disabled:opacity-70 disabled:bg-slate-100"
               placeholder="Summarize the establishment's operational readiness, hygiene culture, and significant findings..."
               value={auditorNotes}
               onChange={e => setAuditorNotes(e.target.value)}
+              disabled={isReadOnly}
             />
           </div>
 
           {/* Final Submission Block */}
-          {progressPct === 100 && (
+          {progressPct === 100 && !isReadOnly && (
             <div className="mt-8 p-6 bg-admin-primary text-white rounded-lg shadow-md relative overflow-hidden animate-in slide-in-from-bottom-6">
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-[80px] -mr-32 -mt-32" />
               <div className="relative z-10 space-y-6">
@@ -304,10 +378,11 @@ export default function AuditChecklistPage() {
 
                 <div className="space-y-3">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-white/60 ml-1">Official Auditor Recommendation</label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                     {[
                       { key: "approve", label: "Recommended Approval", icon: CheckCircle2, color: "border-emerald-500 text-emerald-500", active: "bg-emerald-600 text-white border-emerald-600" },
-                      { key: "re_audit", label: "Require Remediation", icon: AlertCircle, color: "border-amber-500 text-amber-500", active: "bg-amber-600 text-white border-amber-600" },
+                      { key: "needs_corrections", label: "Require Corrections", icon: AlertCircle, color: "border-blue-500 text-blue-500", active: "bg-blue-600 text-white border-blue-600" },
+                      { key: "re_audit", label: "Require Re-Audit", icon: AlertCircle, color: "border-amber-500 text-amber-500", active: "bg-amber-600 text-white border-amber-600" },
                       { key: "reject", label: "Mandatory Rejection", icon: XCircle, color: "border-red-500 text-red-500", active: "bg-red-600 text-white border-red-600" },
                     ].map(opt => (
                       <button 

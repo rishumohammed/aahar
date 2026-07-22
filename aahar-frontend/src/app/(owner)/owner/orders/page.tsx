@@ -5,6 +5,7 @@ import { restaurantApi, orderApi } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { 
   ClipboardList, 
   Clock, 
@@ -15,7 +16,9 @@ import {
   User, 
   Search,
   DollarSign,
-  Users
+  Users,
+  FileText,
+  Receipt
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -62,6 +65,7 @@ export default function OwnerOrdersPage() {
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabValue>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewingOrder, setViewingOrder] = useState<any | null>(null);
 
   // Keep ref of order IDs to track when a new order arrives
   const knownOrderIds = useRef<Set<string>>(new Set());
@@ -360,6 +364,17 @@ export default function OwnerOrdersPage() {
                             {isUpdating ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <CheckCircle className="h-3 w-3 mr-1" />} Settle
                           </Button>
                         )}
+
+                        {["completed", "cancelled"].includes(order.status) && (
+                          <Button 
+                            onClick={() => setViewingOrder(order)}
+                            variant="outline"
+                            size="sm"
+                            className="text-slate-600 border-slate-200 h-8 font-semibold shadow-sm hover:bg-slate-50 hover:text-slate-900"
+                          >
+                            <FileText className="h-3 w-3 mr-1" /> Receipt
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -377,6 +392,52 @@ export default function OwnerOrdersPage() {
           </table>
         </div>
       </Card>
+
+      {/* Receipt Dialog */}
+      <Dialog open={!!viewingOrder} onOpenChange={(open) => !open && setViewingOrder(null)}>
+        <DialogContent className="max-w-md p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-xl">
+          <div className="bg-admin-primary p-6 text-white text-center">
+            <Receipt className="h-10 w-10 mx-auto mb-3 opacity-90" />
+            <DialogTitle className="text-2xl font-bold tracking-tight">Order Receipt</DialogTitle>
+            <p className="text-white/80 text-sm mt-1 uppercase tracking-wider font-semibold">Table {viewingOrder?.tableNumber}</p>
+          </div>
+          
+          <div className="p-6 space-y-6">
+            <div className="flex justify-between items-center pb-4 border-b border-dashed border-slate-200">
+              <div>
+                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Customer</p>
+                <p className="font-semibold text-slate-800">{viewingOrder?.customerName || "Anonymous"}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Status</p>
+                <Badge variant="outline" className={cn("text-xs uppercase tracking-wider font-bold border-0", viewingOrder?.status === "cancelled" ? "bg-rose-100 text-rose-600" : "bg-emerald-100 text-emerald-600")}>
+                  {viewingOrder?.status}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Order Items</p>
+              {viewingOrder?.items?.map((item: any, i: number) => (
+                <div key={i} className="flex justify-between items-start gap-4">
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-slate-800 leading-tight">
+                      {item.quantity}x {item.menuItem?.name || "Unknown Item"}
+                    </p>
+                    {item.notes && <p className="text-xs text-slate-500 mt-0.5 max-w-[220px]">Note: {item.notes}</p>}
+                  </div>
+                  <span className="text-sm font-bold text-slate-800 tabular-nums">₹{item.price * item.quantity}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
+              <span className="text-base font-bold text-slate-800 uppercase tracking-tight">Total Amount</span>
+              <span className="text-2xl font-black text-admin-primary tabular-nums">₹{viewingOrder?.totalAmount}</span>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -17,7 +17,8 @@ import {
   Search,
   Globe,
   Building2,
-  Database
+  Database,
+  Star
 } from "lucide-react";
 import { ChevronDown, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,9 +29,9 @@ import { notificationApi } from "@/lib/api";
 
 const NAV_ITEMS = [
   { label: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "Enquiries", href: "/admin/enquiries", icon: Bell },
-  { label: "Applications", href: "/admin/applications", icon: FileText },
-  { label: "Audits", href: "/admin/audits", icon: CheckSquare },
+  { label: "Enquiries", href: "/admin/enquiries", icon: Bell, badge: "3" },
+  { label: "Applications", href: "/admin/applications", icon: FileText, badge: "12" },
+  { label: "Audits", href: "/admin/audits", icon: CheckSquare, badge: "2" },
   { 
     label: "Establishments", 
     href: "/admin/establishments", 
@@ -43,6 +44,7 @@ const NAV_ITEMS = [
   },
 
   { label: "Content", href: "/admin/content", icon: Globe },
+  { label: "Promotions", href: "/admin/promotions", icon: Star },
   { label: "Standards", href: "/admin/standards", icon: ShieldAlert },
   { label: "Master Data", href: "/admin/master", icon: Database },
   { label: "Users", href: "/admin/users", icon: Users },
@@ -141,14 +143,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <Link 
                     href={item.children ? item.children[0].href : item.href}
                     className={cn(
-                      "flex items-center gap-4 px-6 py-3 text-sm font-medium transition-colors rounded-r-full",
+                      "flex items-center justify-between px-6 py-3 text-sm font-medium transition-colors rounded-r-full",
                       isActive 
                         ? "bg-admin-light text-admin-text" 
                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                     )}
                   >
-                    <item.icon className={cn("h-5 w-5", isActive ? "text-admin-primary" : "text-slate-400")} />
-                    {item.label}
+                    <div className="flex items-center gap-4">
+                      <item.icon className={cn("h-5 w-5", isActive ? "text-admin-primary" : "text-slate-400")} />
+                      {item.label}
+                    </div>
+                    {item.badge && (
+                      <span className={cn(
+                        "text-[10px] font-bold px-2 py-0.5 rounded-full",
+                        isActive 
+                          ? "bg-admin-primary text-white" 
+                          : "bg-slate-200 text-slate-600"
+                      )}>
+                        {item.badge}
+                      </span>
+                    )}
                   </Link>
                   
                   {item.children && isActive && (

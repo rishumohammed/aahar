@@ -1,4 +1,5 @@
 import prisma from "../lib/prisma.js";
+import { getIO } from "../socket.js";
 import { ok, created, badRequest, notFound, serverError, forbidden } from "../utils/response.js";
 
 // POST /api/applications
@@ -161,5 +162,134 @@ export const uploadDocument = async (req: any, res: any) => {
     });
 
     return created(res, doc, "Document uploaded");
+  } catch (e) { return serverError(res, e); }
+};
+
+// GET /api/applications/:id/messages
+export const getMessages = async (req: any, res: any) => {
+  try {
+    const messages = await prisma.applicationMessage.findMany({
+      where: { applicationId: req.params.id },
+      orderBy: { sentAt: "asc" },
+      include: {
+        sender: { select: { id: true, name: true, role: true } }
+      }
+    });
+    return ok(res, messages);
+  } catch (e) { return serverError(res, e); }
+};
+
+// POST /api/applications/:id/messages
+export const sendMessage = async (req: any, res: any) => {
+  try {
+    const { content, attachmentUrl, isSystem = false } = req.body;
+    if (!content?.trim() && !attachmentUrl) return badRequest(res, "Message content or attachment is required");
+
+    const app = await prisma.application.findUnique({
+      where: { id: req.params.id },
+      include: {
+        applicant: { select: { id: true } },
+        audit: { select: { auditorId: true } }
+      }
+    });
+
+    if (!app) return notFound(res, "Application not found");
+
+    const isApplicant = app.applicantId === req.user.id;
+    const isAuditor = app.audit?.auditorId === req.user.id;
+    const isAdmin = ["admin", "super_admin"].includes(req.user.role);
+
+    if (!isApplicant && !isAuditor && !isAdmin) {
+      return forbidden(res, "Not authorized to send messages on this application");
+    }
+
+    const message = await prisma.applicationMessage.create({
+      data: {
+        applicationId: app.id,
+        senderId: req.user.id,
+        content: content ? content.trim() : "",
+        attachmentUrl: attachmentUrl || null,
+        isSystem
+      },
+      include: { sender: { select: { id: true, name: true, role: true } } }
+    });
+
+    // Notify the other party via socket
+    const io = getIO();
+    
+    // If applicant sends, notify auditor room and admin
+    if (isApplicant) {
+      if (app.audit?.auditorId) {
+        io.to(`user_${app.audit.auditorId}`).emit("new_application_message", { applicationId: app.id, message });
+      }
+      io.to("admin_room").emit("new_application_message", { applicationId: app.id, message });
+    } else {
+      // If auditor/admin sends, notify applicant
+      io.to(`user_${app.applicantId}`).emit("new_application_message", { applicationId: app.id, message });
+    }
+
+    // DB Notification
+    const recipientId = isApplicant ? app.audit?.auditorId : app.applicantId;
+    if (recipientId) {
+      await prisma.notification.create({
+        data: {
+          userId: recipientId,
+          type: "application_message",
+          title: "New Application Message",
+          message: `You have a new message from ${message.sender.name}`,
+          actionUrl: isApplicant ? `/auditor/audits/${app.id}` : `/hotel-manager/compliance`
+        }
+      });
+    }
+
+    return created(res, message, "Message sent");
+  } catch (e) { return serverError(res, e); }
+};
+
+// POST /api/applications/:id/submit-corrections
+export const submitCorrections = async (req: any, res: any) => {
+  try {
+    const { note } = req.body;
+    
+    const app = await prisma.application.findUnique({
+      where: { id: req.params.id },
+      include: { audit: true }
+    });
+
+    if (!app) return notFound(res, "Application not found");
+    if (app.applicantId !== req.user.id) return forbidden(res, "Not your application");
+    if (app.status !== "pending_corrections") return badRequest(res, "Application is not pending corrections");
+
+    const updatedApp = await prisma.application.update({
+      where: { id: app.id },
+      data: { status: "under_review" } as any, // Send back to review
+    });
+
+    // Add a message for audit trail
+    await prisma.applicationMessage.create({
+      data: {
+        applicationId: app.id,
+        senderId: req.user.id,
+        content: `Corrections submitted for review. ${note || ""}`,
+        isSystem: true
+      }
+    });
+
+    // Notify auditor and admin
+    const io = getIO();
+    if (app.audit?.auditorId) {
+      io.to(`user_${app.audit.auditorId}`).emit("application_status_changed", { applicationId: app.id, status: "under_review" });
+      await prisma.notification.create({
+        data: {
+          userId: app.audit.auditorId,
+          type: "corrections_submitted",
+          title: "Corrections Submitted",
+          message: `The applicant has submitted corrections for application #${app.id.substring(0, 8)}`,
+          actionUrl: `/auditor/audits/${app.id}`
+        }
+      });
+    }
+
+    return ok(res, updatedApp, "Corrections submitted for review");
   } catch (e) { return serverError(res, e); }
 };

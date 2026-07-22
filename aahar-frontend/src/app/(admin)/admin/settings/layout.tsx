@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, Shield, LayoutTemplate } from "lucide-react";
+import { Settings, Shield, LayoutTemplate, Palette, Mail, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const sidebarNavItems = [
@@ -20,6 +20,21 @@ const sidebarNavItems = [
     title: "Footer Content",
     href: "/admin/settings/footer",
     icon: LayoutTemplate,
+  },
+  {
+    title: "Branding",
+    href: "/admin/settings/branding",
+    icon: Palette,
+  },
+  {
+    title: "Communications",
+    href: "/admin/settings/communications",
+    icon: Mail,
+  },
+  {
+    title: "Marketing & SEO",
+    href: "/admin/settings/marketing",
+    icon: Megaphone,
   },
 ];
 

@@ -108,75 +108,87 @@ export default function AdminAuditExecutePage() {
   const entityName = audit.application?.restaurant?.name ?? audit.application?.hotel?.name ?? "Unknown Property";
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-       <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
-        <div className="space-y-4">
-          <button onClick={() => router.back()} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-admin-text transition-colors">
-            <ChevronLeft className="h-4 w-4" /> Exit Audit Mode
+    <div className="max-w-[1400px] mx-auto space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div className="space-y-2">
+          <button onClick={() => router.back()} className="flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-admin-primary transition-colors">
+            <ChevronLeft className="h-4 w-4" /> BACK TO AUDITS
           </button>
-          <div className="flex items-center gap-4">
-            <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">{entityName}</h1>
-            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 uppercase tracking-widest text-[9px] font-black py-1.5 px-4">Admin Override Mode</Badge>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">{entityName}</h1>
+            <Badge className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100">Admin Override Mode</Badge>
           </div>
-          <p className="text-sm font-bold text-slate-600 uppercase tracking-widest opacity-60">Standard: {audit.track.toUpperCase()} Division</p>
+          <p className="text-sm font-medium text-slate-500">Standard: {audit.track.toUpperCase()} Division</p>
         </div>
-        
-        <div className="card p-6 bg-white border-slate-200 shadow-xl min-w-[280px] rounded-[2rem]">
-          <div className="flex justify-between items-end mb-4">
-            <div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Audit Completion</div>
-              <div className="text-2xl font-black text-slate-900 tracking-tighter">{totalScored} / {checklist.length}</div>
-            </div>
-            <div className="text-sm font-black text-admin-text">{progressPct}%</div>
+
+        <div className="flex flex-col items-end min-w-[200px]">
+          <div className="flex justify-between w-full mb-2">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Completion</span>
+            <span className="text-sm font-bold text-admin-primary">{progressPct}%</span>
           </div>
-          <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-            <div className="h-full bg-admin-primary transition-all duration-700" style={{ width: `${progressPct}%` }} />
+          <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
+            <div className="h-full bg-admin-primary transition-all duration-500" style={{ width: `${progressPct}%` }} />
           </div>
+          <p className="text-xs font-medium text-slate-400 mt-2">{totalScored} of {checklist.length} checked</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        <div className="lg:col-span-3 space-y-2">
-          {sections.map(section => (
-            <button 
-              key={section}
-              onClick={() => setActiveSection(section)}
-              className={cn(
-                "w-full text-left p-5 rounded-[1.5rem] transition-all flex items-start gap-4 group",
-                activeSection === section 
-                  ? "bg-admin-primary text-white shadow-xl" 
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
-              )}
-            >
-              <div className="flex-1 min-w-0">
-                <div className="text-[11px] font-black uppercase tracking-widest leading-tight">{section}</div>
-              </div>
-            </button>
-          ))}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Sidebar Navigation */}
+        <div className="lg:col-span-3">
+          <Card className="p-2 border-slate-200 shadow-sm sticky top-6">
+            <div className="space-y-1">
+              {sections.map(section => {
+                const sectionItems = checklist.filter((i: any) => i.section === section);
+                const scoredInSection = sectionItems.filter((i: any) => scores[i.id] !== undefined).length;
+                const isComplete = scoredInSection === sectionItems.length;
+
+                return (
+                  <button 
+                    key={section}
+                    onClick={() => setActiveSection(section)}
+                    className={cn(
+                      "w-full text-left px-4 py-3 rounded-lg transition-all flex items-center justify-between group",
+                      activeSection === section 
+                        ? "bg-admin-light text-admin-primary font-semibold" 
+                        : "text-slate-600 hover:bg-slate-50 font-medium"
+                    )}
+                  >
+                    <span className="text-sm">{section}</span>
+                    {isComplete && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
         </div>
 
-        <div className="lg:col-span-9 space-y-8">
-           <div className="grid grid-cols-1 gap-6">
+        {/* Main Content */}
+        <div className="lg:col-span-9 space-y-6">
+          <div className="space-y-4">
             {sectionItems.map((item: any) => (
-              <Card key={item.id} className="p-8 rounded-[2.5rem] border-slate-200 bg-white shadow-sm">
-                <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 mb-8">
-                  <div className="space-y-3 flex-1">
-                    <p className="text-lg font-black text-slate-900 leading-snug">{item.criterion}</p>
-                    <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest py-1 border-slate-200">
+              <Card key={item.id} className="p-6 border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-6">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-start gap-3">
+                      <p className="text-base font-semibold text-slate-800 leading-snug">{item.criterion}</p>
+                    </div>
+                    <Badge variant="secondary" className="text-xs font-medium bg-slate-100 text-slate-600 border-none">
                       Weight: {item.weight}/5
                     </Badge>
                   </div>
                   
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 shrink-0">
                     {[0, 1, 2, 3, 4, 5].map(score => (
                       <button 
                         key={score}
                         onClick={() => setScores(prev => ({ ...prev, [item.id]: score }))}
                         className={cn(
-                          "w-11 h-11 rounded-xl text-xs font-black transition-all border-2",
+                          "w-10 h-10 rounded-md text-sm font-semibold transition-all flex items-center justify-center",
                           scores[item.id] === score
-                            ? "bg-admin-primary text-white border-admin-primary"
-                            : "bg-white border-slate-200 text-slate-600 hover:border-admin-primary"
+                            ? "bg-white text-admin-primary shadow-sm border border-slate-200"
+                            : "text-slate-500 hover:bg-slate-200/50 hover:text-slate-700"
                         )}
                       >
                         {score}
@@ -184,47 +196,91 @@ export default function AdminAuditExecutePage() {
                     ))}
                   </div>
                 </div>
-                <input
-                  className="input py-4 text-xs rounded-xl bg-slate-50 border-none"
-                  placeholder="Admin mediation notes or observations..."
-                  value={notes[item.id] ?? ""}
-                  onChange={e => setNotes(prev => ({ ...prev, [item.id]: e.target.value }))}
-                />
+
+                <div className="relative">
+                  <textarea
+                    className="w-full min-h-[80px] p-4 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-admin-primary focus:ring-1 focus:ring-admin-primary outline-none transition-all resize-y"
+                    placeholder="Admin mediation notes or observations (optional)..."
+                    value={notes[item.id] ?? ""}
+                    onChange={e => setNotes(prev => ({ ...prev, [item.id]: e.target.value }))}
+                  />
+                </div>
               </Card>
             ))}
           </div>
 
+          {/* Executive Decision Area */}
           {progressPct === 100 && (
-            <div className="mt-20 p-12 bg-admin-primary text-white rounded-[3.5rem] shadow-2xl space-y-10">
-                <h2 className="text-3xl font-black uppercase tracking-tight">Executive Audit Decision</h2>
-                <textarea
-                  className="w-full bg-white/5 border-2 border-white/10 rounded-[2rem] p-8 text-sm outline-none focus:border-white/50 transition-all min-h-[160px]"
-                  placeholder="Enter executive summary for the audit report..."
-                  value={auditorNotes}
-                  onChange={e => setAuditorNotes(e.target.value)}
-                />
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {["approve", "re_audit", "reject"].map(opt => (
-                    <button 
-                      key={opt}
-                      onClick={() => setRecommendation(opt as any)}
-                      className={cn(
-                        "p-6 rounded-2xl border-2 font-black uppercase tracking-widest text-[10px] transition-all",
-                        recommendation === opt ? "bg-white text-admin-text border-white" : "border-white/10 text-white/40 hover:border-white/30"
-                      )}
-                    >
-                      {opt.replace('_', ' ')}
-                    </button>
-                  ))}
+            <Card className="mt-12 p-8 border-admin-primary/20 shadow-lg bg-gradient-to-b from-white to-admin-light/20 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-admin-primary" />
+              
+              <div className="max-w-3xl mx-auto space-y-8">
+                <div className="text-center space-y-2">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-admin-light mb-2">
+                    <ShieldCheck className="h-6 w-6 text-admin-primary" />
+                  </div>
+                  <h2 className="text-2xl font-semibold text-slate-900">Executive Audit Decision</h2>
+                  <p className="text-slate-500 text-sm">Please provide your final assessment and recommendation for this establishment.</p>
                 </div>
+
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-slate-700">Executive Summary</label>
+                  <textarea
+                    className="w-full min-h-[120px] p-4 text-sm bg-white border border-slate-300 rounded-lg focus:border-admin-primary focus:ring-1 focus:ring-admin-primary outline-none transition-all resize-y"
+                    placeholder="Enter detailed executive summary for the audit report..."
+                    value={auditorNotes}
+                    onChange={e => setAuditorNotes(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-slate-700">Final Recommendation</label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[
+                      { value: "approve", label: "Approve Certification", color: "emerald" },
+                      { value: "re_audit", label: "Require Re-Audit", color: "amber" },
+                      { value: "reject", label: "Reject Application", color: "rose" }
+                    ].map(opt => {
+                      const isSelected = recommendation === opt.value;
+                      const colorMap: any = {
+                        emerald: isSelected ? "border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-500" : "border-slate-200 hover:border-emerald-200 hover:bg-emerald-50/50 text-slate-600",
+                        amber: isSelected ? "border-amber-500 bg-amber-50 text-amber-700 ring-1 ring-amber-500" : "border-slate-200 hover:border-amber-200 hover:bg-amber-50/50 text-slate-600",
+                        rose: isSelected ? "border-rose-500 bg-rose-50 text-rose-700 ring-1 ring-rose-500" : "border-slate-200 hover:border-rose-200 hover:bg-rose-50/50 text-slate-600",
+                      };
+                      
+                      return (
+                        <button 
+                          key={opt.value}
+                          onClick={() => setRecommendation(opt.value as any)}
+                          className={cn(
+                            "flex items-center justify-center p-4 rounded-xl border transition-all text-sm font-semibold",
+                            colorMap[opt.color]
+                          )}
+                        >
+                          {isSelected && <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                          {opt.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
                 <Button 
                   onClick={handleSubmit}
                   disabled={saving || !recommendation}
-                  className="w-full py-10 bg-white text-admin-text hover:bg-white/90 rounded-[2rem] text-xl font-black uppercase tracking-[0.4em]"
+                  className="w-full h-14 bg-admin-text hover:bg-admin-primary text-white rounded-xl text-base font-semibold shadow-md hover:shadow-lg transition-all"
                 >
-                  {saving ? "Processing..." : "Submit Executive Audit"}
+                  {saving ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Processing Decision...
+                    </>
+                  ) : (
+                    "Submit Executive Audit"
+                  )}
                 </Button>
-            </div>
+              </div>
+            </Card>
           )}
         </div>
       </div>

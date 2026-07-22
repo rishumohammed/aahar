@@ -126,30 +126,37 @@ export default function OwnerTablesPage() {
  </Button>
  </div>
 
+ <style>{`
+ @media print {
+ @page { size: A6 portrait; margin: 0; }
+ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+ }
+ `}</style>
+
  {/* Print Frame (Only visible when printing) */}
  {printingTable && (
- <div className="hidden print:flex flex-col items-center justify-center min-h-screen text-center bg-white p-12 space-y-8 border-4 border-aahar-dark rounded-lg w-[500px] mx-auto my-auto">
+ <div className="hidden print:flex flex-col items-center justify-center text-center bg-white p-6 space-y-5 border-4 border-aahar-dark rounded-2xl w-[105mm] h-[148mm] mx-auto my-auto overflow-hidden shadow-none box-border">
  <div>
- <h1 className="text-4xl font-bold tracking-tighter text-admin-primary">AAHAR</h1>
- <p className="text-xs uppercase font-bold text-slate-800 tracking-wider mt-1">{restaurantName}</p>
+ <h1 className="text-3xl font-bold tracking-tighter text-admin-primary">AAHAR</h1>
+ <p className="text-[10px] uppercase font-bold text-slate-800 tracking-wider mt-0.5">{restaurantName}</p>
  </div>
  
- <div className="p-4 bg-white border-2 border-aahar-dark/10 rounded-lg">
+ <div className="p-3 bg-white border-2 border-aahar-dark/10 rounded-xl">
  <img 
  src={printingTable.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=http://localhost:3000/restaurant/saffron?table=${printingTable.tableNumber}`} 
  alt={`Table ${printingTable.tableNumber} QR`} 
- className="w-64 h-64"
+ className="w-40 h-40 object-contain"
  />
  </div>
 
- <div className="space-y-2">
- <h2 className="text-3xl font-bold text-slate-800 tracking-tight">TABLE {printingTable.tableNumber}</h2>
- <p className="text-sm font-bold text-slate-500 leading-relaxed max-w-xs">
- Scan this QR code to view our hygiene-certified digital menu and place your order directly from your phone!
+ <div className="space-y-1.5 px-4">
+ <h2 className="text-2xl font-bold text-slate-800 tracking-tight leading-none">TABLE {printingTable.tableNumber}</h2>
+ <p className="text-[10px] font-bold text-slate-500 leading-snug">
+ Scan to view our digital menu and order from your phone!
  </p>
  </div>
 
- <div className="text-xs font-semibold uppercase tracking-wider text-slate-500/30">
+ <div className="text-[8px] font-bold uppercase tracking-wider text-slate-400 mt-auto pt-2">
  No Apps Required • Pay at Counter
  </div>
  </div>

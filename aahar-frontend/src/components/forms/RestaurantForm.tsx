@@ -14,7 +14,9 @@ import {
   X,
   Loader2,
   Save,
-  ArrowLeft
+  ArrowLeft,
+  KeyRound,
+  Copy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -22,6 +24,9 @@ import { cn } from "@/lib/utils";
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import { useRouter } from "next/navigation";
 import { MaterialInput } from "@/components/ui/material-input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 interface RestaurantFormProps {
   initialData?: any;
@@ -33,6 +38,8 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
   const { user } = useAuthStore();
   const isAdmin = user?.role === "admin" || user?.role === "super_admin";
   const [working, setWorking] = useState(false);
+  const [credentialsOpen, setCredentialsOpen] = useState(false);
+  const [credentials, setCredentials] = useState<any>(null);
   const [owners, setOwners] = useState<any[]>([]);
   const [masterCategories, setMasterCategories] = useState<any[]>([]);
   const [masterDietary, setMasterDietary] = useState<any[]>([]);
@@ -40,7 +47,7 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
   const [formData, setFormData] = useState<any>({
     name: "", category: "casual_dining", city: "", area: "", address: "", 
     cuisineType: ["Indian"], priceRange: "₹₹", dietary: "mixed",
-    description: "", phone: "", image: "", ownerId: "",
+    description: "", phone: "", image: "", ownerId: "", googleLocationLink: "",
     amenities: [],
     openingHours: {
       monday: "11:00 - 23:00", tuesday: "11:00 - 23:00", wednesday: "11:00 - 23:00",
@@ -77,6 +84,7 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
         cuisineType: Array.isArray(initialData.cuisineType) ? initialData.cuisineType : ["Indian"],
         amenities: Array.isArray(initialData.amenities) ? initialData.amenities : [],
         image: initialData.image || initialData.photos?.cover || "",
+        googleLocationLink: initialData.googleLocationLink || "",
         openingHours: initialData.openingHours || {
           monday: "11:00 - 23:00", tuesday: "11:00 - 23:00", wednesday: "11:00 - 23:00",
           thursday: "11:00 - 23:00", friday: "11:00 - 23:00", saturday: "11:00 - 23:00", sunday: "11:00 - 23:00"
@@ -114,6 +122,21 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!initialData?.ownerId) return;
+    setWorking(true);
+    try {
+      const res = await adminApi.resetPassword(initialData.ownerId);
+      setCredentials(res.data.data);
+      setCredentialsOpen(true);
+      toast.success("Owner credentials reset successfully");
+    } catch (e) {
+      toast.error("Failed to reset credentials");
+    } finally {
+      setWorking(false);
+    }
+  };
+
   return (
     <div className="space-y-10">
       {/* Header */}
@@ -127,6 +150,16 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
             <p className="text-slate-500 font-medium mt-1">{formData.name || "Enter profile details"}</p>
           </div>
         </div>
+        {isAdmin && isEditing && (
+          <Button 
+            variant="outline" 
+            onClick={handleResetPassword} 
+            disabled={working}
+            className="flex items-center gap-2 border-slate-200 text-slate-700 hover:bg-slate-50"
+          >
+            <KeyRound className="w-4 h-4" /> Reset Owner Credentials
+          </Button>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-12">
@@ -260,6 +293,11 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
                   value={formData.address} 
                   onChange={e => setFormData({...formData, address: e.target.value})} 
                 />
+                <MaterialInput 
+                  label="Google Location Link (Maps URL)"
+                  value={formData.googleLocationLink} 
+                  onChange={e => setFormData({...formData, googleLocationLink: e.target.value})} 
+                />
               </div>
 
               <div className="space-y-6">
@@ -283,17 +321,33 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
               </div>
               
               <div className="space-y-6 pt-6 border-t border-slate-100">
-                <h4 className={cn("text-[10px] font-black uppercase tracking-widest", primaryText)}>Cover Image</h4>
-                <p className="text-xs text-slate-500 font-medium max-w-xl">Upload a high-quality hero image to represent your property across the platform.</p>
-                <div className="max-w-xl">
-                  <ImageUpload 
-                    value={formData.image || formData.photos?.cover} 
-                    onChange={url => setFormData({
-                      ...formData, 
-                      image: url,
-                      photos: { ...(formData.photos || {}), cover: url }
-                    })} 
-                  />
+                <h4 className={cn("text-[10px] font-black uppercase tracking-widest", primaryText)}>Media & Imagery</h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-slate-800">Profile Image / Logo</p>
+                    <p className="text-xs text-slate-500 font-medium max-w-sm">Upload a logo or profile image to represent your property on the dashboard.</p>
+                    <ImageUpload 
+                      value={formData.photos?.logo || ""} 
+                      onChange={url => setFormData({
+                        ...formData, 
+                        photos: { ...(formData.photos || {}), logo: url }
+                      })} 
+                    />
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-slate-800">Cover Image</p>
+                    <p className="text-xs text-slate-500 font-medium max-w-sm">Upload a high-quality hero image to represent your property across the platform.</p>
+                    <ImageUpload 
+                      value={formData.image || formData.photos?.cover} 
+                      onChange={url => setFormData({
+                        ...formData, 
+                        image: url,
+                        photos: { ...(formData.photos || {}), cover: url }
+                      })} 
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -332,6 +386,56 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
           </div>
         </Card>
       </form>
+
+      {/* Credentials Dialog */}
+      <Dialog open={credentialsOpen} onOpenChange={setCredentialsOpen}>
+        <DialogContent className="sm:max-w-md bg-white rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black text-slate-900 flex items-center gap-2">
+              <KeyRound className="w-5 h-5 text-admin-primary" />
+              Owner Credentials Reset
+            </DialogTitle>
+          </DialogHeader>
+          {credentials && (
+            <div className="py-2 space-y-4">
+              <p className="text-sm text-slate-600">
+                The password for the owner account has been reset to the system default. Please copy and share these details securely with the owner.
+              </p>
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                <div>
+                  <Label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Login Email</Label>
+                  <div className="flex items-center justify-between bg-white px-3 py-2 border border-slate-200 rounded-lg">
+                    <span className="text-sm font-semibold">{credentials.email}</span>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => {
+                      navigator.clipboard.writeText(credentials.email);
+                      toast.success("Email copied");
+                    }} className="h-6 w-6 p-0 text-slate-400 hover:text-slate-900">
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Temporary Password</Label>
+                  <div className="flex items-center justify-between bg-white px-3 py-2 border border-slate-200 rounded-lg">
+                    <span className="text-sm font-semibold">{credentials.password}</span>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => {
+                      navigator.clipboard.writeText(credentials.password);
+                      toast.success("Password copied");
+                    }} className="h-6 w-6 p-0 text-slate-400 hover:text-slate-900">
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" onClick={() => setCredentialsOpen(false)} className="w-full bg-slate-900 text-white hover:bg-slate-800">
+                  Acknowledge & Close
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

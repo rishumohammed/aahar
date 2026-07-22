@@ -96,7 +96,7 @@ export const resetUserPassword = async (req: any, res: any) => {
     const user = await prisma.user.findUnique({ where: { id: req.params.id } });
     if (!user) return notFound(res, "User not found");
 
-    const defaultPassword = "Aahar@12345";
+    const defaultPassword = "Admin@123";
     const passwordHash = await bcrypt.hash(defaultPassword, 10);
 
     await prisma.user.update({
@@ -205,4 +205,32 @@ export const assignAudit = async (req: any, res: any) => {
 
     return ok(res, audit, "Audit assigned and application updated");
   } catch (e) { return serverError(res, e); }
+};
+// PATCH /api/admin/audits/:id/reopen
+export const reopenAudit = async (req: any, res: any) => {
+  try {
+    const { id } = req.params;
+    const audit = await prisma.audit.findUnique({ where: { id } });
+    if (!audit) return notFound(res, "Audit not found");
+
+    // Reset audit to in_progress
+    const updatedAudit = await prisma.audit.update({
+      where: { id },
+      data: {
+        status: "in_progress",
+        completedAt: null, // clear completion date
+      }
+    });
+
+    // Reset application status to audit_scheduled (or under_review)
+    // We will set to audit_scheduled so it falls back out of the completion queue
+    await prisma.application.update({
+      where: { id: audit.applicationId },
+      data: { status: "audit_scheduled" }
+    });
+
+    return ok(res, updatedAudit, "Audit has been reopened successfully.");
+  } catch (e) {
+    return serverError(res, e);
+  }
 };

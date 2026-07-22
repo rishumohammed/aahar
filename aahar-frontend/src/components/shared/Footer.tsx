@@ -27,13 +27,21 @@ type FooterConfig = {
 };
 
 const DEFAULT_CONFIG: FooterConfig = {
-  brandDescription: "",
-  ecosystemLinks: [],
-  companyLinks: [],
+  brandDescription: "Aahar Foundation is committed to bringing transparency and standardisation to the hospitality sector globally.",
+  ecosystemLinks: [
+    { label: "Restaurants", type: "url", url: "/search?type=restaurant" },
+    { label: "Hotels", type: "url", url: "/search?type=hotel" },
+    { label: "Get Certified", type: "url", url: "/apply" },
+  ],
+  companyLinks: [
+    { label: "About Us", type: "url", url: "/about" },
+    { label: "Contact", type: "url", url: "/contact" },
+    { label: "Blog", type: "url", url: "/blog" },
+  ],
   contact: {
-    email: "",
-    phone: "",
-    location: "",
+    email: "support@aahar.example.com",
+    phone: "+91 90000 00000",
+    location: "New Delhi, India",
   }
 };
 

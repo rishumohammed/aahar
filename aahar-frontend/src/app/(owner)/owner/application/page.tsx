@@ -22,7 +22,7 @@ import { Badge } from"@/components/ui/badge";
 import { Label } from"@/components/ui/label";
 import { Progress } from"@/components/ui/progress";
 import { cn } from"@/lib/utils";
-import { applicationApi, ownerApi } from"@/lib/api";
+import { applicationApi, ownerApi, masterApi } from"@/lib/api";
 import { uploadDocument } from"@/lib/upload";
 
 // ── Types & Constants ───────────────────────────────────────
@@ -41,13 +41,7 @@ interface DocMetadata {
  expiryDate?: string;
 }
 
-const REQUIRED_DOCS: DocRequirement[] = [
- { id:"fssai", label:"FSSAI Licence", hasExpiry: true },
- { id:"gst", label:"GST Certificate", hasExpiry: false },
- { id:"lease", label:"Lease Agreement", hasExpiry: true },
- { id:"kitchen_photos", label:"Kitchen Photos (min 5)", hasExpiry: false },
- { id:"owner_id", label:"Owner ID Proof", hasExpiry: true }
-];
+
 
 export default function DocumentUploadPage() {
  const [docUrls, setDocUrls] = useState<Record<string, DocMetadata | null>>({});
@@ -59,6 +53,7 @@ export default function DocumentUploadPage() {
  const [isSubmitting, setIsSubmitting] = useState(false);
  const fileInputRef = useRef<HTMLInputElement>(null);
  const [activeDocType, setActiveDocType] = useState<string | null>(null);
+ const [requiredDocs, setRequiredDocs] = useState<DocRequirement[]>([]);
  const [toasts, setToasts] = useState<any[]>([]);
 
  const showToast = useCallback((message: string, type:"success"|"error"="success") => {
@@ -83,6 +78,14 @@ export default function DocumentUploadPage() {
 
  const listRes = await applicationApi.list({ limit: 1 });
  let app = listRes.data?.data?.items?.[0];
+
+ const masterRes = await masterApi.list("DOCUMENT_RESTAURANT");
+ const docs = masterRes.data?.data?.filter((d:any) => d.isActive).map((d: any) => ({
+   id: d.key,
+   label: d.label,
+   hasExpiry: d.icon === "true"
+ })) || [];
+ setRequiredDocs(docs);
 
  if (!app) {
  const createRes = await applicationApi.submit({
@@ -210,7 +213,7 @@ export default function DocumentUploadPage() {
  };
 
  const uploadedCount = Object.values(docUrls).filter(Boolean).length;
- const isComplete = uploadedCount === REQUIRED_DOCS.length;
+ const isComplete = requiredDocs.length > 0 && uploadedCount >= requiredDocs.length;
 
  return (
  <div className="p-8 max-w-5xl mx-auto space-y-10">
@@ -223,12 +226,12 @@ export default function DocumentUploadPage() {
  </div>
  <div className="text-right">
  <p className="text-xs font-semibold text-slate-800 tracking-wider uppercase mb-2">
- {uploadedCount} of {REQUIRED_DOCS.length} Uploaded
+ {uploadedCount} of {requiredDocs.length} Uploaded
  </p>
  <div className="w-48 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
  <div 
  className="h-full bg-admin-primary transition-all duration-500 ease-out"
- style={{ width: `${(uploadedCount / REQUIRED_DOCS.length) * 100}%` }}
+ style={{ width: requiredDocs.length ? `${(uploadedCount / requiredDocs.length) * 100}%` : '0%' }}
  />
  </div>
  </div>
@@ -244,7 +247,7 @@ export default function DocumentUploadPage() {
 
  {/* Document Rows */}
  <div className="space-y-4">
- {REQUIRED_DOCS.map((docReq) => {
+ {requiredDocs.map((docReq) => {
  const doc = docUrls[docReq.id];
  const status = getStatus(docReq.id);
  const isUploading = docStatus[docReq.id] ==="uploading";

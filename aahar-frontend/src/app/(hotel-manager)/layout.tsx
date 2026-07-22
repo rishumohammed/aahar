@@ -16,19 +16,22 @@ import {
  Bell,
  Search,
  ChevronDown,
- Building2
+ Building2,
+ MessageSquare
 } from"lucide-react";
 import { cn } from"@/lib/utils";
-import { Button } from"@/components/ui/button";
-import { useAuthStore } from"@/store/authStore";
+import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/authStore";
+import { notificationApi } from "@/lib/api";
 
 const NAV_ITEMS = [
  { label:"Overview", href:"/hotel-manager/dashboard", icon: Calendar },
  { label:"Enquiries", href:"/hotel-manager/enquiries", icon: Inbox },
- { label:"Application", href:"/hotel-manager/application", icon: ShieldCheck },
- { label:"Compliance", href:"/hotel-manager/compliance", icon: ShieldCheck },
- { label:"Photos", href:"/hotel-manager/photos", icon: ImageIcon },
- { label:"Profile", href:"/hotel-manager/profile", icon: Settings },
+ { label: "Application", href: "/hotel-manager/application", icon: ShieldCheck },
+ { label: "Compliance", href: "/hotel-manager/compliance", icon: ShieldCheck },
+ { label: "Messages", href: "/hotel-manager/messages", icon: MessageSquare },
+ { label: "Photos", href: "/hotel-manager/photos", icon: ImageIcon },
+ { label: "Profile", href: "/hotel-manager/profile", icon: Settings },
 ];
 
 export default function HotelManagerLayout({ children }: { children: React.ReactNode }) {
@@ -36,8 +39,11 @@ export default function HotelManagerLayout({ children }: { children: React.React
  const pathname = usePathname();
  const { user, isAuthenticated } = useAuthStore();
  const [mounted, setMounted] = useState(false);
- const [isAuthorized, setIsAuthorized] = useState(false);
- const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
  useEffect(() => {
  setMounted(true);
@@ -49,7 +55,15 @@ export default function HotelManagerLayout({ children }: { children: React.React
  router.push("/auth/login");
  return;
  }
- setIsAuthorized(true);
+  setIsAuthorized(true);
+
+  // Fetch Notifications
+  notificationApi.list()
+    .then(res => {
+      setNotifications(res.data?.data?.notifications || []);
+      setUnreadCount(res.data?.data?.unreadCount || 0);
+    })
+    .catch(err => console.error("Failed to load notifications", err));
 
  // Set CSS custom variables for Teal theme (Hotel Manager)
  const primaryColor ="#0A7B7B"; 
@@ -140,11 +154,72 @@ export default function HotelManagerLayout({ children }: { children: React.React
  </div>
  </div>
 
- <div className="flex items-center gap-5">
- <button type="button" className="relative p-2 rounded-full hover:bg-white/10 transition-colors">
- <Bell className="h-5 w-5 text-white"/>
- <span className="absolute top-2 right-2 w-2 h-2 bg-red-400 rounded-full border border-white"/>
- </button>
+  <div className="flex items-center gap-5">
+  <div className="relative">
+    <button 
+      type="button" 
+      onClick={() => {
+        setShowProfileMenu(false);
+        setShowNotifications(v => !v);
+      }}
+      className="relative p-2 rounded-full hover:bg-white/10 transition-colors"
+    >
+      <Bell className="h-5 w-5 text-white" />
+      {unreadCount > 0 && (
+        <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-red-400 rounded-full border-2 border-admin-primary flex items-center justify-center text-[8px] font-bold text-white">
+          {unreadCount > 9 ? '9+' : unreadCount}
+        </span>
+      )}
+    </button>
+
+    {showNotifications && (
+      <>
+        <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
+        <div className="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 z-50 overflow-hidden text-slate-800 animate-in fade-in slide-in-from-top-4">
+          <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+            <h3 className="font-bold text-slate-800">Notifications</h3>
+            {unreadCount > 0 && (
+              <span className="text-xs font-medium text-admin-primary bg-admin-light px-2 py-1 rounded-full">{unreadCount} New</span>
+            )}
+          </div>
+          
+          <div className="max-h-[320px] overflow-y-auto">
+            {notifications.length === 0 ? (
+              <div className="p-8 text-center flex flex-col items-center justify-center">
+                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                  <Bell className="h-8 w-8 text-slate-300 mx-auto" />
+                </div>
+                <p className="text-sm font-medium text-slate-600">All caught up!</p>
+                <p className="text-xs text-slate-400 mt-1">No new notifications right now</p>
+              </div>
+            ) : (
+              <div className="flex flex-col">
+                {notifications.map((n) => (
+                  <Link 
+                    href={n.actionUrl || "#"} 
+                    key={n.id} 
+                    onClick={() => setShowNotifications(false)}
+                    className={cn("p-4 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors block", !n.isRead && "bg-slate-50/50")}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={cn("w-2 h-2 mt-1.5 rounded-full shrink-0", !n.isRead ? "bg-admin-primary" : "bg-transparent")} />
+                      <div>
+                        <p className="text-sm font-medium text-slate-800">{n.title || "Notification"}</p>
+                        <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{n.message}</p>
+                        <span className="text-[10px] text-slate-400 mt-1 block">
+                          {new Date(n.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </>
+    )}
+  </div>
 
  {/* Profile Dropdown */}
  <div className="relative">

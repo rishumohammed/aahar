@@ -19,6 +19,7 @@ import { Button } from"@/components/ui/button";
 import { Card } from"@/components/ui/card";
 import { Badge } from"@/components/ui/badge";
 import { cn } from"@/lib/utils";
+import { ComplianceChatDialog } from "@/components/shared/ComplianceChatDialog";
 
 // ── Constants ───────────────────────────────────────────────
 const RING_RADIUS = 54;
@@ -39,6 +40,7 @@ export default function ComplianceDashboard() {
  });
  const [certification, setCertification] = useState<any>(null);
  const [restaurantName, setRestaurantName] = useState("Your Restaurant");
+ const [applicationId, setApplicationId] = useState<string | null>(null);
  const [loading, setLoading] = useState(true);
 
  useEffect(() => {
@@ -54,7 +56,8 @@ export default function ComplianceDashboard() {
  if (statsRes.data?.data?.certification) {
  setCertification(statsRes.data.data.certification);
  }
- setRestaurantName(statsRes.data?.data?.restaurantName ||"Your Restaurant");
+ setRestaurantName(statsRes.data?.data?.restaurantName || "Your Restaurant");
+ setApplicationId(statsRes.data?.data?.applicationId || null);
  } catch (e) {
  console.error("Failed to load compliance data", e);
  } finally {
@@ -114,7 +117,7 @@ export default function ComplianceDashboard() {
  <div className="space-y-10">
  
  {/* Top Score Section */}
- <Card className="p-10 rounded-lg border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-12">
+ <Card className="p-10 rounded-xl border-slate-200 shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row items-center gap-12">
  
  {/* Score Ring */}
  <div className="relative flex flex-col items-center">
@@ -175,7 +178,7 @@ export default function ComplianceDashboard() {
  </Badge>
  </div>
  
- <Card className="rounded-lg border-slate-200 overflow-hidden shadow-sm">
+ <Card className="rounded-xl border-slate-200 overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
  <div className="divide-y divide-aahar-wash">
  {sortedActions.map((action, i) => {
  const isExpired = getDueDateStatus(action.dueDate) ==="expired";
@@ -242,7 +245,7 @@ export default function ComplianceDashboard() {
  {/* Audit Timeline */}
  <section className="space-y-6">
  <h2 className="text-xl font-bold text-slate-800 tracking-tight uppercase">Audit Timeline</h2>
- <Card className="p-8 rounded-lg border-slate-200 shadow-sm">
+ <Card className="p-8 rounded-xl border-slate-200 shadow-md hover:shadow-lg transition-shadow duration-300">
  <div className="space-y-0 relative">
  <div className="absolute left-[85px] top-4 bottom-4 w-0.5 bg-slate-50"/>
  
@@ -289,7 +292,7 @@ export default function ComplianceDashboard() {
  
  {/* Renewal Countdown */}
   {certification ? (
-  <Card className={cn("p-8 rounded-lg border-slate-200 shadow-xl text-center space-y-6", countdownBg)}>
+  <Card className={cn("p-8 rounded-xl border-slate-200 shadow-xl text-center space-y-6 hover:shadow-2xl transition-shadow duration-300", countdownBg)}>
   <div className="space-y-2">
   <h3 className={cn("text-6xl font-bold tracking-tighter", countdownColor)}>
   {daysRemaining}
@@ -319,7 +322,7 @@ export default function ComplianceDashboard() {
   )}
   </Card>
   ) : (
-  <Card className="p-8 rounded-lg border-slate-200 shadow-xl text-center space-y-6 bg-slate-50">
+  <Card className="p-8 rounded-xl border-slate-200 shadow-xl text-center space-y-6 bg-slate-50 hover:shadow-2xl transition-shadow duration-300">
   <div className="space-y-2">
   <h3 className="text-4xl font-bold tracking-tighter text-slate-400">PENDING</h3>
   <p className="text-xs font-semibold uppercase tracking-wider text-slate-500/60">Certification Status</p>
@@ -341,7 +344,7 @@ export default function ComplianceDashboard() {
   )}
 
  {/* Compliance Tips */}
- <Card className="p-8 rounded-lg border-slate-200 shadow-sm space-y-6 bg-slate-50/10">
+ <Card className="p-8 rounded-xl border-slate-200 shadow-md hover:shadow-lg transition-shadow duration-300 space-y-6 bg-slate-50/10">
  <div className="flex items-center gap-3">
  <div className="p-2.5 rounded-md bg-white shadow-sm">
  <Info className="h-5 w-5 text-admin-primary"/>
@@ -369,11 +372,9 @@ export default function ComplianceDashboard() {
  </Card>
 
  {/* Contact Auditor */}
- <div className="p-6 bg-slate-900 rounded-lg text-center space-y-4">
+ <div className="p-6 bg-slate-900 rounded-xl text-center space-y-4 shadow-xl">
  <p className="text-white font-bold text-sm">Need help with compliance?</p>
- <Button type="button" className="w-full bg-admin-primary text-white rounded-md py-6 font-bold shadow-lg shadow-admin-primary/20">
- Message Auditor
- </Button>
+ <ComplianceChatDialog applicationId={applicationId} />
  </div>
  </aside>
 

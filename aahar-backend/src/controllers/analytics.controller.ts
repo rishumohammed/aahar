@@ -16,7 +16,7 @@ export const getAdminStats = async (req: any, res: any) => {
       prisma.user.count(),
       prisma.certification.count({ where: { status: "active" } }),
       prisma.application.count({ where: { status: "submitted" } }),
-      prisma.enquiry.count(),
+      prisma.businessLead.count(),
       prisma.payment.aggregate({
         where: { status: "captured" },
         _sum: { amount: true }
@@ -218,7 +218,8 @@ export const getOwnerStats = async (req: any, res: any) => {
       correctiveActions,
       timeline,
       hygieneScore,
-      certification
+      certification,
+      applicationId: latestApp?.id || null
     });
   } catch (e) { return serverError(res, e); }
 };

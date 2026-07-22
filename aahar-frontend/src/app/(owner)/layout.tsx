@@ -17,11 +17,13 @@ import {
  ClipboardList,
  QrCode,
  Globe,
- ChevronDown
+ ChevronDown,
+ MessageSquare
 } from"lucide-react";
 import { cn } from"@/lib/utils";
-import { Button } from"@/components/ui/button";
-import { useAuthStore } from"@/store/authStore";
+import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/authStore";
+import { notificationApi } from "@/lib/api";
 
 const NAV_ITEMS = [
  { label:"Overview", href:"/owner/dashboard", icon: LayoutDashboard },
@@ -32,6 +34,7 @@ const NAV_ITEMS = [
  { label:"Menu", href:"/owner/menu", icon: UtensilsCrossed },
  { label:"Photos", href:"/owner/photos", icon: ImageIcon },
  { label:"Compliance", href:"/owner/compliance", icon: ShieldCheck },
+ { label: "Messages", href: "/owner/messages", icon: MessageSquare },
 ];
 
 export default function OwnerLayout({ children }: { children: React.ReactNode }) {
@@ -41,6 +44,9 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
  const [mounted, setMounted] = useState(false);
  const [isAuthorized, setIsAuthorized] = useState(false);
  const [showProfileMenu, setShowProfileMenu] = useState(false);
+ const [showNotifications, setShowNotifications] = useState(false);
+ const [notifications, setNotifications] = useState<any[]>([]);
+ const [unreadCount, setUnreadCount] = useState(0);
 
  useEffect(() => {
  setMounted(true);
@@ -53,6 +59,14 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
  return;
  }
  setIsAuthorized(true);
+
+ // Fetch Notifications
+ notificationApi.list()
+   .then(res => {
+     setNotifications(res.data?.data?.notifications || []);
+     setUnreadCount(res.data?.data?.unreadCount || 0);
+   })
+   .catch(err => console.error("Failed to load notifications", err));
 
  // Set CSS custom variables for Teal theme (Owner)
  const primaryColor ="#0A7B7B"; 
@@ -85,9 +99,9 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
  const pageTitle = activeItem ? activeItem.label :"Owner Portal";
 
  return (
- <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+ <div className="flex h-screen print:h-auto print:block bg-slate-50 overflow-hidden print:overflow-visible font-sans">
  {/* Material Drawer (Sidebar) */}
- <aside className="w-64 bg-white flex flex-col shrink-0 border-r border-slate-200 z-10 shadow-sm">
+ <aside className="w-64 print:hidden bg-white flex flex-col shrink-0 border-r border-slate-200 z-10 shadow-sm">
  <div className="p-6 border-b border-slate-100 flex items-center gap-3">
  <div className="w-10 h-10 rounded-full bg-admin-primary flex items-center justify-center shadow-md transition-colors duration-300">
  <UtensilsCrossed className="h-5 w-5 text-white"/>
@@ -128,9 +142,9 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
  </aside>
 
  {/* Main Container */}
- <div className="flex-1 flex flex-col min-w-0 relative z-0">
+ <div className="flex-1 flex flex-col min-w-0 relative z-0 print:block">
  {/* Material Top App Bar */}
- <header className="h-16 bg-admin-primary shadow-md flex items-center justify-between px-6 shrink-0 z-20 text-white transition-colors duration-300">
+ <header className="h-16 print:hidden bg-admin-primary shadow-md flex items-center justify-between px-6 shrink-0 z-20 text-white transition-colors duration-300">
  <div className="flex items-center gap-6">
  <h1 className="text-lg font-medium">{pageTitle}</h1>
  <div className="hidden md:flex items-center gap-3 bg-white/10 px-4 py-2 rounded-md w-72 focus-within:bg-white/20 transition-colors">
@@ -144,10 +158,71 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
  </div>
 
  <div className="flex items-center gap-5">
- <button type="button" className="relative p-2 rounded-full hover:bg-white/10 transition-colors">
- <Bell className="h-5 w-5 text-white"/>
- <span className="absolute top-2 right-2 w-2 h-2 bg-red-400 rounded-full border border-white"/>
- </button>
+ <div className="relative">
+   <button 
+     type="button" 
+     onClick={() => {
+       setShowProfileMenu(false);
+       setShowNotifications(v => !v);
+     }}
+     className="relative p-2 rounded-full hover:bg-white/10 transition-colors"
+   >
+     <Bell className="h-5 w-5 text-white" />
+     {unreadCount > 0 && (
+       <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-red-400 rounded-full border-2 border-admin-primary flex items-center justify-center text-[8px] font-bold text-white">
+         {unreadCount > 9 ? '9+' : unreadCount}
+       </span>
+     )}
+   </button>
+
+   {showNotifications && (
+     <>
+       <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
+       <div className="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 z-50 overflow-hidden text-slate-800 animate-in fade-in slide-in-from-top-4">
+         <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+           <h3 className="font-bold text-slate-800">Notifications</h3>
+           {unreadCount > 0 && (
+             <span className="text-xs font-medium text-admin-primary bg-admin-light px-2 py-1 rounded-full">{unreadCount} New</span>
+           )}
+         </div>
+         
+         <div className="max-h-[320px] overflow-y-auto">
+           {notifications.length === 0 ? (
+             <div className="p-8 text-center flex flex-col items-center justify-center">
+               <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                 <Bell className="h-8 w-8 text-slate-300 mx-auto" />
+               </div>
+               <p className="text-sm font-medium text-slate-600">All caught up!</p>
+               <p className="text-xs text-slate-400 mt-1">No new notifications right now</p>
+             </div>
+           ) : (
+             <div className="flex flex-col">
+               {notifications.map((n) => (
+                 <Link 
+                   href={n.actionUrl || "#"} 
+                   key={n.id} 
+                   onClick={() => setShowNotifications(false)}
+                   className={cn("p-4 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors block", !n.isRead && "bg-slate-50/50")}
+                 >
+                   <div className="flex items-start gap-3">
+                     <div className={cn("w-2 h-2 mt-1.5 rounded-full shrink-0", !n.isRead ? "bg-admin-primary" : "bg-transparent")} />
+                     <div>
+                       <p className="text-sm font-medium text-slate-800">{n.title || "Notification"}</p>
+                       <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{n.message}</p>
+                       <span className="text-[10px] text-slate-400 mt-1 block">
+                         {new Date(n.createdAt).toLocaleDateString()}
+                       </span>
+                     </div>
+                   </div>
+                 </Link>
+               ))}
+             </div>
+           )}
+         </div>
+       </div>
+     </>
+   )}
+ </div>
 
  {/* Profile Dropdown */}
  <div className="relative">
@@ -195,7 +270,7 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
  </header>
 
  {/* Page Content */}
- <main className="flex-1 overflow-y-auto bg-slate-50 p-6 md:p-8">
+ <main className="flex-1 overflow-y-auto print:overflow-visible bg-slate-50 p-6 md:p-8 print:p-0">
  {children}
  </main>
  </div>

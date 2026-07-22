@@ -134,6 +134,12 @@ export const applicationApi = {
     api.post(`/applications/${id}/documents`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     }),
+  getMessages:  (id: string) =>
+    api.get(`/applications/${id}/messages`),
+  sendMessage:  (id: string, content: string, attachmentUrl?: string) =>
+    api.post(`/applications/${id}/messages`, { content, attachmentUrl }),
+  submitCorrections: (id: string, note?: string) => 
+    api.post(`/applications/${id}/submit-corrections`, { note }),
 };
 
 // ── Uploads ───────────────────────────────────────────────
@@ -186,6 +192,7 @@ export const adminApi = {
   deleteStandard: (id: string) => api.delete(`/admin/standards/${id}`),
   addCriterion: (id: string, data: any) => api.post(`/admin/standards/${id}/criteria`, data),
   deleteCriterion: (criterionId: string) => api.delete(`/admin/standards/criteria/${criterionId}`),
+  reopenAudit:  (id: string) => api.patch(`/admin/audits/${id}/reopen`),
 };
 
 // ── Auditor ───────────────────────────────────────────────
@@ -226,6 +233,24 @@ export const blogApi = {
     api.get("/blogs", { params }),
   get:    (slug: string) =>
     api.get(`/blogs/${slug}`),
+  create: (data: any) =>
+    api.post("/blogs", data),
+  update: (id: string, data: any) =>
+    api.patch(`/blogs/${id}`, data),
+  delete: (id: string) =>
+    api.delete(`/blogs/${id}`),
+};
+
+// ── Promotions / Ads ──────────────────────────────────────
+export const promotionApi = {
+  list:   (params?: Record<string, any>) =>
+    api.get("/promotions", { params }),
+  create: (data: any) =>
+    api.post("/promotions", data),
+  update: (id: string, data: any) =>
+    api.patch(`/promotions/${id}`, data),
+  delete: (id: string) =>
+    api.delete(`/promotions/${id}`),
 };
 
 // ── Table Orders & QR Codes ───────────────────────────────
