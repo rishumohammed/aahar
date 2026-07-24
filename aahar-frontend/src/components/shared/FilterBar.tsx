@@ -70,14 +70,15 @@ export default function FilterBar({
 
   // Google Places Autocomplete Integration
   useEffect(() => {
-    if (typeof window !== "undefined" && (window as any).google && locationInputRef.current) {
-      autocompleteRef.current = new (window as any).google.maps.places.Autocomplete(
-        locationInputRef.current,
-        {
-          types: ["(cities)"],
-          componentRestrictions: { country: ["in", "ae", "sa", "qa", "kw", "om", "bh"] }, // India & GCC
-        }
-      );
+    try {
+      if (typeof window !== "undefined" && (window as any).google && (window as any).google.maps && (window as any).google.maps.places && locationInputRef.current) {
+        autocompleteRef.current = new (window as any).google.maps.places.Autocomplete(
+          locationInputRef.current,
+          {
+            types: ["(cities)"],
+            componentRestrictions: { country: ["in", "ae", "sa", "qa", "kw", "om", "bh"] }, // India & GCC
+          }
+        );
 
       autocompleteRef.current.addListener("place_changed", () => {
         const place = autocompleteRef.current.getPlace();
@@ -99,6 +100,7 @@ export default function FilterBar({
         }
       });
     }
+    } catch(err) { console.error(err) }
   }, [onFilterChange, isCertified, searchQuery, selectedTags]);
 
 
