@@ -1,0 +1,79 @@
+services:
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:alpine
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    container_name: nginx-proxy-acme
+    restart: always
+    depends_on:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - acme:/etc/acme.sh
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+    environment:
+      DEFAULT_EMAIL: "admin@aaharportal.com"
+
+  db:
+    image: mariadb:10.6
+    container_name: aahar_db
+    restart: always
+    environment:
+      MARIADB_DATABASE: aahar_db
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-password}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./aahar-backend
+    container_name: aahar_backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - backend_uploads:/app/uploads
+    env_file:
+      - .env.production
+    environment:
+      DATABASE_URL: "mysql://root:${DB_ROOT_PASSWORD:-password}@db:3306/aahar_db"
+
+  frontend:
+    build:
+      context: ./aahar-frontend
+      args:
+        - NEXT_PUBLIC_API_URL=http://backend:3001/api
+    container_name: aahar_frontend
+    restart: always
+    depends_on:
+      - backend
+    environment:
+      VIRTUAL_HOST: "aaharportal.com,www.aaharportal.com"
+      LETSENCRYPT_HOST: "aaharportal.com,www.aaharportal.com"
+      VIRTUAL_PORT: "3000"
+      NEXT_PUBLIC_API_URL: "http://backend:3001/api"
+
+volumes:
+  mariadb_data:
+  backend_uploads:
+  certs:
+  vhost:
+  html:
+  acme:
