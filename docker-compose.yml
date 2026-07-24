@@ -26,6 +26,7 @@ services:
       - html:/usr/share/nginx/html
     environment:
       DEFAULT_EMAIL: "admin@aaharportal.com"
+      NGINX_PROXY_CONTAINER: "nginx-proxy"
 
   db:
     image: mariadb:10.6
