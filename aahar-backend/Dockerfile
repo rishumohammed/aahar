@@ -27,6 +27,7 @@ RUN npm ci --only=production && npm cache clean --force
 # Copy built artifacts from the builder stage
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY start.sh ./start.sh
 
 # Make start script executable

@@ -35,6 +35,7 @@ wait();
 echo "Generating Prisma Client..."
 npx prisma generate
 
+echo "DATABASE_URL is: $DATABASE_URL"
 echo "Running Database Migrations..."
 # If Prisma migration files exist, this runs them. If none exist but schema changed, we fallback.
 # In a pure production env, migrate deploy is safest. 
