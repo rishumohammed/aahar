@@ -37,9 +37,8 @@ npx prisma generate
 
 echo "DATABASE_URL is: $DATABASE_URL"
 echo "Running Database Migrations..."
-# If Prisma migration files exist, this runs them. If none exist but schema changed, we fallback.
-# In a pure production env, migrate deploy is safest. 
-npx prisma migrate deploy
+# Use db push since we deleted the postgresql migration files and want it to sync automatically
+npx prisma db push --accept-data-loss
 
 echo "Starting Backend Server..."
 npm run start
