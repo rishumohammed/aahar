@@ -1,7 +1,9 @@
 import axios, { type AxiosError } from "axios";
 import type { ApiResponse, Restaurant, Hotel, BlogPost } from "@/types";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
+const BASE_URL = typeof window !== "undefined" 
+  ? "/api" 
+  : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api");
 
 // ── Axios instance ───────────────────────────────────────
 const api = axios.create({
