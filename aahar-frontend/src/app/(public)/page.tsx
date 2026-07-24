@@ -13,6 +13,8 @@ import TrustProcess from "@/components/home/TrustProcess";
 import { NearbySection } from "@/components/home/NearbySection";
 import { blogApi, promotionApi } from "@/lib/api";
 
+export const revalidate = 60; // Revalidate every 60 seconds
+
 export default async function HomePage() {
   // Fetch featured restaurants and hotels in parallel
   const [restaurantsRes, hotelsRes, newRes, blogsRes, promotionsRes] = await Promise.allSettled([
@@ -32,6 +34,7 @@ export default async function HomePage() {
   ]);
 
   const restaurants = restaurantsRes.status === "fulfilled" ? restaurantsRes.value : [];
+  if (restaurantsRes.status === "rejected") console.error("SSR Restaurants Fetch Failed:", restaurantsRes.reason);
   const hotels      = hotelsRes.status === "fulfilled"      ? hotelsRes.value      : [];
   const newItems    = newRes.status === "fulfilled"         ? newRes.value         : [];
   const blogs       = blogsRes.status === "fulfilled"       ? (blogsRes.value.items || blogsRes.value || []) : [];
