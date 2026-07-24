@@ -203,7 +203,8 @@ export const getOwnerStats = async (req: any, res: any) => {
 
     const certification = activeCert ? {
       expiresAt: activeCert.expiresAt.toISOString(),
-      status: activeCert.status
+      status: activeCert.status,
+      pdfUrl: activeCert.pdfUrl
     } : null;
 
     return ok(res, {

@@ -215,7 +215,7 @@ export const convertLead = async (req: any, res: any) => {
             name: lead.applicantName,
             phone: lead.phone,
             passwordHash,
-            role: lead.entityType === "hotel" ? "hotel_manager" : "owner",
+            role: lead.entityType === "hotel" ? "manager" : "owner",
           }
         });
       }

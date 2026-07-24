@@ -1,0 +1,1 @@
+import prisma from './src/lib/prisma.js'; async function main() { await prisma.$executeRaw`UPDATE User SET role = 'manager' WHERE role = ''`; console.log('Fixed'); } main().finally(() => prisma.$disconnect());

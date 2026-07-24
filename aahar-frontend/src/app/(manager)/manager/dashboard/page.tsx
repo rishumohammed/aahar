@@ -94,7 +94,7 @@ export default function HotelManagerDashboardPage() {
  <p className="text-slate-500 font-medium text-sm mt-1">Monitor your property performance and guest enquiries.</p>
  </div>
  <Button asChild className="bg-admin-primary hover:bg-admin-primary-hover text-white rounded-md px-6 shadow-md transition-all">
- <Link href="/hotel-manager/enquiries">View All Enquiries</Link>
+ <Link href="/manager/enquiries">View All Enquiries</Link>
  </Button>
  </div>
 
@@ -108,7 +108,7 @@ export default function HotelManagerDashboardPage() {
  </p>
  </div>
  <Button asChild className="bg-admin-primary hover:bg-admin-primary-hover text-white rounded-md px-8 py-2 font-semibold shadow-md shrink-0">
- <Link href="/hotel-manager/application">Apply for Certification</Link>
+ <Link href="/manager/application">Apply for Certification</Link>
  </Button>
  </Card>
  ) : (
@@ -124,8 +124,8 @@ export default function HotelManagerDashboardPage() {
  </p>
  </div>
  </div>
- <Button asChild variant="outline"className="border-admin-primary text-admin-text hover:bg-admin-light rounded-md px-8 py-2 font-semibold shrink-0">
- <Link href="/hotel-manager/compliance">View Compliance & Progress</Link>
+ <Button asChild variant="outline"className="border-admin-primary text-admin-text rounded-md px-8 py-2 font-semibold shrink-0 hover:bg-admin-primary hover:text-white transition-colors shadow-sm">
+ <Link href="/manager/compliance">View Compliance & Progress</Link>
  </Button>
  </Card>
  )}
@@ -160,7 +160,7 @@ export default function HotelManagerDashboardPage() {
  <Card className="bg-white rounded-lg border-0 shadow-md p-6">
  <div className="flex items-center justify-between mb-6">
  <h2 className="text-lg font-semibold text-slate-800 tracking-tight">Recent Enquiries</h2>
- <Link href="/hotel-manager/enquiries"className="text-xs font-semibold text-admin-text flex items-center gap-1 hover:text-admin-hover transition-colors">
+ <Link href="/manager/enquiries"className="text-xs font-semibold text-admin-text flex items-center gap-1 hover:text-admin-hover transition-colors">
  View all <ArrowRight className="h-3 w-3"/>
  </Link>
  </div>
@@ -240,3 +240,4 @@ export default function HotelManagerDashboardPage() {
  </div>
  );
 }
+

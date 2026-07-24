@@ -123,7 +123,7 @@ export const listEnquiries = async (req: any, res: any) => {
     // Role-based filtering
     if (role === "consumer") {
       where.guestId = req.user.id;
-    } else if (role === "hotel_manager") {
+    } else if (role === "manager") {
       // Find hotels managed by this user
       const hotels = await prisma.hotel.findMany({
         where:  { managerId: req.user.id },
@@ -187,7 +187,7 @@ export const getEnquiry = async (req: any, res: any) => {
     const isAdmin   = ["admin","super_admin"].includes(role);
 
     let isManager = false;
-    if (role === "hotel_manager") {
+    if (role === "manager") {
       const hotel = await prisma.hotel.findUnique({ where:{ id:enquiry.hotelId } });
       isManager = hotel?.managerId === req.user.id;
     }

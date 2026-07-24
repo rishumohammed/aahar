@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { auditorApi } from "@/lib/api";
+import { auditorApi, uploadApi } from "@/lib/api";
 import { 
   ChevronLeft, 
   CheckCircle2, 
@@ -15,7 +15,8 @@ import {
   MapPin,
   TrendingUp,
   ShieldCheck,
-  MessageSquare
+  MessageSquare,
+  Upload
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ export default function AuditChecklistPage() {
   const [saving, setSaving] = useState(false);
   const [activeSection, setActiveSection] = useState("");
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [sitePhotos, setSitePhotos] = useState<string[]>([]);
 
   // Load from local storage if available
   useEffect(() => {
@@ -79,6 +81,7 @@ export default function AuditChecklistPage() {
 
         if (d.data.recommendation) setRecommendation(d.data.recommendation);
         if (d.data.auditorNotes) setAuditorNotes(d.data.auditorNotes);
+        if (d.data.sitePhotos && Array.isArray(d.data.sitePhotos)) setSitePhotos(d.data.sitePhotos);
       }
       const sections = [...new Set(d.data.checklist?.map((i: any) => i.section))] as string[];
       if (sections.length) setActiveSection(sections[0]);
@@ -154,7 +157,7 @@ export default function AuditChecklistPage() {
         checklist: filledChecklist,
         auditorNotes,
         recommendation,
-        sitePhotos: [],
+        sitePhotos,
         lat,
         lng
       });
@@ -208,7 +211,7 @@ export default function AuditChecklistPage() {
           <ComplianceChatDialog 
             applicationId={audit?.applicationId} 
             trigger={
-              <Button variant="outline" className="w-full bg-white text-admin-text border-slate-200 shadow-sm hover:bg-slate-50 gap-2">
+              <Button variant="outline" className="w-full bg-white text-admin-text border-slate-200 gap-2 hover:bg-admin-primary hover:text-white transition-colors shadow-sm">
                 <MessageSquare className="h-4 w-4 text-admin-primary" />
                 Message Property
               </Button>
@@ -349,6 +352,53 @@ export default function AuditChecklistPage() {
             ))}
           </div>
 
+          {/* Site Photos Block */}
+          <div className="p-6 bg-white border border-slate-200 rounded-lg shadow-sm space-y-4 mt-6">
+            <div>
+              <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">Site Evidence Photos</h3>
+              <p className="text-xs text-slate-400 font-medium ml-1 mt-1">Attach supporting images for your findings.</p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {sitePhotos.map((photo, i) => (
+                <div key={i} className="relative aspect-video rounded-lg overflow-hidden border border-slate-200 group">
+                  <img src={photo} alt="evidence" className="w-full h-full object-cover" />
+                  {!isReadOnly && (
+                    <button 
+                      onClick={() => setSitePhotos(prev => prev.filter((_, idx) => idx !== i))}
+                      className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                    >
+                      <XCircle className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+              {!isReadOnly && (
+                <label className="aspect-video rounded-lg border-2 border-dashed border-slate-300 hover:border-admin-primary hover:bg-admin-light/30 transition-colors flex flex-col items-center justify-center gap-2 cursor-pointer">
+                  <Upload className="h-6 w-6 text-slate-400" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Upload Photo</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      try {
+                        const res = await uploadApi.singlePhoto(file);
+                        const url = res.data.data.url;
+                        const fullUrl = url.startsWith("http") ? url : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5000"}${url}`;
+                        setSitePhotos(prev => [...prev, fullUrl]);
+                      } catch (error) {
+                        alert("Failed to upload image");
+                      }
+                    }} 
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+
           {/* General Notes Block - Always Visible */}
           <div className="p-6 bg-white border border-slate-200 rounded-lg shadow-sm space-y-2 mt-6">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">Overall Inspection Narrative</label>
@@ -380,17 +430,17 @@ export default function AuditChecklistPage() {
                   <label className="text-[10px] font-bold uppercase tracking-wider text-white/60 ml-1">Official Auditor Recommendation</label>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                     {[
-                      { key: "approve", label: "Recommended Approval", icon: CheckCircle2, color: "border-emerald-500 text-emerald-500", active: "bg-emerald-600 text-white border-emerald-600" },
-                      { key: "needs_corrections", label: "Require Corrections", icon: AlertCircle, color: "border-blue-500 text-blue-500", active: "bg-blue-600 text-white border-blue-600" },
-                      { key: "re_audit", label: "Require Re-Audit", icon: AlertCircle, color: "border-amber-500 text-amber-500", active: "bg-amber-600 text-white border-amber-600" },
-                      { key: "reject", label: "Mandatory Rejection", icon: XCircle, color: "border-red-500 text-red-500", active: "bg-red-600 text-white border-red-600" },
+                      { key: "approve", label: "Recommended Approval", icon: CheckCircle2, active: "bg-emerald-500 text-white border-emerald-500 shadow-md ring-2 ring-emerald-500/30 ring-offset-2 ring-offset-admin-primary" },
+                      { key: "needs_corrections", label: "Require Corrections", icon: AlertCircle, active: "bg-blue-500 text-white border-blue-500 shadow-md ring-2 ring-blue-500/30 ring-offset-2 ring-offset-admin-primary" },
+                      { key: "re_audit", label: "Require Re-Audit", icon: AlertCircle, active: "bg-amber-500 text-white border-amber-500 shadow-md ring-2 ring-amber-500/30 ring-offset-2 ring-offset-admin-primary" },
+                      { key: "reject", label: "Mandatory Rejection", icon: XCircle, active: "bg-red-500 text-white border-red-500 shadow-md ring-2 ring-red-500/30 ring-offset-2 ring-offset-admin-primary" },
                     ].map(opt => (
                       <button 
                         key={opt.key}
                         onClick={() => setRecommendation(opt.key as any)}
                         className={cn(
                           "flex items-center justify-center gap-2 py-3.5 px-4 rounded-md border font-semibold uppercase tracking-wider text-[11px] transition-all",
-                          recommendation === opt.key ? opt.active : cn(opt.color, "bg-transparent hover:bg-white/5")
+                          recommendation === opt.key ? opt.active : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10 hover:text-white"
                         )}
                       >
                         <opt.icon className="h-4 w-4 shrink-0" />
@@ -403,7 +453,7 @@ export default function AuditChecklistPage() {
                 <Button 
                   onClick={handleSubmit}
                   disabled={saving || !recommendation}
-                  className="w-full py-6 bg-admin-primary hover:bg-admin-hover text-white rounded-md text-sm font-bold uppercase tracking-wider shadow-sm transition-all disabled:opacity-50"
+                  className="w-full py-6 bg-white hover:bg-slate-50 text-admin-primary rounded-md text-sm font-black uppercase tracking-wider shadow-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {saving ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Commit Audit Report"}
                 </Button>

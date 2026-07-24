@@ -1,5 +1,6 @@
 "use client";
-import { useState }  from "react";
+import { useState, useEffect }  from "react";
+import { useParams } from "next/navigation";
 import { verifyApi } from "@/lib/api";
 import { Search, CheckCircle2, AlertTriangle, XCircle, Calendar, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,21 +8,25 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
 export default function VerifyPage() {
-  const [query,   setQuery]   = useState("");
+  const params = useParams();
+  const certIdParam = params?.id ? (Array.isArray(params.id) ? params.id[0] : params.id) : "";
+
+  const [query,   setQuery]   = useState(certIdParam || "");
   const [result,  setResult]  = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
 
-  const handleVerify = async () => {
-    if (!query.trim()) return;
+  const handleVerify = async (searchQuery?: string) => {
+    const term = (searchQuery || query || "").trim();
+    if (!term) return;
     setLoading(true);
     setError("");
     setResult(null);
     try {
       // Try cert number lookup first
-      const res = query.toUpperCase().startsWith("AHR-")
-        ? await verifyApi.lookup(query.trim().toUpperCase())
-        : await verifyApi.search(query.trim());
+      const res = term.toUpperCase().startsWith("AHR-")
+        ? await verifyApi.lookup(term.toUpperCase())
+        : await verifyApi.search(term);
       setResult(res.data.data);
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Certificate not found");
@@ -29,6 +34,12 @@ export default function VerifyPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (certIdParam) {
+      handleVerify(certIdParam);
+    }
+  }, [certIdParam]);
 
   return (
     <div className="min-h-screen bg-aahar-wash py-20">
@@ -53,7 +64,7 @@ export default function VerifyPage() {
             </div>
             <Button 
               className="h-14 px-8 rounded-xl bg-aahar-teal hover:bg-aahar-teal/90 text-white font-bold"
-              onClick={handleVerify}
+              onClick={() => handleVerify()}
               disabled={loading}
             >
               {loading ? "Verifying..." : "Verify Now"}

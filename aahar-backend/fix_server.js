@@ -1,0 +1,1 @@
+const fs = require('fs'); let content = fs.readFileSync('src/server.ts', 'utf8'); content = content.replace(/\x00/g, ''); fs.writeFileSync('src/server.ts', content, 'utf8'); console.log('Fixed server.ts');

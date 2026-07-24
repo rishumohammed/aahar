@@ -48,7 +48,7 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
   const [working, setWorking] = useState(false);
   const [credentialsOpen, setCredentialsOpen] = useState(false);
   const [credentials, setCredentials] = useState<any>(null);
-  const [managers, setManagers] = useState<any[]>([]);
+  const [owners, setOwners] = useState<any[]>([]);
   const [masterCategories, setMasterCategories] = useState<any[]>([]);
   const [masterAmenities, setMasterAmenities] = useState<any[]>([]);
   const [masterRoomAmenities, setMasterRoomAmenities] = useState<any[]>([]);
@@ -56,7 +56,7 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
   const [masterRoomTypes, setMasterRoomTypes] = useState<any[]>([]);
   const [formData, setFormData] = useState<any>({
     name: "", propertyType: "resort", starRating: 4, city: "", area: "", address: "", 
-    description: "", phone: "", image: "", managerId: "", googleLocationLink: "",
+    description: "", phone: "", image: "", ownerId: "", googleLocationLink: "",
     checkInTime: "14:00", checkOutTime: "11:00",
     cancellationPolicy: "Full refund if cancelled 24 hours prior to check-in.",
     mealPlans: ["ep", "cp"],
@@ -71,11 +71,11 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
 
   useEffect(() => {
     if (isAdmin) {
-      adminApi.users({ role: "hotel_manager" })
-        .then(res => setManagers(res.data.data.items || []))
+      adminApi.users({ role: "owner" })
+        .then(res => setOwners(res.data.data.items || []))
         .catch(err => {
-          console.error("Failed to fetch managers:", err);
-          setManagers([]);
+          console.error("Failed to fetch owners:", err);
+          setOwners([]);
         });
     }
 
@@ -131,6 +131,7 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
       const payload = { ...formData };
       delete payload.id;
       delete payload.slug;
+      delete payload.owner;
       delete payload.manager;
       delete payload.certification;
       delete payload.createdAt;
@@ -153,13 +154,13 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
   };
 
   const handleResetPassword = async () => {
-    if (!initialData?.managerId) return;
+    if (!initialData?.ownerId) return;
     setWorking(true);
     try {
-      const res = await adminApi.resetPassword(initialData.managerId);
+      const res = await adminApi.resetPassword(initialData.ownerId);
       setCredentials(res.data.data);
       setCredentialsOpen(true);
-      toast.success("Manager credentials reset successfully");
+      toast.success("Owner credentials reset successfully");
     } catch (e) {
       toast.error("Failed to reset credentials");
     } finally {
@@ -187,7 +188,7 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
             disabled={working}
             className="flex items-center gap-2 border-slate-200 text-slate-700 hover:bg-slate-50"
           >
-            <KeyRound className="w-4 h-4" /> Reset Manager Credentials
+            <KeyRound className="w-4 h-4" /> Reset Owner Credentials
           </Button>
         )}
       </div>
@@ -203,15 +204,15 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
                 <div className="space-y-6">
                   {isAdmin && !isEditing && (
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-1">Assign Manager</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-1">Assign Owner</label>
                       <select 
                         required
                         className="w-full px-4 py-4 text-base text-slate-800 bg-transparent rounded-xl border border-slate-200 focus:outline-none focus:ring-0 focus:border-admin-primary transition-colors"
-                        value={formData.managerId} 
-                        onChange={e => setFormData({...formData, managerId: e.target.value})}
+                        value={formData.ownerId} 
+                        onChange={e => setFormData({...formData, ownerId: e.target.value})}
                       >
-                        <option value="">Select Manager</option>
-                        {managers.map(m => (
+                        <option value="">Select Owner</option>
+                        {owners.map(m => (
                           <option key={m.id} value={m.id}>{m.name} ({m.email})</option>
                         ))}
                       </select>
@@ -540,13 +541,13 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
           <DialogHeader>
             <DialogTitle className="text-xl font-black text-slate-900 flex items-center gap-2">
               <KeyRound className="w-5 h-5 text-admin-primary" />
-              Manager Credentials Reset
+              Owner Credentials Reset
             </DialogTitle>
           </DialogHeader>
           {credentials && (
             <div className="py-2 space-y-4">
               <p className="text-sm text-slate-600">
-                The password for the manager account has been reset to the system default. Please copy and share these details securely with the manager.
+                The password for the owner account has been reset to the system default. Please copy and share these details securely with the owner.
               </p>
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                 <div>

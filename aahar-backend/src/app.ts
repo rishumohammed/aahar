@@ -26,6 +26,7 @@ import masterRoutes       from "./routes/master.routes.js";
 import settingsRoutes     from "./routes/settings.routes.js";
 import blogRoutes         from "./routes/blog.routes.js";
 import promotionRoutes    from "./routes/promotion.routes.js";
+import ownerRoutes        from "./routes/owner.routes.js";
 import path from "path";
 
 const app = express();
@@ -73,6 +74,7 @@ app.use("/api/master",        masterRoutes);
 app.use("/api/settings",      settingsRoutes);
 app.use("/api/blogs",         blogRoutes);
 app.use("/api/promotions",    promotionRoutes);
+app.use("/api/owner",         ownerRoutes);
 
 // Error Handler
 app.use((err: any, req: any, res: any, next: any) => {

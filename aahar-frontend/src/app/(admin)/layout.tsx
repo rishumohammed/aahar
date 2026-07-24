@@ -25,13 +25,13 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 
-import { notificationApi } from "@/lib/api";
+import { notificationApi, adminApi } from "@/lib/api";
 
 const NAV_ITEMS = [
   { label: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "Enquiries", href: "/admin/enquiries", icon: Bell, badge: "3" },
-  { label: "Applications", href: "/admin/applications", icon: FileText, badge: "12" },
-  { label: "Audits", href: "/admin/audits", icon: CheckSquare, badge: "2" },
+  { label: "Enquiries", href: "/admin/enquiries", icon: Bell },
+  { label: "Applications", href: "/admin/applications", icon: FileText },
+  { label: "Audits", href: "/admin/audits", icon: CheckSquare },
   { 
     label: "Establishments", 
     href: "/admin/establishments", 
@@ -61,6 +61,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -75,6 +76,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           setUnreadCount(res.data?.data?.unreadCount || 0);
         })
         .catch(err => console.error("Failed to load notifications", err));
+        
+      adminApi.dashboard()
+        .then(res => {
+          setStats(res.data?.data?.stats || null);
+        })
+        .catch(err => console.error("Failed to load admin stats", err));
     }
   }, [mounted, isAuthenticated]);
 
@@ -138,6 +145,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <ul className="space-y-1">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href || (item.children?.some(child => pathname.startsWith(child.href)));
+              let dynamicBadge = undefined;
+              if (stats) {
+                if (item.label === "Enquiries" && stats.totalEnquiries > 0) dynamicBadge = stats.totalEnquiries.toString();
+                if (item.label === "Applications" && stats.pendingApps > 0) dynamicBadge = stats.pendingApps.toString();
+              }
               return (
                 <li key={item.label} className="pr-4">
                   <Link 
@@ -153,14 +165,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       <item.icon className={cn("h-5 w-5", isActive ? "text-admin-primary" : "text-slate-400")} />
                       {item.label}
                     </div>
-                    {item.badge && (
+                    {dynamicBadge && (
                       <span className={cn(
                         "text-[10px] font-bold px-2 py-0.5 rounded-full",
                         isActive 
                           ? "bg-admin-primary text-white" 
                           : "bg-slate-200 text-slate-600"
                       )}>
-                        {item.badge}
+                        {dynamicBadge}
                       </span>
                     )}
                   </Link>

@@ -164,7 +164,10 @@ export const downloadAuditReport = async (req: any, res: any) => {
     });
 
     if (!audit) return notFound(res, "Audit not found");
-    if (audit.status !== "submitted") return badRequest(res, "Audit has not been submitted yet");
+    // Allow download if audit is submitted, completed, approved, etc. Basically anything except scheduled or in_progress.
+    if (audit.status === "scheduled" || audit.status === "in_progress") {
+      return badRequest(res, "Audit has not been completed yet");
+    }
 
     const entity = audit.application.restaurant ?? audit.application.hotel;
 
@@ -185,5 +188,8 @@ export const downloadAuditReport = async (req: any, res: any) => {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="AuditReport_${audit.id}.pdf"`);
     res.send(pdfBuffer);
-  } catch (e) { return serverError(res, e); }
+  } catch (e) {
+    console.error("PDF GENERATION ERROR:", e);
+    return serverError(res, e);
+  }
 };

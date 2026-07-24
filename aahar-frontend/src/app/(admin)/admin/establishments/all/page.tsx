@@ -147,7 +147,7 @@ export default function AllEstablishmentsPage() {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-slate-800 line-clamp-1">{item.name}</p>
-                        <p className="text-xs font-medium text-slate-500 mt-0.5">{item.email || "No Email"}</p>
+                        <p className="text-xs font-medium text-slate-500 mt-0.5">{item.email || item.owner?.email || "No Email"}</p>
                       </div>
                     </div>
                   </td>

@@ -12,7 +12,7 @@ enum UserRole {
   admin
   auditor
   owner
-  hotel_manager
+  manager
   consumer
 }
 
@@ -83,9 +83,11 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  restaurants  Restaurant[]
-  hotels       Hotel[]
-  applications Application[]
+  restaurants        Restaurant[]  @relation("RestaurantOwner")
+  managedRestaurants Restaurant[]  @relation("RestaurantManager")
+  hotels             Hotel[]       @relation("HotelOwner")
+  managedHotels      Hotel[]       @relation("HotelManager")
+  applications       Application[]
   audits       Audit[]       @relation("AuditorAudits")
   enquiries    Enquiry[]     @relation("GuestEnquiries")
   messages     EnquiryMessage[]
@@ -103,7 +105,9 @@ model Restaurant {
   name         String
   slug         String             @unique
   ownerId      String
-  owner        User               @relation(fields: [ownerId], references: [id])
+  owner User @relation("RestaurantOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  managerId    String?
+  manager User? @relation("RestaurantManager", fields: [managerId], references: [id], onDelete: SetNull)
   description  String?
   category     String             @default("casual_dining")
   cuisineType  Json?
@@ -188,8 +192,10 @@ model Hotel {
   id                  String       @id @default(cuid())
   name                String
   slug                String       @unique
-  managerId           String
-  manager             User         @relation(fields: [managerId], references: [id])
+  ownerId             String?
+  owner User? @relation("HotelOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  managerId           String?
+  manager User? @relation("HotelManager", fields: [managerId], references: [id], onDelete: SetNull)
   description         String?
   propertyType        String @default("boutique_hotel")
   starRating          Int          @default(3)
@@ -255,11 +261,11 @@ model Application {
   id           String            @id @default(cuid())
   businessType AuditTrack
   restaurantId String?
-  restaurant   Restaurant?       @relation(fields: [restaurantId], references: [id])
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   hotelId      String?
-  hotel        Hotel?            @relation(fields: [hotelId], references: [id])
+  hotel Hotel? @relation(fields: [hotelId], references: [id], onDelete: Cascade)
   applicantId  String
-  applicant    User              @relation(fields: [applicantId], references: [id])
+  applicant User @relation(fields: [applicantId], references: [id], onDelete: Cascade)
   status       ApplicationStatus @default(draft)
   notes        String?
   adminNotes   String?
@@ -294,9 +300,9 @@ model Document {
 model Audit {
   id            String      @id @default(cuid())
   applicationId String      @unique
-  application   Application @relation(fields: [applicationId], references: [id])
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   auditorId     String
-  auditor       User        @relation("AuditorAudits", fields: [auditorId], references: [id])
+  auditor User @relation("AuditorAudits", fields: [auditorId], references: [id], onDelete: Cascade)
   track         AuditTrack
   scheduledAt   DateTime
   completedAt   DateTime?
@@ -320,11 +326,11 @@ model Certification {
   certNumber    String     @unique
   type          AuditTrack
   applicationId String     @unique
-  application   Application @relation("ApplicationCert", fields: [applicationId], references: [id])
+  application Application @relation("ApplicationCert", fields: [applicationId], references: [id], onDelete: Cascade)
   restaurantId  String?    @unique
-  restaurant    Restaurant? @relation("RestaurantCert", fields: [restaurantId], references: [id])
+  restaurant Restaurant? @relation("RestaurantCert", fields: [restaurantId], references: [id], onDelete: Cascade)
   hotelId       String?    @unique
-  hotel         Hotel?     @relation("HotelCert", fields: [hotelId], references: [id])
+  hotel Hotel? @relation("HotelCert", fields: [hotelId], references: [id], onDelete: Cascade)
   issuedAt      DateTime   @default(now())
   expiresAt     DateTime
   status        CertStatus @default(active)
@@ -344,11 +350,11 @@ model Certification {
 model Enquiry {
   id                  String        @id @default(cuid())
   hotelId             String
-  hotel               Hotel         @relation(fields: [hotelId], references: [id])
+  hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
   guestId             String
-  guest               User          @relation("GuestEnquiries", fields: [guestId], references: [id])
+  guest User @relation("GuestEnquiries", fields: [guestId], references: [id], onDelete: Cascade)
   roomTypeId          String?
-  roomType            RoomType?     @relation(fields: [roomTypeId], references: [id])
+  roomType RoomType? @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
   checkIn             DateTime
   checkOut            DateTime
   adults              Int           @default(2)
@@ -375,7 +381,7 @@ model EnquiryMessage {
   enquiryId  String
   enquiry    Enquiry  @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
   senderId   String
-  sender     User     @relation(fields: [senderId], references: [id])
+  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
   content    String
   isSystem   Boolean  @default(false)
   sentAt     DateTime @default(now())
@@ -388,7 +394,7 @@ model ApplicationMessage {
   applicationId String
   application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   senderId      String
-  sender        User        @relation(fields: [senderId], references: [id])
+  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
   content       String      @db.Text
   attachmentUrl String?
   isSystem      Boolean     @default(false)
@@ -415,11 +421,11 @@ model Notification {
 model Payment {
   id            String      @id @default(cuid())
   userId        String
-  user          User        @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   applicationId String?
-  application   Application? @relation(fields: [applicationId], references: [id])
+  application Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   enquiryId     String?
-  enquiry       Enquiry?     @relation(fields: [enquiryId], references: [id])
+  enquiry Enquiry? @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
   amount        Float
   currency      String      @default("INR")
   status        String      @default("pending")
@@ -560,7 +566,7 @@ model BlogPost {
   isFeatured  Boolean  @default(false)
   tags        Json?
   authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
   publishedAt DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

@@ -184,7 +184,9 @@ export const adminApi = {
   reports:      (params?: any) => api.get("/admin/reports", { params }),
   certify:      (applicationId: string) => api.post("/admin/certify", { applicationId }),
   revokeCert:   (certId: string, reason: string) =>
-    api.patch(`/admin/certifications/${certId}/revoke`, { reason }),
+    api.patch(`/certifications/${certId}/status`, { status: "revoked", reason }),
+  reinstateCert: (certId: string) =>
+    api.patch(`/certifications/${certId}/status`, { status: "active" }),
   stats:        () => api.get("/admin/dashboard"),
   listStandards:() => api.get("/admin/standards"),
   createStandard: (data: any) => api.post("/admin/standards", data),
@@ -195,16 +197,20 @@ export const adminApi = {
   reopenAudit:  (id: string) => api.patch(`/admin/audits/${id}/reopen`),
 };
 
-// ── Auditor ───────────────────────────────────────────────
 export const auditorApi = {
   list:   () => api.get("/audits"),
   get:    (id: string) => api.get(`/audits/${id}`),
   submit: (id: string, data: any) => api.patch(`/audits/${id}/submit`, data),
+  downloadReport: (id: string) => api.get(`/audits/${id}/report`, { responseType: 'blob', timeout: 30000 }),
 };
 
 // ── Owner ─────────────────────────────────────────────────
 export const ownerApi = {
   stats: () => api.get("/owner/stats"),
+  managers: () => api.get(`/owner/managers`),
+  createManager: (data: any) => api.post(`/owner/managers`, data),
+  deleteManager: (id: string) => api.delete(`/owner/managers/${id}`),
+  establishments: () => api.get(`/owner/establishments`)
 };
 
 // ── Payments ──────────────────────────────────────────────

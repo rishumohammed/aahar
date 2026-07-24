@@ -24,6 +24,7 @@ import { cn } from"@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { notificationApi } from "@/lib/api";
+import { FloatingSupportChat } from "@/components/shared/FloatingSupportChat";
 
 const NAV_ITEMS = [
  { label:"Overview", href:"/owner/dashboard", icon: LayoutDashboard },
@@ -33,8 +34,8 @@ const NAV_ITEMS = [
  { label:"Tables & QR", href:"/owner/tables", icon: QrCode },
  { label:"Menu", href:"/owner/menu", icon: UtensilsCrossed },
  { label:"Photos", href:"/owner/photos", icon: ImageIcon },
- { label:"Compliance", href:"/owner/compliance", icon: ShieldCheck },
- { label: "Messages", href: "/owner/messages", icon: MessageSquare },
+ { label: "Compliance", href: "/owner/compliance", icon: ShieldCheck },
+ { label: "Managers", href: "/owner/managers", icon: User },
 ];
 
 export default function OwnerLayout({ children }: { children: React.ReactNode }) {
@@ -274,7 +275,7 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
  {children}
  </main>
  </div>
+ <FloatingSupportChat />
  </div>
  );
 }
-

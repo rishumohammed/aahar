@@ -76,9 +76,22 @@ export const deleteUser = async (req: any, res: any) => {
       return badRequest(res, "Cannot delete your own account");
     }
 
-    await prisma.user.delete({
-      where: { id }
-    });
+    // Manually delete associated records to prevent foreign key constraint failures
+    await prisma.$transaction([
+      prisma.applicationMessage.deleteMany({ where: { senderId: id } }),
+      prisma.enquiryMessage.deleteMany({ where: { senderId: id } }),
+      prisma.enquiry.deleteMany({ where: { guestId: id } }),
+      prisma.audit.deleteMany({ where: { auditorId: id } }),
+      prisma.payment.deleteMany({ where: { userId: id } }),
+      prisma.blogPost.deleteMany({ where: { authorId: id } }),
+      prisma.application.deleteMany({ where: { applicantId: id } }),
+      prisma.hotel.deleteMany({ where: { ownerId: id } }),
+      prisma.restaurant.deleteMany({ where: { ownerId: id } }),
+      prisma.hotel.updateMany({ where: { managerId: id }, data: { managerId: null } }),
+      prisma.restaurant.updateMany({ where: { managerId: id }, data: { managerId: null } }),
+      prisma.notification.deleteMany({ where: { userId: id } }),
+      prisma.user.delete({ where: { id } })
+    ]);
 
     return ok(res, null, "User deleted successfully");
   } catch (e: any) {

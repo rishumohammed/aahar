@@ -60,6 +60,29 @@ export const submitApplication = async (req: any, res: any) => {
       include: { restaurant:true, hotel:true, documents:true } as any
     });
 
+    if (appStatus === "submitted") {
+      const io = getIO();
+      io.to("admin_room").emit("new_application", { applicationId: application.id });
+      
+      const admins = await prisma.user.findMany({
+        where: { role: { in: ["admin", "super_admin"] } }
+      });
+      
+      const entityName = application.restaurant?.name || application.hotel?.name || "An establishment";
+      
+      if (admins.length > 0) {
+        await prisma.notification.createMany({
+          data: admins.map(admin => ({
+            userId: admin.id,
+            type: "new_application",
+            title: "New Application Submitted",
+            message: `${entityName} has submitted a new application for ${businessType} certification.`,
+            actionUrl: `/admin/applications/${application.id}`
+          }))
+        });
+      }
+    }
+
     return created(res, application, appStatus === "draft" ? "Draft application created" : "Application submitted successfully");
   } catch (e) { return serverError(res, e); }
 };
@@ -139,8 +162,36 @@ export const updateApplicationStatus = async (req: any, res: any) => {
     const app = await prisma.application.update({
       where: { id: req.params.id },
       data:  { status, adminNotes: notes || undefined } as any,
-      include: { restaurant:true, hotel:true, applicant:true }
+      include: { restaurant:true, hotel:true, applicant:true, audit:true } as any
     });
+
+    const io = getIO();
+    io.to(`user_${app.applicantId}`).emit("application_status_changed", { applicationId: app.id, status });
+    
+    // Notify Applicant
+    await prisma.notification.create({
+      data: {
+        userId: app.applicantId,
+        type: "application_status_changed",
+        title: "Application Status Updated",
+        message: `Your application status has been updated to: ${status.replace("_", " ")}.`,
+        actionUrl: `/owner/compliance`
+      }
+    });
+
+    // Notify Auditor if exists
+    if (app.audit?.auditorId) {
+      io.to(`user_${app.audit.auditorId}`).emit("application_status_changed", { applicationId: app.id, status });
+      await prisma.notification.create({
+        data: {
+          userId: app.audit.auditorId,
+          type: "application_status_changed",
+          title: "Audit Application Status Updated",
+          message: `An application assigned to you is now: ${status.replace("_", " ")}.`,
+          actionUrl: `/auditor/audits/${app.audit.id}` // Link to auditor view
+        }
+      });
+    }
 
     return ok(res, app, `Application status updated to ${status}`);
   } catch (e) { return serverError(res, e); }

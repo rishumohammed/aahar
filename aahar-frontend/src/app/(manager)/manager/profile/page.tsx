@@ -17,16 +17,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function ManagerProfilePage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [hotel, setHotel] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const fetchHotel = () => {
-    hotelApi.list({ limit: 1 })
+    if (!user?.id) return;
+    hotelApi.list({ limit: 1, managerId: user.id })
       .then(res => {
         setHotel(res.data.data.items[0]);
       })
@@ -35,8 +38,10 @@ export default function ManagerProfilePage() {
   };
 
   useEffect(() => {
-    fetchHotel();
-  }, []);
+    if (user?.id) {
+      fetchHotel();
+    }
+  }, [user?.id]);
 
   const toggleStatus = async () => {
     if (!hotel) return;

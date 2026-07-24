@@ -1,4 +1,5 @@
 import prisma from "../lib/prisma.js";
+import { getIO } from "../socket.js";
 import { generateCertNumber } from "../utils/certId.js";
 import { generateQRCode } from "../services/qr.service.js";
 import { generateCertPDF } from "../services/pdf.service.js";
@@ -114,6 +115,9 @@ export const issueCertification = async (req: any, res: any) => {
       : app.hotel?.managerId;
 
     if (entityOwnerId) {
+      const io = getIO();
+      io.to(`user_${entityOwnerId}`).emit("cert_issued", { certNumber });
+
       await prisma.notification.create({
         data: {
           userId:    entityOwnerId,
@@ -248,12 +252,19 @@ export const updateCertStatus = async (req: any, res: any) => {
         }
       });
 
-      // Sync isVerified on entity
+      // Sync isVerified on entity and application status
       const isVerified = status === "active";
       if (cert.restaurantId) {
         await tx.restaurant.update({ where:{ id:cert.restaurantId }, data:{ isVerified } });
       } else if (cert.hotelId) {
         await tx.hotel.update({ where:{ id:cert.hotelId }, data:{ isVerified } });
+      }
+
+      if (isVerified) {
+        await tx.application.update({
+          where: { id: cert.applicationId },
+          data: { status: "certified" }
+        });
       }
 
       return c;

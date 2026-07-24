@@ -27,21 +27,13 @@ type FooterConfig = {
 };
 
 const DEFAULT_CONFIG: FooterConfig = {
-  brandDescription: "Aahar Foundation is committed to bringing transparency and standardisation to the hospitality sector globally.",
-  ecosystemLinks: [
-    { label: "Restaurants", type: "url", url: "/search?type=restaurant" },
-    { label: "Hotels", type: "url", url: "/search?type=hotel" },
-    { label: "Get Certified", type: "url", url: "/apply" },
-  ],
-  companyLinks: [
-    { label: "About Us", type: "url", url: "/about" },
-    { label: "Contact", type: "url", url: "/contact" },
-    { label: "Blog", type: "url", url: "/blog" },
-  ],
+  brandDescription: "",
+  ecosystemLinks: [],
+  companyLinks: [],
   contact: {
-    email: "support@aahar.example.com",
-    phone: "+91 90000 00000",
-    location: "New Delhi, India",
+    email: "",
+    phone: "",
+    location: "",
   }
 };
 
@@ -117,7 +109,9 @@ export default function Footer() {
                   { Icon: Mail, text: config.contact.email },
                   { Icon: Phone, text: config.contact.phone },
                   { Icon: MapPin, text: config.contact.location },
-                ].map((item, i) => (
+                ]
+                .filter(item => item.text && item.text.trim() !== "")
+                .map((item, i) => (
                   <div key={i} className="flex items-center gap-4 group cursor-pointer">
                     <div className="w-10 h-10 rounded-xl bg-aahar-teal/10 flex items-center justify-center text-aahar-teal group-hover:bg-aahar-teal group-hover:text-white transition-all shrink-0">
                       <item.Icon className="w-5 h-5" />

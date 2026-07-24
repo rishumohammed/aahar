@@ -93,32 +93,47 @@ export default function Navbar() {
     return () => clearInterval(interval);
   }, [ordersOpen]);
 
-  useEffect(() => {
-    if (!isAuthenticated || !token) return;
-
-    // Load initial unread count
+  const fetchNotifications = () => {
+    if (!token) return;
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(r => r.json())
     .then(d => {
-      setNotifs(d.data.notifications ?? []);
-      setUnread(d.data.unreadCount ?? 0);
+      setNotifs(d.data?.notifications ?? []);
+      setUnread(d.data?.unreadCount ?? 0);
     })
     .catch(console.error);
+  };
+
+  useEffect(() => {
+    if (!isAuthenticated || !token) return;
+
+    // Load initial notifications
+    fetchNotifications();
 
     // Real-time updates via Socket.io
     const socket = getSocket();
-    const increment = () => setUnread(n => n + 1);
-
-    socket.on("new_enquiry", increment);
-    socket.on("enquiry_status_changed", increment);
-    socket.on("new_message", increment);
+    
+    // When a relevant event occurs, refetch notifications so the dropdown has the latest items
+    socket.on("new_enquiry", fetchNotifications);
+    socket.on("enquiry_status_changed", fetchNotifications);
+    socket.on("new_message", fetchNotifications);
+    socket.on("new_application", fetchNotifications);
+    socket.on("application_status_changed", fetchNotifications);
+    socket.on("new_application_message", fetchNotifications);
+    socket.on("cert_issued", fetchNotifications);
+    socket.on("new_order", fetchNotifications);
 
     return () => {
-      socket.off("new_enquiry", increment);
-      socket.off("enquiry_status_changed", increment);
-      socket.off("new_message", increment);
+      socket.off("new_enquiry", fetchNotifications);
+      socket.off("enquiry_status_changed", fetchNotifications);
+      socket.off("new_message", fetchNotifications);
+      socket.off("new_application", fetchNotifications);
+      socket.off("application_status_changed", fetchNotifications);
+      socket.off("new_application_message", fetchNotifications);
+      socket.off("cert_issued", fetchNotifications);
+      socket.off("new_order", fetchNotifications);
     };
   }, [isAuthenticated, token]);
 
@@ -138,7 +153,7 @@ export default function Navbar() {
       case "admin":         return "/admin/dashboard";
       case "auditor":       return "/auditor/dashboard";
       case "owner":         return "/owner/dashboard";
-      case "hotel_manager": return "/hotel-manager/dashboard";
+      case "hotel_manager": return "/manager/dashboard";
       default:              return "/profile";
     }
   };
@@ -349,3 +364,4 @@ export default function Navbar() {
     </>
   );
 }
+

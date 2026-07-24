@@ -64,7 +64,7 @@ export default function AdminEnquiriesPage() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <Button type="button" variant="outline" className="h-11 px-6 rounded-xl border border-slate-200 bg-white flex items-center gap-2 hover:bg-slate-50 hover:border-admin-primary hover:text-admin-primary transition-all shadow-sm">
+        <Button type="button" variant="outline" className="h-11 px-6 rounded-xl border border-slate-200 bg-white flex items-center gap-2 hover:border-admin-primary hover:bg-admin-primary hover:text-white transition-colors shadow-sm">
           <Filter className="h-4 w-4" />
           <span className="text-sm font-semibold">Filter Status</span>
         </Button>

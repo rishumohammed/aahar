@@ -514,7 +514,7 @@ function CategoryModal({ isOpen, onClose, sections, onSave }: {
             )}
           </div>
           
-          <Button onClick={addCategory} variant="outline" className="w-full border-dashed border-2 border-slate-200 py-6 text-slate-600 hover:bg-slate-50 hover:border-slate-300">
+          <Button onClick={addCategory} variant="outline" className="w-full border-dashed border-2 border-slate-200 py-6 text-slate-600 hover:border-slate-300 hover:bg-admin-primary hover:text-white transition-colors shadow-sm">
             <Plus className="h-4 w-4 mr-2" /> Add Blank Category
           </Button>
 

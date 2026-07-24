@@ -23,15 +23,15 @@ import { cn } from"@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { notificationApi } from "@/lib/api";
+import { FloatingSupportChat } from "@/components/shared/FloatingSupportChat";
 
 const NAV_ITEMS = [
- { label:"Overview", href:"/hotel-manager/dashboard", icon: Calendar },
- { label:"Enquiries", href:"/hotel-manager/enquiries", icon: Inbox },
- { label: "Application", href: "/hotel-manager/application", icon: ShieldCheck },
- { label: "Compliance", href: "/hotel-manager/compliance", icon: ShieldCheck },
- { label: "Messages", href: "/hotel-manager/messages", icon: MessageSquare },
- { label: "Photos", href: "/hotel-manager/photos", icon: ImageIcon },
- { label: "Profile", href: "/hotel-manager/profile", icon: Settings },
+ { label:"Overview", href:"/manager/dashboard", icon: Calendar },
+ { label:"Enquiries", href:"/manager/enquiries", icon: Inbox },
+ { label: "Application", href: "/manager/application", icon: ShieldCheck },
+ { label: "Compliance", href: "/manager/compliance", icon: ShieldCheck },
+ { label: "Photos", href: "/manager/photos", icon: ImageIcon },
+ { label: "Profile", href: "/manager/profile", icon: Settings },
 ];
 
 export default function HotelManagerLayout({ children }: { children: React.ReactNode }) {
@@ -91,7 +91,7 @@ export default function HotelManagerLayout({ children }: { children: React.React
  }
 
  const activeItem = NAV_ITEMS.find(
- (item) => pathname === item.href || (item.href !=="/hotel-manager/dashboard"&& pathname.startsWith(item.href))
+ (item) => pathname === item.href || (item.href !=="/manager/dashboard"&& pathname.startsWith(item.href))
  );
  const pageTitle = activeItem ? activeItem.label :"Manager Portal";
 
@@ -114,7 +114,7 @@ export default function HotelManagerLayout({ children }: { children: React.React
  <nav className="flex-1 overflow-y-auto no-scrollbar py-4">
  <ul className="space-y-1">
  {NAV_ITEMS.map((item) => {
- const isActive = pathname === item.href || (item.href !=="/hotel-manager/dashboard"&& pathname.startsWith(item.href));
+ const isActive = pathname === item.href || (item.href !=="/manager/dashboard"&& pathname.startsWith(item.href));
  return (
  <li key={item.label} className="pr-4">
  <Link 
@@ -267,10 +267,12 @@ export default function HotelManagerLayout({ children }: { children: React.React
  </header>
 
  {/* Page Content */}
- <main className="flex-1 overflow-y-auto bg-slate-50 p-6 md:p-8">
+ <main className="flex-1 overflow-y-auto print:overflow-visible bg-slate-50 p-6 md:p-8 print:p-0">
  {children}
  </main>
  </div>
+ <FloatingSupportChat />
  </div>
  );
 }
+

@@ -143,7 +143,7 @@ export default function AdminDashboard() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <Link href={`/admin/applications/${app.id}`}>
-                      <Button variant="ghost" size="sm" className="text-admin-text hover:text-admin-hover hover:bg-admin-light">
+                      <Button variant="ghost" size="sm" className="text-admin-text hover:bg-admin-primary hover:text-white transition-colors shadow-sm">
                         View
                         <ArrowUpRight className="h-4 w-4 ml-1" />
                       </Button>

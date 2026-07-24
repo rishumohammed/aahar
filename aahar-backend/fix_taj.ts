@@ -1,0 +1,1 @@
+import prisma from './src/lib/prisma.js'; import bcrypt from 'bcryptjs'; async function main() { const hash = await bcrypt.hash('Password@123', 10); await prisma.user.update({ where: { email: 'taj@gmail.com' }, data: { passwordHash: hash }}); console.log('Password updated'); } main().finally(() => prisma.$disconnect());

@@ -154,7 +154,7 @@ export function ComplianceChatDialog({ applicationId, trigger }: ChatDialogProps
 
         <div 
           ref={scrollRef}
-          className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          className="flex-1 overflow-y-auto p-4 space-y-2 bg-[#efeae2] relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         >
           {loading ? (
             <div className="absolute inset-0 flex items-center justify-center bg-slate-50/50 backdrop-blur-sm z-10">
@@ -180,37 +180,43 @@ export function ComplianceChatDialog({ applicationId, trigger }: ChatDialogProps
               }
 
               return (
-                <div key={msg.id} className={cn("flex w-full", isMe ? "justify-end" : "justify-start")}>
+                <div key={msg.id} className={cn("flex w-full my-0.5", isMe ? "justify-end" : "justify-start")}>
                   <div className={cn(
-                    "max-w-[80%] rounded-2xl shadow-sm relative group overflow-hidden",
+                    "max-w-[75%] rounded-2xl shadow-sm relative group flex flex-col",
                     isMe 
-                      ? "bg-admin-primary text-white rounded-br-none" 
-                      : "bg-white border border-slate-100 text-slate-800 rounded-bl-none"
+                      ? "bg-admin-primary text-white rounded-tr-none" 
+                      : "bg-white border border-slate-100 text-slate-800 rounded-tl-none"
                   )}>
                     {msg.attachmentUrl && (
                       <div className="p-1">
-                        <img src={msg.attachmentUrl} alt="Attachment" className="rounded-xl max-h-[250px] object-contain bg-white/10" />
+                        <img src={msg.attachmentUrl} alt="Attachment" className="rounded-xl max-h-[250px] object-cover bg-white/10 w-full" />
                       </div>
                     )}
                     {msg.content && (
-                      <div className="px-3 py-2.5">
-                        <p className="text-[14px] leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                        <div className={cn(
-                          "text-[9px] font-bold mt-1 uppercase tracking-wider opacity-70",
-                          isMe ? "text-admin-light/80 text-right" : "text-slate-400 text-left"
-                        )}>
-                          {!isMe && <span className="mr-2">{msg.sender?.name}</span>}
-                          {format(new Date(msg.sentAt), "h:mm a")}
+                      <div className="px-3 py-2 pb-1.5 min-w-[120px]">
+                        {!isMe && (
+                          <div className="text-[11px] font-bold text-admin-primary mb-0.5">
+                            {msg.sender?.name}
+                          </div>
+                        )}
+                        <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
+                          <p className="text-[14.5px] leading-snug whitespace-pre-wrap break-words">{msg.content}</p>
+                          <div className={cn(
+                            "text-[10px] font-medium ml-auto mt-auto leading-none",
+                            isMe ? "text-white/80" : "text-slate-400"
+                          )}>
+                            {format(new Date(msg.sentAt), "h:mm a")}
+                          </div>
                         </div>
                       </div>
                     )}
                     {!msg.content && msg.attachmentUrl && (
                        <div className={cn(
-                          "text-[9px] font-bold pb-2 px-3 uppercase tracking-wider opacity-70",
-                          isMe ? "text-admin-light/80 text-right" : "text-slate-400 text-left"
+                          "text-[10px] font-medium pb-1.5 px-3 flex justify-end gap-2",
+                          isMe ? "text-white/80" : "text-slate-400"
                         )}>
-                          {!isMe && <span className="mr-2">{msg.sender?.name}</span>}
-                          {format(new Date(msg.sentAt), "h:mm a")}
+                          {!isMe && <span className="font-bold mr-auto text-admin-primary">{msg.sender?.name}</span>}
+                          <span>{format(new Date(msg.sentAt), "h:mm a")}</span>
                         </div>
                     )}
                   </div>
@@ -220,19 +226,19 @@ export function ComplianceChatDialog({ applicationId, trigger }: ChatDialogProps
           )}
         </div>
 
-        <div className="p-3 bg-white border-t border-slate-100 shrink-0">
+        <div className="p-3 bg-[#f0f2f5] shrink-0 border-t border-slate-200/60">
           {attachment && (
-            <div className="flex items-center gap-2 mb-2 px-1">
-              <div className="px-3 py-1 bg-slate-100 text-xs font-semibold text-slate-600 rounded-md flex items-center gap-2 border border-slate-200">
+            <div className="flex items-center gap-2 mb-2 px-2">
+              <div className="px-3 py-1 bg-white text-xs font-semibold text-slate-600 rounded-md flex items-center gap-2 shadow-sm">
                 <Paperclip className="h-3 w-3" />
-                <span className="max-w-[120px] truncate">{attachment.name}</span>
+                <span className="max-w-[150px] truncate">{attachment.name}</span>
                 <button type="button" onClick={() => setAttachment(null)} className="hover:text-red-500">
                   <X className="h-3 w-3" />
                 </button>
               </div>
             </div>
           )}
-          <form onSubmit={handleSend} className="flex items-end gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-200 focus-within:border-admin-primary/50 focus-within:ring-4 focus-within:ring-admin-primary/10 transition-all">
+          <form onSubmit={handleSend} className="flex items-center gap-2">
             <input 
               type="file" 
               ref={fileInputRef} 
@@ -243,24 +249,26 @@ export function ComplianceChatDialog({ applicationId, trigger }: ChatDialogProps
             <button 
               type="button" 
               onClick={() => fileInputRef.current?.click()}
-              className="w-10 h-10 flex items-center justify-center shrink-0 text-slate-400 hover:text-admin-primary transition-colors"
+              className="w-10 h-10 flex items-center justify-center shrink-0 text-slate-500 hover:text-admin-primary transition-colors"
             >
-              <Paperclip className="h-4 w-4" />
+              <Paperclip className="h-5 w-5" />
             </button>
-            <Input
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1 bg-transparent border-0 focus-visible:ring-0 shadow-none px-2 min-h-[40px] text-[14px]"
-              autoComplete="off"
-            />
-            <Button 
+            <div className="flex-1 bg-white rounded-full flex items-center px-4 min-h-[44px] shadow-sm">
+              <Input
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Type a message"
+                className="flex-1 bg-transparent border-0 focus-visible:ring-0 shadow-none px-0 text-[15px]"
+                autoComplete="off"
+              />
+            </div>
+            <button 
               type="submit" 
               disabled={(!newMessage.trim() && !attachment) || uploadingAttachment}
-              className="rounded-xl w-10 h-10 p-0 shrink-0 bg-admin-primary hover:bg-admin-primary/90 text-white shadow-md disabled:opacity-50 disabled:shadow-none transition-all"
+              className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 bg-admin-primary hover:bg-admin-primary/90 text-white shadow-sm disabled:opacity-50 disabled:shadow-none transition-all"
             >
-              {uploadingAttachment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 ml-0.5" />}
-            </Button>
+              {uploadingAttachment ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5 ml-1" />}
+            </button>
           </form>
         </div>
       </DialogContent>

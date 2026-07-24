@@ -224,7 +224,7 @@ export default async function CertifyPage() {
           <p className="text-xl text-white/70 mb-10 leading-relaxed">
             Start your certification journey today and show your guests that their safety and experience is your top priority.
           </p>
-          <Button asChild className="bg-white text-aahar-dark hover:bg-gray-100 rounded-2xl px-12 py-8 font-black uppercase tracking-widest text-[14px] border-0 shadow-2xl hover:scale-105 active:scale-95 transition-all">
+          <Button asChild className="bg-white text-aahar-dark rounded-2xl px-12 py-8 font-black uppercase tracking-widest text-[14px] border-0 shadow-2xl hover:scale-105 active:scale-95 hover:bg-aahar-teal hover:text-white transition-colors shadow-sm">
             <Link href="/enquiry">Begin Application Process</Link>
           </Button>
         </div>

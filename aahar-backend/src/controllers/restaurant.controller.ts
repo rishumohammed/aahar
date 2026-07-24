@@ -9,7 +9,10 @@ const SAFE_SELECT = {
   website:true, openingHours:true, amenities:true, photos:true,
   googleRating:true, isVerified:true, isActive:true, isFeatured:true,
   isSponsored:true, createdAt:true,
+  ownerId: true,
+  managerId: true,
   owner: { select:{ id:true, name:true, email:true } },
+  manager: { select:{ id:true, name:true, email:true } },
   certification: {
     include: {
       application: {
@@ -32,12 +35,13 @@ export const listRestaurants = async (req: any, res: any) => {
       lat, lng, radius = 10,
       page = 1, limit = 20,
       q, sort = "featured",
-      ownerId
+      ownerId, managerId
     } = req.query;
 
     const where: any = { isActive: true };
-    if (ownerId)  where.ownerId = ownerId;
-    if (city)     where.city     = { contains: city };
+    if (ownerId)    where.ownerId = ownerId;
+    if (managerId)  where.managerId = managerId;
+    if (city)       where.city     = { contains: city };
     if (category) where.category = category;
     if (dietary)  where.dietary  = dietary;
     if (certified === "true") where.isVerified = true;
@@ -109,7 +113,11 @@ export const updateRestaurant = async (req: any, res: any) => {
     if (existing.ownerId !== req.user.id && !["admin", "super_admin"].includes(req.user.role))
       return forbidden(res, "Not your restaurant");
     
-    const { id, slug, ownerId, createdAt, menu, ...data } = req.body;
+    const { id, slug, ownerId, createdAt, menu, owner, manager, certification, ...data } = req.body;
+
+    if (ownerId && ["admin", "super_admin"].includes(req.user.role)) {
+      (data as any).ownerId = ownerId;
+    }
 
     const result = await prisma.$transaction(async (tx) => {
       // 1. Update Profile

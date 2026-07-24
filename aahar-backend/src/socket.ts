@@ -36,7 +36,7 @@ export const initSocket = (httpServer: HttpServer): Server => {
     // Join role-based rooms
     socket.join(`user_${user.id}`);
 
-    if (user.role === "hotel_manager") {
+    if (user.role === "manager") {
       // Manager joins all their hotel rooms
       // We'll let the client send join_hotel events
     }
@@ -47,7 +47,7 @@ export const initSocket = (httpServer: HttpServer): Server => {
 
     // Client sends this after connecting to join their hotel room
     socket.on("join_hotel", (hotelId: string) => {
-      if (user.role === "hotel_manager" || ["admin","super_admin"].includes(user.role)) {
+      if (user.role === "manager" || ["admin","super_admin"].includes(user.role)) {
         socket.join(`hotel_${hotelId}`);
         console.log(`${user.email} joined hotel_${hotelId}`);
       }

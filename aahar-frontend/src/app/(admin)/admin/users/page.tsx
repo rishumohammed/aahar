@@ -41,6 +41,9 @@ export default function UserManagementPage() {
   const [activeSection, setActiveSection] = useState<"system" | "establishment">("system");
   const [loading, setLoading] = useState(true);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<any>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [viewingUser, setViewingUser] = useState<any>(null);
   const [editingUser, setEditingUser] = useState<any>(null);
   const [formData, setFormData] = useState({
@@ -118,13 +121,26 @@ export default function UserManagementPage() {
     }
   };
 
-  const handleDeleteUser = async (user: any) => {
-    if (!confirm(`Are you sure you want to permanently delete ${user.name}? This action cannot be undone.`)) return;
+  const openDeleteModal = (user: any) => {
+    setUserToDelete(user);
+    setDeleteConfirmText("");
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (deleteConfirmText !== "DELETE") return;
+    if (!userToDelete) return;
+    
+    setSaving(true);
     try {
-      await adminApi.deleteUser(user.id);
+      await adminApi.deleteUser(userToDelete.id);
+      setShowDeleteModal(false);
       load();
+      alert("User deleted successfully!");
     } catch (err: any) {
       alert(err.response?.data?.message || "Failed to delete user");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -325,15 +341,15 @@ export default function UserManagementPage() {
                         </button>
                       )}
 
-                      {!["super_admin"].includes(user.role) && (
-                        <button 
-                          onClick={() => handleDeleteUser(user)}
-                          className="p-2 rounded-xl text-red-600 bg-red-50 hover:bg-red-500 hover:text-white transition-all shadow-sm active:scale-95"
-                          title="Delete User"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      )}
+                        {!["super_admin"].includes(user.role) && (
+                          <button 
+                            onClick={() => openDeleteModal(user)}
+                            className="p-2 rounded-xl text-rose-500 bg-rose-50 hover:bg-rose-100 hover:text-rose-700 transition-all shadow-sm active:scale-95"
+                            title="Delete User"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       
                       {activeSection === "establishment" && (
                         <button 
@@ -478,6 +494,51 @@ export default function UserManagementPage() {
               <div className="pt-2">
                 <Button onClick={() => setViewingUser(null)} variant="outline" className="w-full rounded-xl h-11 border-slate-200 font-semibold text-slate-700 hover:bg-slate-50">
                   Close Profile
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && userToDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)} />
+          <div className="relative w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 border border-rose-100">
+            <button onClick={() => setShowDeleteModal(false)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+              <X className="h-5 w-5" />
+            </button>
+            <div className="space-y-6">
+              <div className="space-y-1">
+                <div className="w-12 h-12 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center text-rose-500 mb-4 shadow-sm">
+                  <Trash2 className="h-6 w-6" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">Delete User</h2>
+                <p className="text-sm font-medium text-slate-500">
+                  You are about to permanently delete <strong className="text-rose-600">{userToDelete.name}</strong> and ALL associated records. This action CANNOT be undone.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">Type DELETE to confirm</label>
+                <input 
+                  className="w-full px-4 h-11 text-sm bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-rose-500 outline-none transition-all" 
+                  placeholder="DELETE" 
+                  value={deleteConfirmText} 
+                  onChange={e => setDeleteConfirmText(e.target.value)} 
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button 
+                  onClick={confirmDeleteUser} 
+                  disabled={deleteConfirmText !== "DELETE" || saving} 
+                  className="bg-rose-600 text-white hover:bg-rose-700 font-semibold rounded-xl h-11 flex-1 shadow-sm disabled:opacity-50"
+                >
+                  {saving ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Confirm Deletion"}
+                </Button>
+                <Button onClick={() => setShowDeleteModal(false)} variant="outline" className="flex-1 rounded-xl h-11 border-slate-200 font-semibold text-slate-700 hover:bg-slate-50">
+                  Cancel
                 </Button>
               </div>
             </div>

@@ -25,7 +25,16 @@ export default function AuditorAuditsPage() {
   useEffect(() => {
     auditorApi.list()
       .then(res => {
-        setAudits(res.data.data || []);
+        const sorted = (res.data.data || []).sort((a: any, b: any) => {
+          const isACompleted = a.status === "submitted" || a.status === "completed" || a.status === "reviewed";
+          const isBCompleted = b.status === "submitted" || b.status === "completed" || b.status === "reviewed";
+          
+          if (isACompleted && !isBCompleted) return 1;
+          if (!isACompleted && isBCompleted) return -1;
+          
+          return new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime();
+        });
+        setAudits(sorted);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -58,7 +67,7 @@ export default function AuditorAuditsPage() {
         <div className="grid grid-cols-1 gap-6">
           {audits.map((audit) => {
             const entity = audit.application?.restaurant || audit.application?.hotel;
-            const isCompleted = audit.status === "submitted";
+            const isCompleted = audit.status === "submitted" || audit.status === "completed" || audit.status === "reviewed";
 
             return (
               <Card 

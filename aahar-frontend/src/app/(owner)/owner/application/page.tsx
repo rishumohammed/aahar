@@ -141,7 +141,7 @@ export default function DocumentUploadPage() {
  }
  };
 
- const isReadOnly = applicationStatus ? applicationStatus !=="draft": false;
+ const isReadOnly = applicationStatus ? !["draft", "audit_scheduled"].includes(applicationStatus) : false;
 
  // ── Handlers ─────────────────────────────────────────────
  const handleDocUpload = async (docType: string, file: File) => {
@@ -386,7 +386,15 @@ export default function DocumentUploadPage() {
 
  {/* Form Action Footer */}
  <div className="mt-12 pt-8 flex justify-end border-t border-slate-200">
- {isReadOnly ? (
+ {applicationStatus === "audit_scheduled" ? (
+ <Button 
+ disabled
+ className="bg-admin-primary/70 text-white rounded-md px-10 h-14 font-bold shadow-md flex items-center gap-3"
+ >
+ <RefreshCw className="h-5 w-5"/>
+ Updates Saved Automatically
+ </Button>
+ ) : isReadOnly ? (
  <Button 
  disabled
  className="bg-admin-primary text-white rounded-md px-10 h-14 font-bold shadow-md flex items-center gap-3"

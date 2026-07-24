@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { applicationApi, adminApi } from "@/lib/api";
+import { applicationApi, adminApi, auditorApi } from "@/lib/api";
 import { 
   ChevronLeft, 
   MapPin, 
@@ -20,7 +20,8 @@ import {
   Building,
   ArrowLeft,
   KeyRound,
-  Copy
+  Copy,
+  RefreshCcw
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -42,7 +43,7 @@ export default function ApplicationDetailPage() {
   const [loading, setLoading] = useState(true);
   
   // Dialog states
-  const [action, setAction] = useState<"approve" | "reject" | "review" | null>(null);
+  const [action, setAction] = useState<"approve" | "reject" | "review" | "revoke" | "reinstate" | "require_reaudit" | null>(null);
   const [notes, setNotes] = useState("");
   const [working, setWorking] = useState(false);
 
@@ -91,8 +92,55 @@ export default function ApplicationDetailPage() {
     }
   };
 
+  const handleRevokeCertificate = async () => {
+    if (!app.certification) return;
+    if (!notes.trim()) {
+      toast.error("Please provide a reason for revocation");
+      return;
+    }
+    setWorking(true);
+    try {
+      await adminApi.revokeCert(app.certification.id, notes);
+      toast.success("Certificate has been revoked");
+      await fetchApp();
+      setAction(null);
+      setNotes("");
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || "Failed to revoke certificate");
+    } finally {
+      setWorking(false);
+    }
+  };
 
+  const handleRequireReAudit = async () => {
+    if (!app.audit) return;
+    setWorking(true);
+    try {
+      await adminApi.reopenAudit(app.audit.id);
+      toast.success("Audit reopened! The property must now undergo a re-audit before reinstatement.");
+      await fetchApp();
+      setAction(null);
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || "Failed to require re-audit");
+    } finally {
+      setWorking(false);
+    }
+  };
 
+  const handleReinstateCertificate = async () => {
+    if (!app.certification) return;
+    setWorking(true);
+    try {
+      await adminApi.reinstateCert(app.certification.id);
+      toast.success("Certificate has been reinstated and is active again");
+      await fetchApp();
+      setAction(null);
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || "Failed to reinstate certificate");
+    } finally {
+      setWorking(false);
+    }
+  };
   const handleReopenAudit = async () => {
     if (!app.audit) return;
     setWorking(true);
@@ -104,6 +152,24 @@ export default function ApplicationDetailPage() {
       toast.error("Failed to reopen audit");
     } finally {
       setWorking(false);
+    }
+  };
+
+  const handleDownloadAuditReport = async () => {
+    if (!app.audit) return;
+    try {
+      toast.info("Generating report...");
+      const res = await auditorApi.downloadReport(app.audit.id);
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `AuditReport_${app.audit.id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success("Report downloaded");
+    } catch (e) {
+      toast.error("Failed to download report");
     }
   };
 
@@ -196,13 +262,18 @@ export default function ApplicationDetailPage() {
                 Schedule Site Audit
               </Button>
             )}
-            {app.status === "audit_complete" && (
+            {app.status === "audit_complete" && (!app.certification || app.certification.status !== "revoked") && (
               <Button onClick={() => setAction("approve")} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
                 Confirm & Issue License
               </Button>
             )}
+            {app.status === "audit_complete" && app.certification?.status === "revoked" && (
+              <Button onClick={() => setAction("reinstate")} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+                Confirm & Reinstate License
+              </Button>
+            )}
             {(app.audit?.status === "submitted" || app.audit?.status === "completed" || app.audit?.status === "reviewed") && !["certified", "rejected"].includes(app.status) && (
-              <Button variant="outline" onClick={handleReopenAudit} disabled={working} className="w-full mt-2 font-bold text-amber-600 border-amber-200 hover:bg-amber-50">
+              <Button variant="outline" onClick={handleReopenAudit} disabled={working} className="w-full mt-2 font-bold text-amber-600 border-amber-200 hover:bg-amber-500 hover:text-white transition-colors duration-300 shadow-sm">
                 Unlock / Reopen Audit
               </Button>
             )}
@@ -366,6 +437,74 @@ export default function ApplicationDetailPage() {
                           </div>
                         </div>
                       )}
+
+                      {(app.audit.status === "submitted" || app.audit.status === "completed" || app.audit.status === "reviewed") && (
+                        <>
+                          {app.audit.sitePhotos && app.audit.sitePhotos.length > 0 && (
+                            <div className="pt-6 mt-6 border-t border-slate-100">
+                              <h4 className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">Site Evidence Photos</h4>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {app.audit.sitePhotos.map((photo: string, i: number) => (
+                                  <a key={i} href={photo} target="_blank" rel="noopener noreferrer" className="relative aspect-video rounded-lg overflow-hidden border border-slate-200 group block shadow-sm">
+                                    <img src={photo} alt="evidence" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                                  </a>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {app.audit.checklist && app.audit.checklist.length > 0 && (
+                            <div className="pt-6 mt-6 border-t border-slate-100 space-y-4">
+                              <h4 className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Detailed Checklist Scores</h4>
+                              {Array.from(new Set(app.audit.checklist.map((i: any) => i.section))).map((section: any) => (
+                                <div key={section} className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                                  <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 font-bold text-xs text-slate-700 uppercase tracking-wider flex justify-between items-center">
+                                    {section}
+                                    <span className="text-[10px] text-slate-400 font-semibold tracking-normal normal-case">
+                                      {app.audit.checklist.filter((i: any) => i.section === section).length} items
+                                    </span>
+                                  </div>
+                                  <div className="divide-y divide-slate-100 bg-white">
+                                    {app.audit.checklist.filter((i: any) => i.section === section).map((item: any) => (
+                                      <div key={item.id} className="p-4 flex flex-col sm:flex-row justify-between gap-4">
+                                        <div className="flex-1">
+                                          <div className="flex items-start gap-2">
+                                            <p className="text-sm font-semibold text-slate-800">{item.criterion}</p>
+                                            {item.isCritical && (
+                                              <Badge variant="destructive" className="shrink-0 text-[9px] uppercase tracking-widest bg-red-500">Critical</Badge>
+                                            )}
+                                          </div>
+                                          {item.comment && (
+                                            <div className="mt-2 text-xs text-slate-600 bg-slate-50 p-2 rounded-md border border-slate-100">
+                                              <span className="font-bold text-slate-500 uppercase tracking-wider text-[9px] block mb-0.5">Auditor Comment:</span>
+                                              {item.comment}
+                                            </div>
+                                          )}
+                                        </div>
+                                        <div className="shrink-0 flex flex-col items-end gap-1.5 justify-center">
+                                          <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Weight: {item.weight}</span>
+                                          <Badge className={cn(
+                                            "w-9 h-9 p-0 flex items-center justify-center text-sm font-bold border-0 shadow-sm",
+                                            item.score >= 4 ? "bg-emerald-500 text-white" : item.score >= 3 ? "bg-amber-500 text-white" : "bg-red-500 text-white"
+                                          )}>
+                                            {item.score}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="pt-6 mt-6 border-t border-slate-100">
+                            <Button onClick={handleDownloadAuditReport} variant="outline" className="w-full sm:w-auto gap-2 text-admin-primary border-admin-primary/20 hover:bg-admin-primary hover:text-white transition-colors duration-300 shadow-sm">
+                              <FileText className="h-4 w-4" /> Download Complete Audit Report (PDF)
+                            </Button>
+                          </div>
+                        </>
+                      )}
                     </CardContent>
                   </Card>
                 </div>
@@ -402,18 +541,53 @@ export default function ApplicationDetailPage() {
                   ))}
                 </dl>
 
-                <div className="flex gap-4">
-                  <a href={`/verify/${app.certification.certNumber}`} target="_blank" className="flex-1">
-                    <Button variant="secondary" className="w-full bg-white text-admin-primary hover:bg-white/90">
-                      View Live Badge
-                    </Button>
-                  </a>
-                  {app.certification.pdfUrl && (
-                    <a href={app.certification.pdfUrl} target="_blank" className="flex-1">
-                      <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10">
-                        Download PDF
+                <div className="flex flex-col gap-4">
+                  <div className="flex gap-4">
+                    <a href={`/verify/${app.certification.certNumber}`} target="_blank" className="flex-1">
+                      <Button variant="secondary" className="w-full bg-white text-admin-primary hover:bg-white/90">
+                        View Live Badge
                       </Button>
                     </a>
+                    {app.certification.pdfUrl && (
+                      <a href={app.certification.pdfUrl} target="_blank" className="flex-1">
+                        <Button variant="outline" className="w-full border-white/20 bg-transparent text-white hover:bg-white/10">
+                          Download PDF
+                        </Button>
+                      </a>
+                    )}
+                  </div>
+                  {app.certification.status === "active" && (
+                    <Button 
+                      variant="destructive" 
+                      className="w-full bg-red-500 hover:bg-red-600 text-white shadow-sm border-0"
+                      onClick={() => { setAction("revoke"); setNotes(""); }}
+                    >
+                      <AlertCircle className="h-4 w-4 mr-2" /> Revoke Certificate
+                    </Button>
+                  )}
+                  {app.certification.status === "revoked" && !["audit_scheduled", "in_progress", "audit_complete"].includes(app.status) && (
+                    <Button 
+                      className="w-full bg-amber-500 hover:bg-amber-600 text-white shadow-sm border-0"
+                      onClick={() => { setAction("require_reaudit"); }}
+                    >
+                      <RefreshCcw className="h-4 w-4 mr-2" /> Require Re-Audit for Reinstatement
+                    </Button>
+                  )}
+                  {app.certification.status === "revoked" && ["audit_scheduled", "in_progress"].includes(app.status) && (
+                    <div className="w-full py-2 px-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm font-bold text-center">
+                      Re-Audit in Progress...
+                    </div>
+                  )}
+                  {app.certification.status === "revoked" && app.status === "audit_complete" && (
+                     <div className="w-full py-2 px-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-bold text-center flex flex-col gap-2">
+                       <span>Re-Audit Completed!</span>
+                       <Button 
+                          className="w-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm border-0"
+                          onClick={() => { setAction("reinstate"); }}
+                        >
+                          <CheckCircle2 className="h-4 w-4 mr-2" /> Reinstate Certificate
+                        </Button>
+                     </div>
                   )}
                 </div>
               </div>
@@ -434,27 +608,40 @@ export default function ApplicationDetailPage() {
                   "submitted", "under_review", "audit_scheduled",
                   "audit_complete", "certified"
                 ].map((s, i) => {
-                  const steps = [
-                    "submitted", "under_review", "audit_scheduled",
-                    "audit_complete", "certified"
-                  ];
-                  const currentIdx = steps.indexOf(app.status);
-                  const done = i <= currentIdx;
-                  const current = i === currentIdx;
+                  const stepMap: Record<string, number> = {
+                    "draft": -1,
+                    "submitted": 0,
+                    "under_review": 1,
+                    "gap_analysis": 1,
+                    "audit_scheduled": 2,
+                    "audit_complete": 3,
+                    "pending_corrections": 3,
+                    "approved": 3,
+                    "certified": 4,
+                    "rejected": -1
+                  };
+                  
+                  const currentIdx = stepMap[app.status] ?? -1;
+                  const isRejected = app.status === "rejected";
+                  const done = !isRejected && i <= currentIdx;
+                  const current = !isRejected && i === currentIdx;
+                  
                   return (
                     <div key={s} className="flex items-center gap-4 relative z-10">
                       <div className={cn(
                         "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300",
+                        isRejected && currentIdx === -1 && i === 0 ? "bg-rose-500 text-white shadow-sm ring-4 ring-rose-500/20" : 
                         done ? "bg-admin-primary text-white shadow-sm" : "bg-white border-2 border-slate-200 text-transparent",
                         current && "ring-4 ring-admin-primary/20 scale-110"
                       )}>
-                        {done ? "✓" : ""}
+                        {isRejected && currentIdx === -1 && i === 0 ? "✕" : done ? "✓" : ""}
                       </div>
                       <span className={cn(
                         "text-xs font-bold uppercase tracking-wider transition-colors",
+                        isRejected && currentIdx === -1 && i === 0 ? "text-rose-600" :
                         done ? "text-slate-900" : "text-slate-400"
                       )}>
-                        {s.replace(/_/g, " ")}
+                        {isRejected && i === 0 ? "REJECTED" : s.replace(/_/g, " ")}
                       </span>
                     </div>
                   );
@@ -528,6 +715,73 @@ export default function ApplicationDetailPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Revoke Dialog */}
+      <Dialog open={action === "revoke"} onOpenChange={(o) => !o && setAction(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-red-600">Revoke Certificate</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-slate-600">
+              You are about to revoke the certificate for this property. This action will immediately mark the badge as revoked globally. Please provide a reason.
+            </p>
+            <div className="space-y-2">
+              <Label>Revocation Reason</Label>
+              <Input 
+                value={notes} 
+                onChange={e => setNotes(e.target.value)} 
+                placeholder="e.g. Failed surprise compliance check" 
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAction(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleRevokeCertificate} disabled={working || !notes.trim()}>
+              {working ? "Revoking..." : "Confirm Revocation"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reinstate Dialog */}
+      <Dialog open={action === "reinstate"} onOpenChange={(o) => !o && setAction(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-emerald-600">Reinstate Certificate</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-slate-600">
+              The property has successfully completed the re-audit. This action will immediately mark the badge as active globally and restore its trusted status.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAction(null)}>Cancel</Button>
+            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" onClick={handleReinstateCertificate} disabled={working}>
+              {working ? "Reinstating..." : "Confirm Reinstatement"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Require Re-Audit Dialog */}
+      <Dialog open={action === "require_reaudit"} onOpenChange={(o) => !o && setAction(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-amber-600">Require Re-Audit</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-slate-600">
+              This will reopen the audit and require the auditor to conduct a fresh inspection. The certificate will remain revoked until the new audit is completed and approved.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAction(null)}>Cancel</Button>
+            <Button className="bg-amber-500 hover:bg-amber-600 text-white" onClick={handleRequireReAudit} disabled={working}>
+              {working ? "Processing..." : "Confirm Re-Audit Requirement"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );

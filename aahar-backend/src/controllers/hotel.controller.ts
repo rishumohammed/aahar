@@ -9,6 +9,9 @@ const HOTEL_SELECT = {
   cancellationPolicy:true, mealPlans:true, amenities:true, photos:true,
   googleRating:true, isVerified:true, isActive:true, isFeatured:true,
   isSponsored:true, createdAt:true,
+  ownerId:true,
+  managerId:true,
+  owner: { select:{ id:true, name:true, email:true } },
   manager: { select:{ id:true, name:true, email:true } },
   roomTypes: { orderBy:{ order:"asc" } },
   certification: {
@@ -30,10 +33,11 @@ export const listHotels = async (req: any, res: any) => {
     const {
       city, propertyType, starMin, budgetMax, certified,
       amenities, page = 1, limit = 20, q, sort = "featured",
-      managerId
+      ownerId, managerId
     } = req.query;
 
     const where: any = { isActive: true };
+    if (ownerId)      where.ownerId      = ownerId;
     if (managerId)    where.managerId    = managerId;
     if (city)         where.city         = { contains: city };
     if (propertyType) where.propertyType = propertyType;
@@ -81,12 +85,12 @@ export const getHotel = async (req: any, res: any) => {
 // POST /api/hotels
 export const createHotel = async (req: any, res: any) => {
   try {
-    const { name, managerId, roomTypes, ...rest } = req.body;
+    const { name, ownerId, roomTypes, ...rest } = req.body;
     if (!name) return badRequest(res, "Name is required");
     const slug = await uniqueSlug(prisma, "hotel", name);
     const item = await prisma.hotel.create({
       data: { 
-        name, slug, managerId: (managerId || req.user.id), ...rest,
+        name, slug, ownerId: (ownerId || req.user.id), ...rest,
         roomTypes: roomTypes && roomTypes.length > 0 ? {
           create: roomTypes.map((r: any) => ({
             name: r.name,
@@ -113,10 +117,14 @@ export const updateHotel = async (req: any, res: any) => {
   try {
     const existing = await prisma.hotel.findUnique({ where: { id: req.params.id } });
     if (!existing) return notFound(res, "Hotel not found");
-    if (existing.managerId !== req.user.id && !["admin", "super_admin"].includes(req.user.role))
+    if (existing.ownerId !== req.user.id && existing.managerId !== req.user.id && !["admin", "super_admin"].includes(req.user.role))
       return forbidden(res, "Not your property");
     
-    const { id, slug, managerId, createdAt, roomTypes, ...data } = req.body;
+    const { id, slug, ownerId, createdAt, roomTypes, owner, manager, certification, ...data } = req.body;
+
+    if (ownerId && ["admin", "super_admin"].includes(req.user.role)) {
+      (data as any).ownerId = ownerId;
+    }
 
     await prisma.$transaction(async (tx) => {
       // 1. Update Profile
@@ -162,7 +170,7 @@ export const deleteHotel = async (req: any, res: any) => {
   try {
     const existing = await prisma.hotel.findUnique({ where: { id: req.params.id } });
     if (!existing) return notFound(res, "Hotel not found");
-    if (existing.managerId !== req.user.id && !["admin", "super_admin"].includes(req.user.role))
+    if (existing.ownerId !== req.user.id && !["admin", "super_admin"].includes(req.user.role))
       return forbidden(res, "Not authorized");
     
     await prisma.hotel.delete({ where: { id: req.params.id } });

@@ -70,15 +70,25 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
       }
     });
 
-    // Notify owner via Socket.io
+    // Notify owner via Socket.io and DB Notification
     try {
       const io = getIO();
       io.to(`user_${restaurant.ownerId}`).emit("new_order", {
         ...order,
         restaurantName: restaurant.name
       });
-    } catch (socketError) {
-      console.warn("Could not send real-time socket event (socket.io might not be active):", socketError);
+      
+      await prisma.notification.create({
+        data: {
+          userId: restaurant.ownerId,
+          type: "new_order",
+          title: "New Table Order",
+          message: `Table ${tableNumber} has placed a new order for ₹${totalAmount}.`,
+          actionUrl: `/owner/orders`
+        }
+      });
+    } catch (error) {
+      console.warn("Could not send real-time socket event or DB notification:", error);
     }
 
     res.status(201).json({ success: true, data: order });

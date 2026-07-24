@@ -15,7 +15,7 @@ const ROLE_REDIRECT: Record<string, string> = {
   admin: "/admin/dashboard",
   auditor: "/auditor/dashboard",
   owner: "/owner/dashboard",
-  hotel_manager: "/hotel-manager/dashboard",
+  manager: "/manager/dashboard",
   consumer: "/",
 };
 
@@ -155,3 +155,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

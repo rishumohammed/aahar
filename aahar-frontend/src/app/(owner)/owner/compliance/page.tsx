@@ -291,7 +291,7 @@ export default function ComplianceDashboard() {
  <aside className="space-y-8">
  
  {/* Renewal Countdown */}
-  {certification ? (
+  {certification?.status === "active" ? (
   <Card className={cn("p-8 rounded-xl border-slate-200 shadow-xl text-center space-y-6 hover:shadow-2xl transition-shadow duration-300", countdownBg)}>
   <div className="space-y-2">
   <h3 className={cn("text-6xl font-bold tracking-tighter", countdownColor)}>
@@ -304,6 +304,15 @@ export default function ComplianceDashboard() {
   <p className="text-[10px] font-bold text-slate-500/40 uppercase tracking-wider">Certificate Expiry</p>
   <p className="text-sm font-bold text-slate-800">{format(parseISO(certification.expiresAt),"dd MMM yyyy")}</p>
   </div>
+
+  {certification.pdfUrl && (
+    <Button 
+      onClick={() => window.open(certification.pdfUrl, "_blank")}
+      className="w-full bg-admin-primary text-white hover:bg-admin-primary/90 border-admin-primary shadow-sm uppercase font-bold tracking-wider rounded-md py-6"
+    >
+      Download Certificate
+    </Button>
+  )}
 
   {daysRemaining < 30 ? (
   <Button type="button" className="w-full bg-rose-500 text-white rounded-md py-7 font-bold uppercase tracking-wider shadow-xl shadow-rose-500/20 hover:scale-105 active:scale-95 transition-all">
@@ -320,6 +329,26 @@ export default function ComplianceDashboard() {
   </div>
   </div>
   )}
+  </Card>
+  ) : certification?.status === "revoked" ? (
+  <Card className="p-8 rounded-xl border-rose-200 shadow-xl text-center space-y-6 bg-rose-50 hover:shadow-2xl transition-shadow duration-300">
+  <div className="space-y-2">
+  <h3 className="text-4xl font-bold tracking-tighter text-rose-500">REVOKED</h3>
+  <p className="text-xs font-semibold uppercase tracking-wider text-rose-500/60">Certification Status</p>
+  </div>
+  <div className="p-4 bg-white/60 rounded-md border border-white space-y-1">
+  <p className="text-[10px] font-bold text-rose-500/40 uppercase tracking-wider">Reason</p>
+  <p className="text-sm font-bold text-rose-800">{certification.revokedReason || "Non-compliance"}</p>
+  </div>
+  <div className="p-4 flex items-center gap-3 text-left">
+  <div className="p-2 bg-rose-200/50 rounded-md">
+  <AlertCircle className="h-5 w-5 text-rose-600"/>
+  </div>
+  <div>
+  <p className="text-xs font-semibold uppercase tracking-wider text-rose-700">Re-audit Required</p>
+  <p className="text-xs font-semibold text-rose-600/70 mt-0.5">Contact administration.</p>
+  </div>
+  </div>
   </Card>
   ) : (
   <Card className="p-8 rounded-xl border-slate-200 shadow-xl text-center space-y-6 bg-slate-50 hover:shadow-2xl transition-shadow duration-300">

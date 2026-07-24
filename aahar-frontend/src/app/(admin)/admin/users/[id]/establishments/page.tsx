@@ -161,7 +161,7 @@ export default function UserEstablishmentsPage() {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-slate-900 line-clamp-1">{item.name}</p>
-                        <p className="text-xs text-slate-600 mt-0.5">{item.email || "No Email"}</p>
+                        <p className="text-xs text-slate-600 mt-0.5">{item.email || item.owner?.email || "No Email"}</p>
                       </div>
                     </div>
                   </td>

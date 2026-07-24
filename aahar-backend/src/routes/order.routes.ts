@@ -17,9 +17,9 @@ router.post("/", createOrder);
 router.get("/:id", getOrderDetails);
 
 // Restaurant specific table & live order management routes (authenticated owner/staff)
-router.get("/restaurant/:restaurantId", verifyToken, requireRole("owner", "hotel_manager", "admin", "super_admin"), getRestaurantOrders);
-router.patch("/:id/status", verifyToken, requireRole("owner", "hotel_manager", "admin", "super_admin"), updateOrderStatus);
-router.get("/restaurant/:restaurantId/tables", verifyToken, requireRole("owner", "hotel_manager", "admin", "super_admin"), getRestaurantTables);
-router.post("/restaurant/:restaurantId/tables", verifyToken, requireRole("owner", "hotel_manager", "admin", "super_admin"), createRestaurantTable);
+router.get("/restaurant/:restaurantId", verifyToken, requireRole("owner", "manager", "admin", "super_admin"), getRestaurantOrders);
+router.patch("/:id/status", verifyToken, requireRole("owner", "manager", "admin", "super_admin"), updateOrderStatus);
+router.get("/restaurant/:restaurantId/tables", verifyToken, requireRole("owner", "manager", "admin", "super_admin"), getRestaurantTables);
+router.post("/restaurant/:restaurantId/tables", verifyToken, requireRole("owner", "manager", "admin", "super_admin"), createRestaurantTable);
 
 export default router;

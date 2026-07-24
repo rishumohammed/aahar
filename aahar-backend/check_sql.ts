@@ -1,0 +1,1 @@
+import prisma from './src/lib/prisma.js'; async function main() { const users = await prisma.$queryRaw`SELECT id, email, role FROM User`; console.log(users); } main().finally(() => prisma.$disconnect());

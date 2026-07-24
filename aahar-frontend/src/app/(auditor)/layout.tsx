@@ -17,11 +17,11 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { notificationApi } from "@/lib/api";
+import { FloatingAuditorChat } from "@/components/shared/FloatingAuditorChat";
 
 const NAV_ITEMS = [
   { label: "Overview", href: "/auditor/dashboard", icon: LayoutDashboard },
   { label: "My Audits", href: "/auditor/audits", icon: ClipboardCheck },
-  { label: "Messages", href: "/auditor/messages", icon: MessageSquare },
 ];
 
 export default function AuditorLayout({ children }: { children: React.ReactNode }) {
@@ -241,10 +241,11 @@ export default function AuditorLayout({ children }: { children: React.ReactNode 
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-slate-50 p-6 md:p-8">
+        <main className="flex-1 overflow-y-auto bg-slate-50 p-6 md:p-8 relative">
           {children}
         </main>
       </div>
+      <FloatingAuditorChat />
     </div>
   );
 }

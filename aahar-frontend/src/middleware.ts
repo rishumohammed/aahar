@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 const PROTECTED_PREFIXES = [
   "/owner",
-  "/hotel-manager",
+  "/manager",
   "/auditor",
   "/admin",
   "/account",
@@ -12,7 +12,7 @@ const PROTECTED_PREFIXES = [
 
 const ROLE_ROUTES: Record<string, string[]> = {
   owner:         ["/owner"],
-  hotel_manager: ["/hotel-manager"],
+  hotel_manager: ["/manager"],
   auditor:       ["/auditor"],
   admin:         ["/admin"],
   super_admin:   ["/admin"],
@@ -47,10 +47,11 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/owner/:path*",
-    "/hotel-manager/:path*",
+    "/manager/:path*",
     "/auditor/:path*",
     "/admin/:path*",
     "/account/:path*",
     "/enquiries/:path*",
   ],
 };
+
