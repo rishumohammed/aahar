@@ -9,6 +9,9 @@ RUN npm ci
 # Copy remaining files
 COPY . .
 
+# Generate Prisma Client
+RUN npx prisma generate
+
 # Build the TypeScript code
 RUN npm run build
 
