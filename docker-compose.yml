@@ -55,6 +55,7 @@ services:
       - .env.production
     environment:
       DATABASE_URL: "mysql://root:${DB_ROOT_PASSWORD:-password}@db:3306/aahar_db"
+      PORT: "3001"
 
   frontend:
     build:
