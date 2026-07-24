@@ -65,34 +65,38 @@ export const createEnquiry = async (req: any, res: any) => {
     io.to("admin_room").emit("new_enquiry", { enquiry });
 
     // Save notification in DB
-    await prisma.notification.create({
-      data: {
-        userId:    hotel.manager.id,
-        type:      "new_enquiry",
-        title:     "New room enquiry",
-        message:   `${enquiry.guest.name} enquired for ${new Date(checkIn).toLocaleDateString("en-IN")}`,
-        actionUrl: `/hotel-manager/enquiries/${enquiry.id}`,
-      }
-    });
+    if (hotel.manager) {
+      await prisma.notification.create({
+        data: {
+          userId:    hotel.manager.id,
+          type:      "new_enquiry",
+          title:     "New room enquiry",
+          message:   `${enquiry.guest.name} enquired for ${new Date(checkIn).toLocaleDateString("en-IN")}`,
+          actionUrl: `/hotel-manager/enquiries/${enquiry.id}`,
+        }
+      });
+    }
 
     // Send email to manager
     const { sendEmail, emailTemplates } = await import("../services/email.service.js");
-    const managerUser = await prisma.user.findUnique({ where:{ id:hotel.manager.id } });
-    if (managerUser?.email) {
-      const tpl = emailTemplates.newEnquiry(
-        hotel.manager.name,
-        enquiry.guest.name,
-        new Date(checkIn),
-        new Date(checkOut),
-        enquiry.roomType?.name ?? "Any room",
-        enquiry.id
-      );
-      await sendEmail(managerUser.email, tpl.subject, tpl.html);
+    if (hotel.manager) {
+      const managerUser = await prisma.user.findUnique({ where:{ id:hotel.manager.id } });
+      if (managerUser?.email) {
+        const tpl = emailTemplates.newEnquiry(
+          hotel.manager.name,
+          enquiry.guest.name,
+          new Date(checkIn),
+          new Date(checkOut),
+          enquiry.roomType?.name ?? "Any room",
+          enquiry.id
+        );
+        await sendEmail(managerUser.email, tpl.subject, tpl.html);
+      }
     }
 
     // Send WhatsApp to manager
     const { sendWhatsApp, waMessages } = await import("../services/whatsapp.service.js");
-    if (hotel.manager.phone) {
+    if (hotel.manager?.phone) {
       await sendWhatsApp(
         hotel.manager.phone,
         waMessages.newEnquiry(

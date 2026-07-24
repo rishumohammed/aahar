@@ -68,7 +68,7 @@ export const submitApplication = async (req: any, res: any) => {
         where: { role: { in: ["admin", "super_admin"] } }
       });
       
-      const entityName = application.restaurant?.name || application.hotel?.name || "An establishment";
+      const entityName = (application as any).restaurant?.name || (application as any).hotel?.name || "An establishment";
       
       if (admins.length > 0) {
         await prisma.notification.createMany({
@@ -180,15 +180,15 @@ export const updateApplicationStatus = async (req: any, res: any) => {
     });
 
     // Notify Auditor if exists
-    if (app.audit?.auditorId) {
-      io.to(`user_${app.audit.auditorId}`).emit("application_status_changed", { applicationId: app.id, status });
+    if ((app as any).audit?.auditorId) {
+      io.to(`user_${(app as any).audit.auditorId}`).emit("application_status_changed", { applicationId: app.id, status });
       await prisma.notification.create({
         data: {
-          userId: app.audit.auditorId,
+          userId: (app as any).audit.auditorId,
           type: "application_status_changed",
           title: "Audit Application Status Updated",
           message: `An application assigned to you is now: ${status.replace("_", " ")}.`,
-          actionUrl: `/auditor/audits/${app.audit.id}` // Link to auditor view
+          actionUrl: `/auditor/audits/${(app as any).audit.id}` // Link to auditor view
         }
       });
     }
