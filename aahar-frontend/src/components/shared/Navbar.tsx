@@ -12,7 +12,7 @@ import { orderApi } from "@/lib/api";
 import ActiveOrderWidget from "./ActiveOrderWidget";
 
 const NAV_LINKS = [
-  { label: "Explore", href: "/search?mode=eat" },
+  { label: "Restaurants", href: "/search?mode=eat" },
   { label: "Stay", href: "/search?mode=stay" },
   { label: "Certify", href: "/certify" },
   { label: "Verify", href: "/verify" },
