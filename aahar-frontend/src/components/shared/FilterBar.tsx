@@ -57,16 +57,16 @@ export default function FilterBar({
   }, [storeCity, initialCity]);
 
   useEffect(() => {
-    if (initialCertified !== undefined && initialCertified !== isCertified) setIsCertified(initialCertified);
-  }, [initialCertified, isCertified]);
+    if (initialCertified !== undefined) setIsCertified(initialCertified);
+  }, [initialCertified]);
 
   useEffect(() => {
-    if (initialQuery !== undefined && initialQuery !== searchQuery) setSearchQuery(initialQuery);
-  }, [initialQuery, searchQuery]);
+    if (initialQuery !== undefined) setSearchQuery(initialQuery);
+  }, [initialQuery]);
 
   useEffect(() => {
-    if (initialCity !== undefined && initialCity !== location) setLocation(initialCity);
-  }, [initialCity, location]);
+    if (initialCity !== undefined) setLocation(initialCity);
+  }, [initialCity]);
 
   // Google Places Autocomplete Integration
   useEffect(() => {
@@ -158,77 +158,80 @@ export default function FilterBar({
       <div className="w-full bg-white border border-aahar-border rounded-[2.5rem] shadow-xl shadow-aahar-teal/5 p-2 flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-0">
         
         {!hideTrustStandard && (
-          <div className="px-6 py-2 border-r border-aahar-wash flex flex-col gap-3 min-w-[200px]">
-            {!hideLabels && <span className="text-[10px] font-black uppercase tracking-widest text-aahar-body/40">Trust Standard</span>}
+          <div className="px-4 py-1 flex flex-col justify-center min-w-[200px]">
+            {!hideLabels && <span className="text-[10px] font-black uppercase tracking-widest text-aahar-body/40 ml-2 mb-1">Trust Standard</span>}
             <button
               onClick={() => setIsCertified(!isCertified)}
               className={cn(
-                "flex items-center gap-3 px-6 h-14 rounded-2xl border-2 transition-all duration-300 font-black uppercase tracking-widest text-[10px]",
+                "flex items-center gap-3 px-4 h-14 rounded-[1.5rem] border-2 transition-all duration-300 font-bold text-sm",
                 isCertified 
-                  ? "bg-aahar-teal/5 border-aahar-teal text-aahar-teal shadow-lg shadow-aahar-teal/10" 
-                  : "bg-white border-aahar-wash text-aahar-body/40 hover:border-aahar-border"
+                  ? "bg-aahar-teal/5 border-aahar-teal text-aahar-teal shadow-sm" 
+                  : "bg-transparent border-aahar-border text-aahar-body/60 hover:border-aahar-teal/50"
               )}
             >
               <div className={cn(
                 "w-5 h-5 rounded-full flex items-center justify-center border-2 transition-colors",
-                isCertified ? "bg-aahar-teal border-aahar-teal text-white" : "border-aahar-wash text-transparent"
+                isCertified ? "bg-aahar-teal border-aahar-teal text-white" : "border-aahar-border text-transparent"
               )}>
-                <Check className="h-3 w-3 stroke-[4]" />
+                <Check className="h-3 w-3 stroke-[3]" />
               </div>
               Aahar Certified
             </button>
           </div>
         )}
-
-
+        {!hideTrustStandard && <div className="hidden md:block w-px h-10 bg-aahar-border/60 self-center" />}
 
         {/* Search Input Section */}
-        <div className="px-6 py-2 border-r border-aahar-wash flex flex-col gap-3 flex-[2]">
-          {!hideLabels && <span className="text-[10px] font-black uppercase tracking-widest text-aahar-body/40">Search & Explore</span>}
-          <div className="relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-aahar-body/40 group-focus-within:text-aahar-teal transition-colors z-10" />
+        <div className="px-2 py-1 flex-[2] flex flex-col justify-center relative">
+          {!hideLabels && <span className="text-[10px] font-black uppercase tracking-widest text-aahar-body/40 ml-4 mb-1">Search & Explore</span>}
+          <div className="relative group flex items-center">
+            <Search className="absolute left-4 h-5 w-5 text-aahar-body/50 group-focus-within:text-aahar-teal transition-colors z-10" />
             <Input 
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Restaurants, hotels, or cuisines..."
-              className="h-14 bg-aahar-wash/30 border-aahar-wash rounded-2xl pl-12 text-sm font-bold text-aahar-dark placeholder:text-aahar-body/30 placeholder:font-medium focus-visible:border-aahar-teal focus-visible:ring-aahar-teal/5 transition-all"
+              placeholder="Search restaurant or hotel name..."
+              className="h-14 w-full bg-transparent border-transparent pl-12 text-base font-normal text-aahar-dark placeholder:text-aahar-body/50 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all shadow-none"
             />
           </div>
         </div>
 
+        {/* Divider */}
+        <div className="hidden md:block w-px h-10 bg-aahar-border/60 self-center" />
+
         {/* Location Section */}
-        <div className="px-6 py-2 border-r border-aahar-wash flex flex-col gap-3 flex-1">
-          {!hideLabels && <span className="text-[10px] font-black uppercase tracking-widest text-aahar-body/40">Location</span>}
-          <div className="relative group">
-            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-aahar-body/40 group-focus-within:text-aahar-rose transition-colors z-10" />
+        <div className="px-2 py-1 flex-[1.5] flex flex-col justify-center relative">
+          {!hideLabels && <span className="text-[10px] font-black uppercase tracking-widest text-aahar-body/40 ml-4 mb-1">Location</span>}
+          <div className="relative group flex items-center">
+            <MapPin className="absolute left-4 h-5 w-5 text-aahar-body/50 group-focus-within:text-aahar-teal transition-colors z-10" />
             <Input 
               ref={locationInputRef}
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Any City"
-              className="h-14 bg-aahar-wash/30 border-aahar-wash rounded-2xl pl-12 pr-10 text-sm font-bold text-aahar-dark placeholder:text-aahar-body/30 focus-visible:border-aahar-rose focus-visible:ring-aahar-rose/5 transition-all"
+              placeholder="Any city"
+              className="h-14 w-full bg-transparent border-transparent pl-12 pr-14 text-base font-normal text-aahar-dark placeholder:text-aahar-body/50 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all shadow-none"
             />
             <button
               onClick={() => detectLocation()}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-aahar-body/40 hover:text-aahar-teal transition-colors"
+              className="absolute right-2 w-10 h-10 flex items-center justify-center rounded-xl bg-aahar-wash/50 border border-aahar-border text-aahar-body hover:text-aahar-teal hover:bg-aahar-wash transition-all"
+              title="Detect Location"
             >
               {locationLoading ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Crosshair className="h-3 w-3" />
+                <Crosshair className="h-4 w-4" />
               )}
             </button>
           </div>
         </div>
 
         {/* Actions Section */}
-        <div className="pl-6 pr-2 py-2 flex items-center gap-4">
+        <div className="pr-2 pl-2 py-1 flex items-center gap-2">
           {!hideReset && (
             <button 
               onClick={handleReset}
-              className="w-14 h-14 bg-aahar-wash rounded-2xl text-[10px] font-black uppercase tracking-widest text-aahar-dark hover:bg-aahar-teal/10 transition-all duration-300 active:scale-95 flex items-center justify-center"
+              className="w-12 h-12 bg-aahar-wash rounded-xl text-aahar-dark hover:bg-aahar-teal/10 transition-all duration-300 active:scale-95 flex items-center justify-center"
               title="Reset Filters"
             >
               <RotateCcw className="h-4 w-4" />
@@ -237,9 +240,9 @@ export default function FilterBar({
           
           <button 
             onClick={handleSearchTrigger}
-            className="bg-aahar-teal text-white px-10 h-14 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-aahar-teal/90 transition-all duration-300 active:scale-95 shadow-lg shadow-aahar-teal/20 flex items-center gap-2"
+            className="bg-[#116d62] text-white px-8 h-14 rounded-[1.75rem] text-base font-semibold hover:bg-[#0e5c53] transition-all duration-300 active:scale-95 shadow-md flex items-center gap-2"
           >
-            <Search className="h-4 w-4" />
+            <Search className="h-5 w-5" />
             Search
           </button>
         </div>
