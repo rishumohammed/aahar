@@ -43,7 +43,7 @@ export const createEnquiry = async (req: any, res: any) => {
         children:           Number(children),
         mealPlan:           mealPlan    || null,
         specialRequirements: specialRequirements || null,
-        status:             "sent",
+        status:             hotel.approvalPreference === "instant" ? "confirmed" : "sent",
         expiresAt,
       },
       include: {
@@ -58,7 +58,10 @@ export const createEnquiry = async (req: any, res: any) => {
     const io = getIO();
     io.to(`hotel_${hotelId}`).emit("new_enquiry", {
       enquiry,
-      message: `New enquiry from ${enquiry.guest.name} for ${new Date(checkIn).toLocaleDateString("en-IN")}`,
+      type: hotel.approvalPreference === "manual_30m" ? "review_required_30m" : "instant_approved",
+      message: hotel.approvalPreference === "manual_30m" 
+        ? `ACTION REQUIRED: You have 30 minutes to review a new booking from ${enquiry.guest.name} for ${new Date(checkIn).toLocaleDateString("en-IN")} before it is auto-verified.`
+        : `New auto-verified booking from ${enquiry.guest.name} for ${new Date(checkIn).toLocaleDateString("en-IN")}`,
     });
 
     // Also emit to admin room
@@ -70,8 +73,10 @@ export const createEnquiry = async (req: any, res: any) => {
         data: {
           userId:    hotel.manager.id,
           type:      "new_enquiry",
-          title:     "New room enquiry",
-          message:   `${enquiry.guest.name} enquired for ${new Date(checkIn).toLocaleDateString("en-IN")}`,
+          title:     hotel.approvalPreference === "manual_30m" ? "Urgent: 30-Min Booking Review" : "New Verified Booking",
+          message:   hotel.approvalPreference === "manual_30m"
+            ? `${enquiry.guest.name} booked for ${new Date(checkIn).toLocaleDateString("en-IN")}. You have 30 mins to cancel before auto-verification.`
+            : `${enquiry.guest.name} booked for ${new Date(checkIn).toLocaleDateString("en-IN")}. Automatically verified.`,
           actionUrl: `/hotel-manager/enquiries/${enquiry.id}`,
         }
       });
@@ -116,7 +121,7 @@ export const createEnquiry = async (req: any, res: any) => {
 export const listEnquiries = async (req: any, res: any) => {
   try {
     const {
-      status, hotelId,
+      status, hotelId, upcoming,
       page = 1, limit = 20
     } = req.query;
 
@@ -134,6 +139,12 @@ export const listEnquiries = async (req: any, res: any) => {
         select: { id: true }
       });
       where.hotelId = { in: hotels.map(h => h.id) };
+    } else if (role === "owner") {
+      const hotels = await prisma.hotel.findMany({
+        where:  { ownerId: req.user.id },
+        select: { id: true }
+      });
+      where.hotelId = { in: hotels.map(h => h.id) };
     } else if (["admin","super_admin"].includes(role)) {
       if (hotelId) where.hotelId = hotelId;
     } else {
@@ -142,12 +153,20 @@ export const listEnquiries = async (req: any, res: any) => {
 
     if (status) where.status = status;
 
+    if (upcoming === "true") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      where.checkOut = { gte: today };
+    }
+
+    const orderBy = upcoming === "true" ? { checkIn: "asc" } : { createdAt: "desc" };
+
     const [items, total] = await Promise.all([
       prisma.enquiry.findMany({
         where,
         skip,
         take:     Number(limit),
-        orderBy:  { createdAt: "desc" },
+        orderBy:  orderBy as any,
         include: {
           guest:    { select:{ id:true, name:true, email:true, phone:true } },
           hotel:    { select:{ id:true, name:true, city:true, slug:true } },

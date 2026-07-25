@@ -6,10 +6,11 @@ import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
 import { getSocket } from "@/lib/socket";
 import { Button } from "@/components/ui/button";
-import { Bell, User, LogOut, LayoutDashboard, Search, Utensils, ChefHat, Clock, CheckCircle2, AlertCircle, Trash2 } from "lucide-react";
+import { Bell, User, LogOut, LayoutDashboard, Search, Utensils, ChefHat, Clock, CheckCircle2, AlertCircle, Trash2, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { orderApi } from "@/lib/api";
 import ActiveOrderWidget from "./ActiveOrderWidget";
+import { motion, AnimatePresence } from "framer-motion";
 
 const NAV_LINKS = [
   { label: "Restaurants", href: "/search?mode=eat" },
@@ -25,6 +26,7 @@ export default function Navbar() {
   const [notifs, setNotifs] = useState<any[]>([]);
   const [bellOpen, setBellOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Active orders states
   const [orders, setOrders] = useState<any[]>([]);
@@ -164,7 +166,7 @@ export default function Navbar() {
         "sticky top-0 z-[60] w-full transition-all duration-300",
         scrolled ? "bg-aahar-dark/95 backdrop-blur-md py-3 shadow-2xl" : "bg-aahar-teal py-5"
       )}>
-      <nav className="container mx-auto px-6 grid grid-cols-3 items-center">
+      <nav className="container mx-auto px-6 flex items-center justify-between">
         {/* Left: Logo */}
         <div className="flex items-center">
           <Link href="/" className="flex items-center space-x-2 group">
@@ -350,14 +352,84 @@ export default function Navbar() {
               </div>
             </>
           ) : (
-            <div className="flex items-center justify-end">
+            <div className="hidden lg:flex items-center justify-end">
               <Button asChild className="bg-aahar-rose text-white hover:bg-aahar-rose/90 rounded-2xl px-8 py-6 font-black uppercase tracking-widest text-[10px] border-0 shadow-lg shadow-aahar-rose/20 transition-all active:scale-95">
                 <Link href="/auth/login">Sign In</Link>
               </Button>
             </div>
           )}
+
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => {
+              setMobileMenuOpen(!mobileMenuOpen);
+              setBellOpen(false);
+              setOrdersOpen(false);
+            }}
+            className="lg:hidden w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all text-white shrink-0 ml-2"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
       </nav>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="lg:hidden bg-aahar-dark/95 backdrop-blur-md border-t border-white/10 overflow-hidden"
+          >
+            <div className="container mx-auto px-6 py-6 flex flex-col gap-5">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-xs font-black uppercase tracking-widest text-white/80 hover:text-white transition-all py-3 border-b border-white/5 last:border-0"
+                >
+                  {link.label}
+                </Link>
+              ))}
+
+              {/* Mobile Actions */}
+              {isAuthenticated ? (
+                <div className="flex flex-col gap-3 pt-2">
+                  <Link
+                    href={getDashboardUrl()}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-2xl hover:bg-white/10 transition-all text-white"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                      <User className="h-4 w-4 text-white" />
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest">{user?.name || "Dashboard"}</span>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      clearAuth();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-2xl hover:bg-rose-500/20 hover:text-white text-rose-300 transition-all text-left"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Sign Out</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="pt-2">
+                  <Button asChild className="bg-aahar-rose text-white hover:bg-aahar-rose/90 rounded-2xl py-6 font-black uppercase tracking-widest text-[10px] border-0 shadow-lg shadow-aahar-rose/20 w-full transition-all active:scale-95">
+                    <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
+                  </Button>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       </header>
       {/* Global client-side floating active order tracker widget */}
       <ActiveOrderWidget />

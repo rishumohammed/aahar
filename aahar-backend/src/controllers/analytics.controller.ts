@@ -220,7 +220,8 @@ export const getOwnerStats = async (req: any, res: any) => {
       timeline,
       hygieneScore,
       certification,
-      applicationId: latestApp?.id || null
+      applicationId: latestApp?.id || null,
+      auditId: latestAudit?.id || null
     });
   } catch (e) { return serverError(res, e); }
 };

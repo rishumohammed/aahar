@@ -155,7 +155,7 @@ export default function FilterBar({
   return (
     <div className={cn("w-full space-y-4", className)}>
       {/* Main Filter Bar */}
-      <div className="w-full bg-white border border-aahar-border rounded-[2.5rem] shadow-xl shadow-aahar-teal/5 p-2 flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-0">
+      <div className="w-full bg-white border border-aahar-border rounded-[1.5rem] md:rounded-[2.5rem] shadow-xl shadow-aahar-teal/5 p-2 flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-0">
         
         {!hideTrustStandard && (
           <div className="px-4 py-1 flex flex-col justify-center min-w-[200px]">
@@ -180,6 +180,7 @@ export default function FilterBar({
           </div>
         )}
         {!hideTrustStandard && <div className="hidden md:block w-px h-10 bg-aahar-border/60 self-center" />}
+        {!hideTrustStandard && <div className="block md:hidden h-px bg-aahar-border/40 mx-4" />}
 
         {/* Search Input Section */}
         <div className="px-2 py-1 flex-[2] flex flex-col justify-center relative">
@@ -198,6 +199,7 @@ export default function FilterBar({
 
         {/* Divider */}
         <div className="hidden md:block w-px h-10 bg-aahar-border/60 self-center" />
+        <div className="block md:hidden h-px bg-aahar-border/40 mx-4" />
 
         {/* Location Section */}
         <div className="px-2 py-1 flex-[1.5] flex flex-col justify-center relative">
@@ -227,7 +229,7 @@ export default function FilterBar({
         </div>
 
         {/* Actions Section */}
-        <div className="pr-2 pl-2 py-1 flex items-center gap-2">
+        <div className="pr-2 pl-2 py-1 flex items-center gap-2 w-full md:w-auto">
           {!hideReset && (
             <button 
               onClick={handleReset}
@@ -240,7 +242,7 @@ export default function FilterBar({
           
           <button 
             onClick={handleSearchTrigger}
-            className="bg-[#116d62] text-white px-8 h-14 rounded-[1.75rem] text-base font-semibold hover:bg-[#0e5c53] transition-all duration-300 active:scale-95 shadow-md flex items-center gap-2"
+            className="bg-[#116d62] text-white px-8 h-14 rounded-[1.75rem] text-base font-semibold hover:bg-[#0e5c53] transition-all duration-300 active:scale-95 shadow-md flex items-center justify-center gap-2 w-full md:w-auto"
           >
             <Search className="h-5 w-5" />
             Search

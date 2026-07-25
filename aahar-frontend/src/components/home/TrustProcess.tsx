@@ -10,7 +10,7 @@ const STEP_ICONS = [Search, Zap, Users, ShieldCheck, Award];
 
 export default function TrustProcess() {
   return (
-    <section className="bg-aahar-wash/50 border-y border-aahar-border relative py-20 overflow-hidden">
+    <section className="bg-aahar-wash/50 border-y border-aahar-border relative py-12 sm:py-20 md:py-24 overflow-hidden">
       {/* Dynamic Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none -z-10">
         <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-aahar-teal/5 rounded-full blur-[120px]" />

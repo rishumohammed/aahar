@@ -65,6 +65,48 @@ export const startCronJobs = () => {
       console.error("Cert cron error:", err);
     }
   });
+  // Run every minute — auto verify manual_30m enquiries if 30 minutes passed
+  cron.schedule("* * * * *", async () => {
+    try {
+      const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000);
+      const toVerify = await prisma.enquiry.findMany({
+        where: {
+          status: "sent",
+          createdAt: { lte: thirtyMinsAgo },
+          hotel: {
+            approvalPreference: "manual_30m"
+          }
+        },
+        include: { guest: { select: { id: true, name: true } }, hotel: { select: { id: true, name: true } } }
+      });
+
+      if (toVerify.length === 0) return;
+
+      await prisma.enquiry.updateMany({
+        where: { id: { in: toVerify.map(e => e.id) } },
+        data: { status: "confirmed" as any }
+      });
+
+      const io = getIO();
+      for (const e of toVerify) {
+        // Notify guest
+        io.to(`user_${e.guestId}`).emit("enquiry_status_changed", {
+          enquiryId: e.id,
+          status: "confirmed",
+          message: `Your booking at ${e.hotel.name} was automatically verified.`
+        });
+        // Notify manager
+        io.to(`hotel_${e.hotelId}`).emit("new_enquiry", {
+          type: "auto_verified",
+          message: `Booking from ${e.guest.name} was auto-verified (30 min window expired).`
+        });
+        console.log(`Enquiry ${e.id} auto-verified after 30m`);
+      }
+    } catch (err) {
+      console.error("Auto-verify cron error:", err);
+    }
+  });
+
 
   console.log("Cron jobs started");
 };

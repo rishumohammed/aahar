@@ -28,7 +28,8 @@ import { useState } from "react";
 const formSchema = z.object({
   checkIn: z.string().min(1, "Check-in date is required"),
   checkOut: z.string().min(1, "Check-out date is required"),
-  guests: z.string().min(1, "Number of guests is required"),
+  adults: z.string().min(1, "Number of adults is required"),
+  children: z.string().min(1, "Number of children is required"),
   roomType: z.string().optional(),
 });
 
@@ -48,7 +49,8 @@ export function EnquiryForm({ hotelId, hotelSlug, roomTypes }: EnquiryFormProps)
     defaultValues: {
       checkIn: "",
       checkOut: "",
-      guests: "2",
+      adults: "2",
+      children: "0",
       roomType: "any",
     },
   });
@@ -62,7 +64,8 @@ export function EnquiryForm({ hotelId, hotelSlug, roomTypes }: EnquiryFormProps)
         roomTypeId: values.roomType === "any" || !values.roomType ? undefined : values.roomType,
         checkIn: values.checkIn,
         checkOut: values.checkOut,
-        adults: parseInt(values.guests),
+        adults: parseInt(values.adults),
+        children: parseInt(values.children),
       });
       router.push(`/enquiries/${res.data.data.id}`);
     } catch (err: any) {
@@ -110,31 +113,58 @@ export function EnquiryForm({ hotelId, hotelSlug, roomTypes }: EnquiryFormProps)
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="guests"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-wider text-aahar-body">Guests</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="py-6 rounded-xl border-aahar-border">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-aahar-teal" />
-                        <SelectValue placeholder="Select guests" />
-                      </div>
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {[1, 2, 3, 4, 5, 6].map(n => (
-                      <SelectItem key={n} value={n.toString()}>{n} Guest{n > 1 ? 's' : ''}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage className="text-[10px]" />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="adults"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs font-bold uppercase tracking-wider text-aahar-body">Adults</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="py-6 rounded-xl border-aahar-border">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-aahar-teal" />
+                          <SelectValue placeholder="Adults" />
+                        </div>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {[1, 2, 3, 4, 5, 6].map(n => (
+                        <SelectItem key={n} value={n.toString()}>{n} Adult{n > 1 ? 's' : ''}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage className="text-[10px]" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="children"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs font-bold uppercase tracking-wider text-aahar-body">Children</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="py-6 rounded-xl border-aahar-border">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-aahar-teal" />
+                          <SelectValue placeholder="Children" />
+                        </div>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {[0, 1, 2, 3, 4].map(n => (
+                        <SelectItem key={n} value={n.toString()}>{n} Child{n !== 1 ? 'ren' : ''}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage className="text-[10px]" />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <FormField
             control={form.control}

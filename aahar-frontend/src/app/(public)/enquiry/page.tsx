@@ -122,7 +122,7 @@ export default function EnquiryPage() {
 
         <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-0 overflow-hidden">
           {/* Header */}
-          <div className="bg-aahar-teal text-white py-12 px-8 text-center relative">
+          <div className="bg-aahar-teal text-white py-8 sm:py-12 px-4 sm:px-8 text-center relative">
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070')] opacity-10 bg-cover bg-center mix-blend-overlay" />
             <div className="relative z-10">
               <h1 className="text-4xl md:text-5xl font-bold font-serif italic mb-4">List your business</h1>
@@ -133,7 +133,7 @@ export default function EnquiryPage() {
           </div>
 
           {/* Form */}
-          <div className="px-8 md:px-12 py-10">
+          <div className="px-4 sm:px-8 md:px-12 py-8 sm:py-10">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-x-10">

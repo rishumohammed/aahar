@@ -11,7 +11,8 @@ import {
  AlertTriangle,
  ChevronRight,
  RefreshCcw,
- Info
+ Info,
+ FileText
 } from"lucide-react";
 import { format, differenceInDays, parseISO, addDays, isPast } from"date-fns";
 import { restaurantApi, ownerApi } from"@/lib/api";
@@ -41,7 +42,9 @@ export default function ComplianceDashboard() {
  const [certification, setCertification] = useState<any>(null);
  const [restaurantName, setRestaurantName] = useState("Your Restaurant");
  const [applicationId, setApplicationId] = useState<string | null>(null);
+ const [auditId, setAuditId] = useState<string | null>(null);
  const [loading, setLoading] = useState(true);
+ const [downloadingReport, setDownloadingReport] = useState(false);
 
  useEffect(() => {
  const fetchData = async () => {
@@ -58,6 +61,7 @@ export default function ComplianceDashboard() {
  }
  setRestaurantName(statsRes.data?.data?.restaurantName || "Your Restaurant");
  setApplicationId(statsRes.data?.data?.applicationId || null);
+ setAuditId(statsRes.data?.data?.auditId || null);
  } catch (e) {
  console.error("Failed to load compliance data", e);
  } finally {
@@ -66,6 +70,28 @@ export default function ComplianceDashboard() {
  };
  fetchData();
  }, []);
+
+ const handleDownloadAuditReport = async () => {
+ if (!auditId) return;
+ try {
+ setDownloadingReport(true);
+ const res = await ownerApi.downloadAuditReport(auditId);
+ const url = window.URL.createObjectURL(new Blob([res.data]));
+ const link = document.createElement('a');
+ link.href = url;
+ link.setAttribute('download', `Audit_Report_${restaurantName.replace(/\s+/g, '_')}.pdf`);
+ document.body.appendChild(link);
+ link.click();
+ document.body.removeChild(link);
+ window.URL.revokeObjectURL(url);
+ toast.success("Audit report downloaded successfully");
+ } catch (e) {
+ console.error("Failed to download audit report", e);
+ toast.error("Failed to download audit report");
+ } finally {
+ setDownloadingReport(false);
+ }
+ };
 
  // ── Animations ────────────────────────────────────────────
  useEffect(() => {
@@ -311,6 +337,27 @@ export default function ComplianceDashboard() {
       className="w-full bg-admin-primary text-white hover:bg-admin-primary/90 border-admin-primary shadow-sm uppercase font-bold tracking-wider rounded-md py-6"
     >
       Download Certificate
+    </Button>
+  )}
+
+  {auditId && (
+    <Button 
+      onClick={handleDownloadAuditReport}
+      disabled={downloadingReport}
+      variant="outline"
+      className="w-full border-admin-primary text-admin-primary hover:bg-admin-primary/10 shadow-sm uppercase font-bold tracking-wider rounded-md py-6 flex items-center justify-center gap-2"
+    >
+      {downloadingReport ? (
+        <>
+          <RefreshCcw className="h-4 w-4 animate-spin" />
+          Downloading...
+        </>
+      ) : (
+        <>
+          <FileText className="h-4 w-4" />
+          Download Audit Report
+        </>
+      )}
     </Button>
   )}
 

@@ -8,7 +8,7 @@ const HOTEL_SELECT = {
   phone:true, email:true, website:true, checkInTime:true, checkOutTime:true,
   cancellationPolicy:true, mealPlans:true, amenities:true, photos:true,
   googleRating:true, isVerified:true, isActive:true, isFeatured:true,
-  isSponsored:true, createdAt:true,
+  isSponsored:true, createdAt:true, approvalPreference:true,
   ownerId:true,
   managerId:true,
   owner: { select:{ id:true, name:true, email:true } },

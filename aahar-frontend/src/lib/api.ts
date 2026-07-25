@@ -212,7 +212,8 @@ export const ownerApi = {
   managers: () => api.get(`/owner/managers`),
   createManager: (data: any) => api.post(`/owner/managers`, data),
   deleteManager: (id: string) => api.delete(`/owner/managers/${id}`),
-  establishments: () => api.get(`/owner/establishments`)
+  establishments: () => api.get(`/owner/establishments`),
+  downloadAuditReport: (id: string) => api.get(`/audits/${id}/report`, { responseType: 'blob', timeout: 30000 })
 };
 
 // ── Payments ──────────────────────────────────────────────

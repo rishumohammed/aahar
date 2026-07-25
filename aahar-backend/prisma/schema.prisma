@@ -213,6 +213,7 @@ model Hotel {
   mealPlans           Json?
   amenities           Json?
   photos              Json?
+  approvalPreference  String       @default("instant")
   googleRating        Float?
   googleLocationLink  String?
   linkedRestaurantId  String?

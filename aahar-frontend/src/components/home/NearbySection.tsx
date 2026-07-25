@@ -53,15 +53,15 @@ export function NearbySection() {
 
       {!loading && city && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between border-l-4 border-aahar-teal pl-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-l-4 border-aahar-teal pl-4">
             <div>
-              <h2 className="text-2xl font-bold text-aahar-dark">Nearby Restaurants in {city}</h2>
-              <p className="text-sm text-aahar-body">Great dining options around your current location</p>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-aahar-dark tracking-tight">Nearby Restaurants in {city}</h2>
+              <p className="text-xs sm:text-sm font-medium text-aahar-body/80">Great dining options around your current location</p>
             </div>
             {restaurants.length > 0 && (
-              <Link href={`/search?mode=eat&city=${encodeURIComponent(city)}`}>
-                <Button variant="link" className="text-aahar-teal font-bold p-0 group">
-                  View all <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <Link href={`/search?mode=eat&city=${encodeURIComponent(city)}`} className="shrink-0">
+                <Button variant="link" className="text-aahar-teal font-black text-xs uppercase tracking-wider p-0 group">
+                  View all <ArrowRight className="ml-1.5 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
             )}
@@ -80,23 +80,23 @@ export function NearbySection() {
 
       {!loading && city && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between border-l-4 border-aahar-rose pl-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-l-4 border-aahar-rose pl-4">
             <div>
-              <h2 className="text-2xl font-bold text-aahar-dark">Nearby Hotels in {city}</h2>
-              <p className="text-sm text-aahar-body">Comfortable stays around your current location</p>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-aahar-dark tracking-tight">Nearby Hotels in {city}</h2>
+              <p className="text-xs sm:text-sm font-medium text-aahar-body/80">Comfortable stays around your current location</p>
             </div>
             {hotels.length > 0 && (
-              <Link href={`/search?mode=stay&city=${encodeURIComponent(city)}`}>
-                <Button variant="link" className="text-aahar-teal font-bold p-0 group">
-                  Explore all <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <Link href={`/search?mode=stay&city=${encodeURIComponent(city)}`} className="shrink-0">
+                <Button variant="link" className="text-aahar-teal font-black text-xs uppercase tracking-wider p-0 group">
+                  Explore all <ArrowRight className="ml-1.5 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
             )}
           </div>
           {hotels.length > 0 ? (
-            <div className="flex gap-6 overflow-x-auto pb-4 no-scrollbar scroll-smooth">
+            <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 no-scrollbar scroll-smooth snap-x snap-mandatory">
               {hotels.map((h: any) => (
-                <HotelCard key={h.id} hotel={h} className="w-[280px] sm:w-[320px] shrink-0" />
+                <HotelCard key={h.id} hotel={h} className="w-[260px] sm:w-[320px] shrink-0 snap-start" />
               ))}
             </div>
           ) : (

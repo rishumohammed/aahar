@@ -84,7 +84,7 @@ export default function ConsumerEnquiriesPage() {
                         </div>
                         <div className="flex items-center gap-1">
                           <Users className="h-3 w-3" />
-                          {e.guests.adults} Guests
+                          {e.guests.adults} Adults{e.guests.children > 0 ? `, ${e.guests.children} Children` : ''}
                         </div>
                       </div>
                     </div>

@@ -18,7 +18,8 @@ import {
  QrCode,
  Globe,
  ChevronDown,
- MessageSquare
+ MessageSquare,
+ BookOpen
 } from"lucide-react";
 import { cn } from"@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ const NAV_ITEMS = [
  { label:"Photos", href:"/owner/photos", icon: ImageIcon },
  { label: "Compliance", href: "/owner/compliance", icon: ShieldCheck },
  { label: "Managers", href: "/owner/managers", icon: User },
+ { label: "Ledger", href: "/owner/ledger", icon: BookOpen },
 ];
 
 export default function OwnerLayout({ children }: { children: React.ReactNode }) {

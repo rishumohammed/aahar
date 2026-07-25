@@ -51,7 +51,7 @@ export default function VerifyPage() {
         </div>
 
         <div className="bg-white rounded-2xl p-6 shadow-card border border-aahar-border mb-8">
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-aahar-body/50" />
               <Input
@@ -63,7 +63,7 @@ export default function VerifyPage() {
               />
             </div>
             <Button 
-              className="h-14 px-8 rounded-xl bg-aahar-teal hover:bg-aahar-teal/90 text-white font-bold"
+              className="h-14 px-8 rounded-xl bg-aahar-teal hover:bg-aahar-teal/90 text-white font-bold w-full sm:w-auto shrink-0"
               onClick={() => handleVerify()}
               disabled={loading}
             >
@@ -104,7 +104,7 @@ export default function VerifyPage() {
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
                 <div className="flex items-center gap-4">
                   <Calendar className="h-8 w-8 text-aahar-body opacity-20" />
                   <div>

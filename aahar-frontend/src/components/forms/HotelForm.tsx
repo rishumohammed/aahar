@@ -59,6 +59,7 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
     description: "", phone: "", image: "", ownerId: "", googleLocationLink: "",
     checkInTime: "14:00", checkOutTime: "11:00",
     cancellationPolicy: "Full refund if cancelled 24 hours prior to check-in.",
+    approvalPreference: "instant",
     mealPlans: ["ep", "cp"],
     amenities: { pool: false, spa: false, gym: false, wifi: true, parking: true, restaurant: false },
     roomTypes: []
@@ -96,6 +97,7 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
         checkInTime: initialData.checkInTime || "14:00",
         checkOutTime: initialData.checkOutTime || "11:00",
         cancellationPolicy: initialData.cancellationPolicy || "Full refund if cancelled 24 hours prior to check-in.",
+        approvalPreference: initialData.approvalPreference || "instant",
         mealPlans: Array.isArray(initialData.mealPlans) ? initialData.mealPlans : ["ep", "cp"],
         amenities: typeof initialData.amenities === 'object' && initialData.amenities !== null ? initialData.amenities : {},
         roomTypes: initialData.roomTypes || []
@@ -290,6 +292,28 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
                       </label>
                     ))}
                   </div>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">Cancellation Policy</label>
+                  <textarea 
+                    className="w-full px-4 py-4 text-base text-slate-800 bg-transparent rounded-xl border border-slate-200 focus:outline-none focus:border-aahar-teal min-h-[100px]"
+                    placeholder="Describe your cancellation policy..."
+                    value={formData.cancellationPolicy}
+                    onChange={e => setFormData({...formData, cancellationPolicy: e.target.value})}
+                  />
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">Approval Preference</label>
+                  <select 
+                    className="w-full px-4 py-4 text-base text-slate-800 bg-transparent rounded-xl border border-slate-200 focus:outline-none focus:border-aahar-teal transition-colors"
+                    value={formData.approvalPreference || "instant"}
+                    onChange={e => setFormData({...formData, approvalPreference: e.target.value})}
+                  >
+                    <option value="instant">Instant Approval (Auto-verify bookings immediately)</option>
+                    <option value="manual_30m">30-Minute Review (Manual verification window before auto-approve)</option>
+                  </select>
                 </div>
               </div>
             </div>

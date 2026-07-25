@@ -23,7 +23,7 @@ export function RestaurantCard({ restaurant }: RestaurantCardProps) {
   return (
     <Link 
       href={`/restaurant/${restaurant.slug}`}
-      className="group flex flex-col relative overflow-hidden rounded-[3rem] bg-white border border-aahar-border transition-all duration-500 hover:shadow-2xl hover:shadow-aahar-dark/5 hover:-translate-y-2"
+      className="group flex flex-col relative overflow-hidden rounded-[2rem] sm:rounded-[3rem] bg-white border border-aahar-border transition-all duration-500 hover:shadow-2xl hover:shadow-aahar-dark/5 hover:-translate-y-2"
     >
       {/* Top Image Section */}
       <div className="relative aspect-[4/3] w-full overflow-hidden">

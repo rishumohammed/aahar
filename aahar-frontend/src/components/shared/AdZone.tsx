@@ -9,9 +9,9 @@ interface AdZoneProps {
 
 export default function AdZone({ size = "fluid", label = "ADVERTISEMENT", className, promotion }: AdZoneProps) {
   const sizeStyles = {
-    "300x250": "w-[300px] h-[250px]",
-    "300x600": "w-[300px] h-[600px]",
-    fluid: "w-full min-h-[100px]",
+    "300x250": "w-full max-w-[300px] h-[250px] mx-auto",
+    "300x600": "w-full max-w-[300px] h-[600px] mx-auto",
+    fluid: "w-full min-h-[120px]",
   };
 
   if (promotion && promotion.imageUrl) {

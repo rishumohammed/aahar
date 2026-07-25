@@ -17,7 +17,8 @@ import {
  Search,
  ChevronDown,
  Building2,
- MessageSquare
+ MessageSquare,
+ BookOpen
 } from"lucide-react";
 import { cn } from"@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ const NAV_ITEMS = [
  { label: "Application", href: "/manager/application", icon: ShieldCheck },
  { label: "Compliance", href: "/manager/compliance", icon: ShieldCheck },
  { label: "Photos", href: "/manager/photos", icon: ImageIcon },
+ { label: "Ledger", href: "/manager/ledger", icon: BookOpen },
  { label: "Profile", href: "/manager/profile", icon: Settings },
 ];
 

@@ -127,7 +127,7 @@ export default async function BlogPage() {
       {/* Newsletter / CTA */}
       <section className="pb-24">
         <div className="container mx-auto max-w-7xl px-4">
-          <div className="bg-aahar-dark rounded-[3.5rem] p-12 md:p-20 relative overflow-hidden text-center">
+          <div className="bg-aahar-dark rounded-[2rem] sm:rounded-[3.5rem] p-6 sm:p-12 md:p-20 relative overflow-hidden text-center">
             <div className="absolute top-0 right-0 w-64 h-64 bg-aahar-teal/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-aahar-rose/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
             
