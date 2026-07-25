@@ -339,8 +339,8 @@ export default function Navbar() {
               </div>
 
               {/* User Menu */}
-              <div className="flex items-center gap-3">
-                <Link href={getDashboardUrl()} className="hidden md:flex items-center gap-3 px-4 py-2 bg-white/10 rounded-2xl hover:bg-white/20 transition-all group">
+              <div className="hidden lg:flex items-center gap-3">
+                <Link href={getDashboardUrl()} className="flex items-center gap-3 px-4 py-2 bg-white/10 rounded-2xl hover:bg-white/20 transition-all group">
                   <div className="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center">
                     <User className="h-3 w-3 text-white" />
                   </div>

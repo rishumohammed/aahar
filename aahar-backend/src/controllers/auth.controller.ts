@@ -93,3 +93,36 @@ export const getMe = async (req: any, res: Response) => {
     return serverError(res, error);
   }
 };
+
+const updateProfileSchema = z.object({
+  name: z.string().min(2).optional(),
+  phone: z.string().optional(),
+  password: z.string().min(6).optional(),
+});
+
+export const updateProfile = async (req: any, res: Response) => {
+  try {
+    if (!req.user) return unauthorized(res, 'Not authenticated');
+    const validatedData = updateProfileSchema.parse(req.body);
+
+    const updateData: any = {};
+    if (validatedData.name) updateData.name = validatedData.name;
+    if (validatedData.phone !== undefined) updateData.phone = validatedData.phone;
+    if (validatedData.password) {
+      updateData.passwordHash = await bcrypt.hash(validatedData.password, 10);
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user.id },
+      data: updateData,
+      select: { id: true, email: true, name: true, phone: true, role: true, createdAt: true }
+    });
+
+    return ok(res, updatedUser, 'Profile updated successfully');
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return badRequest(res, (error as any).errors[0].message);
+    }
+    return serverError(res, error);
+  }
+};

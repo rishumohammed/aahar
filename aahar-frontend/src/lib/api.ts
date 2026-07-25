@@ -49,6 +49,8 @@ export const authApi = {
     api.post<ApiResponse<{ user: any; token: string }>>("/auth/register", data),
   me:       () =>
     api.get<ApiResponse<any>>("/auth/me"),
+  updateProfile: (data: { name?: string; phone?: string; password?: string }) =>
+    api.patch<ApiResponse<any>>("/auth/profile", data),
 };
 
 // ── Restaurants ───────────────────────────────────────────
@@ -269,7 +271,8 @@ export const orderApi = {
   listRestaurantOrders: (restaurantId: string, params?: any) => api.get(`/orders/restaurant/${restaurantId}`, { params }),
   updateStatus:         (id: string, status: string) => api.patch(`/orders/${id}/status`, { status }),
   listTables:           (restaurantId: string) => api.get(`/orders/restaurant/${restaurantId}/tables`),
-  createTable:          (restaurantId: string, data: any) => api.post(`/orders/restaurant/${restaurantId}/tables`, data)
+  createTable:          (restaurantId: string, data: any) => api.post(`/orders/restaurant/${restaurantId}/tables`, data),
+  getCustomerOrders:    () => api.get("/orders/customer/my")
 };
 
 // ── Settings ──────────────────────────────────────────────

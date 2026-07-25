@@ -95,6 +95,7 @@ model User {
   notifications Notification[]
   payments     Payment[]
   blogPosts    BlogPost[]
+  orders       Order[]       @relation("CustomerOrders")
 
   @@index([email])
   @@index([role])
@@ -458,6 +459,8 @@ model Order {
   totalAmount  Float
   customerName String?
   customerPhone String?
+  customerId   String?
+  customer     User?       @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: SetNull)
   notes        String?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
@@ -465,6 +468,7 @@ model Order {
 
   @@index([restaurantId])
   @@index([status])
+  @@index([customerId])
 }
 
 model OrderItem {

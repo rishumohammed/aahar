@@ -48,10 +48,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleTestLogin = (e: string, p: string) => {
-    setEmail(e);
-    setPassword(p);
-  };
 
   return (
     <div className="min-h-screen bg-aahar-wash flex flex-col items-center justify-center py-12 px-4 sm:px-6 relative overflow-y-auto overflow-x-hidden">
@@ -128,29 +124,6 @@ export default function LoginPage() {
             )}
           </Button>
         </form>
-
-        <div className="mt-8 pt-6 border-t border-aahar-wash">
-          <p className="text-[10px] font-black text-center text-aahar-body/40 uppercase tracking-widest mb-4">Developer Quick Access</p>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { label: "System Admin", email: "admin@aahar.in", pass: "Admin@123", color: "bg-aahar-dark" },
-              { label: "Auditor", email: "auditor@aahar.in", pass: "Audit@123", color: "bg-amber-500" },
-              { label: "Business Owner", email: "owner@spicegarden.in", pass: "Owner@123", color: "bg-aahar-teal" },
-              { label: "Hotel Manager", email: "manager@malabarretreat.in", pass: "Manager@123", color: "bg-aahar-rose" },
-              { label: "Guest User", email: "guest@gmail.com", pass: "Guest@123", color: "bg-blue-500" },
-            ].map(test => (
-              <button
-                key={test.label}
-                type="button"
-                onClick={() => handleTestLogin(test.email, test.pass)}
-                className="p-3 bg-aahar-wash border border-aahar-border rounded-xl text-left hover:border-aahar-teal transition-all group"
-              >
-                <div className="text-[10px] font-black text-aahar-dark uppercase tracking-tight group-hover:text-aahar-teal">{test.label}</div>
-                <div className="text-[9px] text-aahar-body truncate opacity-60">{test.email}</div>
-              </button>
-            ))}
-          </div>
-        </div>
       </Card>
     </div>
   );

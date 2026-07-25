@@ -54,6 +54,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
         tableNumber: String(tableNumber),
         customerName: customerName || "Anonymous Diner",
         customerPhone: customerPhone || null,
+        customerId: (req as any).user?.id || null,
         notes: notes || null,
         totalAmount,
         status: "pending",
@@ -305,6 +306,54 @@ export const createRestaurantTable = async (req: Request, res: Response): Promis
     res.status(201).json({ success: true, data: table });
   } catch (error: any) {
     console.error("Error creating table and QR:", error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
+// ── Get Customer Order History ──────────────────────────────
+export const getCustomerOrders = async (req: any, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: "Not authenticated" });
+      return;
+    }
+
+    const orders = await prisma.order.findMany({
+      where: {
+        customerId: req.user.id
+      },
+      include: {
+        restaurant: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            city: true,
+            address: true
+          }
+        },
+        items: {
+          include: {
+            menuItem: {
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                dietary: true,
+                image: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
+
+    res.status(200).json({ success: true, data: orders });
+  } catch (error: any) {
+    console.error("Error fetching customer orders:", error);
     res.status(500).json({ success: false, message: "Internal server error." });
   }
 };

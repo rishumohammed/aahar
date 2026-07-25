@@ -13,3 +13,17 @@ export const verifyToken = (req: any, res: any, next: any) => {
     return unauthorized(res, "Invalid or expired token");
   }
 };
+
+export const optionalVerifyToken = (req: any, res: any, next: any) => {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith("Bearer ")) {
+    return next();
+  }
+  try {
+    const decoded = jwt.verify(auth.split(" ")[1], process.env.JWT_SECRET!);
+    req.user = decoded;
+    next();
+  } catch {
+    next();
+  }
+};
