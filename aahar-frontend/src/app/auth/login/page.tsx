@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useAuthStore } from "@/store/authStore";
 import { ShieldCheck, Lock, Mail, Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
@@ -59,8 +60,8 @@ export default function LoginPage() {
 
       <Card className="w-full max-w-md bg-white/80 backdrop-blur-xl border-aahar-border shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] rounded-[2.5rem] p-6 md:p-10 relative z-10 my-auto">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-aahar-teal/10 rounded-2xl mb-4">
-            <ShieldCheck className="h-8 w-8 text-aahar-teal" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-[1.25rem] mb-4 shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-aahar-border/50 group-hover:rotate-12 transition-transform">
+            <span className="text-aahar-teal font-black text-3xl">A</span>
           </div>
           <h1 className="text-3xl font-black text-aahar-dark tracking-tighter uppercase mb-2">Welcome Back</h1>
           <p className="text-sm font-medium text-aahar-body">Secure access to AAHAR Trust Network</p>
@@ -123,6 +124,13 @@ export default function LoginPage() {
               </>
             )}
           </Button>
+
+          <div className="text-center text-sm font-medium text-aahar-body/70 mt-6">
+            Don't have an account?{" "}
+            <Link href="/auth/register" className="font-bold text-aahar-teal hover:text-aahar-teal/80 transition-colors">
+              Sign up here
+            </Link>
+          </div>
         </form>
       </Card>
     </div>

@@ -352,7 +352,10 @@ export default function Navbar() {
               </div>
             </>
           ) : (
-            <div className="hidden lg:flex items-center justify-end">
+            <div className="hidden lg:flex items-center justify-end gap-3">
+              <Button asChild variant="outline" className="bg-white/10 text-white hover:bg-white/20 hover:text-white border-0 rounded-2xl px-6 py-6 font-black uppercase tracking-widest text-[10px] transition-all active:scale-95">
+                <Link href="/auth/register">Sign Up</Link>
+              </Button>
               <Button asChild className="bg-aahar-rose text-white hover:bg-aahar-rose/90 rounded-2xl px-8 py-6 font-black uppercase tracking-widest text-[10px] border-0 shadow-lg shadow-aahar-rose/20 transition-all active:scale-95">
                 <Link href="/auth/login">Sign In</Link>
               </Button>
@@ -420,9 +423,12 @@ export default function Navbar() {
                   </button>
                 </div>
               ) : (
-                <div className="pt-2">
+                <div className="pt-2 flex flex-col gap-3">
                   <Button asChild className="bg-aahar-rose text-white hover:bg-aahar-rose/90 rounded-2xl py-6 font-black uppercase tracking-widest text-[10px] border-0 shadow-lg shadow-aahar-rose/20 w-full transition-all active:scale-95">
                     <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
+                  </Button>
+                  <Button asChild variant="outline" className="bg-white/10 text-white hover:bg-white/20 hover:text-white border-0 rounded-2xl py-6 font-black uppercase tracking-widest text-[10px] w-full transition-all active:scale-95">
+                    <Link href="/auth/register" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
                   </Button>
                 </div>
               )}
