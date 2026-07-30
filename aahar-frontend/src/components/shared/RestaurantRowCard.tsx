@@ -26,10 +26,11 @@ export function RestaurantRowCard({ restaurant }: RestaurantRowCardProps) {
   return (
     <Link 
       href={`/restaurant/${restaurant.slug}`}
-      className="group block relative overflow-hidden rounded-[2.5rem] bg-white border-2 border-aahar-border transition-all hover:border-aahar-teal hover:shadow-2xl hover:shadow-aahar-teal/5"
+      className="group block relative overflow-hidden rounded-xl bg-white border-2 border-aahar-border transition-all hover:border-aahar-teal hover:shadow-2xl hover:shadow-aahar-teal/5"
     >
       <div className="flex flex-col md:flex-row p-4 md:p-6 gap-6 md:gap-10">
-        <div className="relative w-full md:w-80 aspect-[4/3] md:aspect-square shrink-0 overflow-hidden rounded-[2rem] bg-aahar-wash">
+        {/* Left Image Section */}
+        <div className="relative w-full md:w-80 aspect-[4/3] md:aspect-square shrink-0 overflow-hidden rounded-xl bg-aahar-wash">
           <Image
             src={restaurant.image || fallbackImage}
             alt={restaurant.name}
