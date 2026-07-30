@@ -155,8 +155,8 @@ export default function FilterBar({
   return (
     <div className={cn("w-full space-y-4", className)}>
       {/* Main Filter Bar */}
-      <div className="w-full bg-white border border-aahar-border rounded-[1.5rem] md:rounded-[2.5rem] shadow-xl shadow-aahar-teal/5 p-2 flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-0">
-        
+      <div className="w-full bg-white border border-aahar-border rounded-2xl shadow-lg shadow-black/5 p-1.5 flex flex-col md:flex-row items-stretch md:items-center gap-0">
+
         {!hideTrustStandard && (
           <div className="px-4 py-1 flex flex-col justify-center min-w-[200px]">
             {!hideLabels && <span className="text-[10px] font-black uppercase tracking-widest text-aahar-body/40 ml-2 mb-1">Trust Standard</span>}
@@ -182,70 +182,66 @@ export default function FilterBar({
         {!hideTrustStandard && <div className="hidden md:block w-px h-10 bg-aahar-border/60 self-center" />}
         {!hideTrustStandard && <div className="block md:hidden h-px bg-aahar-border/40 mx-4" />}
 
-        {/* Search Input Section */}
-        <div className="px-2 py-1 flex-[2] flex flex-col justify-center relative">
-          {!hideLabels && <span className="text-[10px] font-black uppercase tracking-widest text-aahar-body/40 ml-4 mb-1">Search & Explore</span>}
-          <div className="relative group flex items-center">
-            <Search className="absolute left-4 h-5 w-5 text-aahar-body/50 group-focus-within:text-aahar-teal transition-colors z-10" />
-            <Input 
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search restaurant or hotel name..."
-              className="h-14 w-full bg-transparent border-transparent pl-12 text-base font-normal text-aahar-dark placeholder:text-aahar-body/50 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all shadow-none"
-            />
-          </div>
+        {/* Search Input */}
+        <div className="px-3 py-1 flex-[2] flex items-center">
+          <Search className="shrink-0 h-[18px] w-[18px] text-aahar-body/40" />
+          <Input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearchTrigger()}
+            placeholder="Search restaurant or hotel name..."
+            className="h-12 w-full bg-transparent border-transparent pl-3 text-[15px] font-normal text-aahar-dark placeholder:text-aahar-body/40 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
+          />
         </div>
 
         {/* Divider */}
-        <div className="hidden md:block w-px h-10 bg-aahar-border/60 self-center" />
-        <div className="block md:hidden h-px bg-aahar-border/40 mx-4" />
+        <div className="hidden md:block w-px h-8 bg-aahar-border/50 self-center shrink-0" />
 
-        {/* Location Section */}
-        <div className="px-2 py-1 flex-[1.5] flex flex-col justify-center relative">
-          {!hideLabels && <span className="text-[10px] font-black uppercase tracking-widest text-aahar-body/40 ml-4 mb-1">Location</span>}
-          <div className="relative group flex items-center">
-            <MapPin className="absolute left-4 h-5 w-5 text-aahar-body/50 group-focus-within:text-aahar-teal transition-colors z-10" />
-            <Input 
-              ref={locationInputRef}
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Any city"
-              className="h-14 w-full bg-transparent border-transparent pl-12 pr-14 text-base font-normal text-aahar-dark placeholder:text-aahar-body/50 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all shadow-none"
-            />
-            <button
-              onClick={() => detectLocation()}
-              className="absolute right-2 w-10 h-10 flex items-center justify-center rounded-xl bg-aahar-wash/50 border border-aahar-border text-aahar-body hover:text-aahar-teal hover:bg-aahar-wash transition-all"
-              title="Detect Location"
-            >
-              {locationLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Crosshair className="h-4 w-4" />
-              )}
-            </button>
-          </div>
+        {/* Location */}
+        <div className="px-3 py-1 flex-[1.2] flex items-center">
+          <MapPin className="shrink-0 h-[18px] w-[18px] text-aahar-body/40" />
+          <Input
+            ref={locationInputRef}
+            type="text"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="Any city"
+            className="h-12 w-full bg-transparent border-transparent pl-3 pr-2 text-[15px] font-normal text-aahar-dark placeholder:text-aahar-body/40 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
+          />
+          <button
+            onClick={() => detectLocation()}
+            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-aahar-body/50 hover:text-aahar-teal hover:bg-aahar-wash transition-all"
+            title="Detect Location"
+          >
+            {locationLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Crosshair className="h-4 w-4" />
+            )}
+          </button>
         </div>
 
-        {/* Actions Section */}
-        <div className="pr-2 pl-2 py-1 flex items-center gap-2 w-full md:w-auto">
+        {/* Actions */}
+        <div className="p-1 flex items-center gap-2 shrink-0">
           {!hideReset && (
-            <button 
+            <button
               onClick={handleReset}
-              className="w-12 h-12 bg-aahar-wash rounded-xl text-aahar-dark hover:bg-aahar-teal/10 transition-all duration-300 active:scale-95 flex items-center justify-center"
+              className="w-11 h-11 bg-aahar-wash rounded-xl text-aahar-dark hover:bg-aahar-border/60 transition-all active:scale-95 flex items-center justify-center"
               title="Reset Filters"
             >
               <RotateCcw className="h-4 w-4" />
             </button>
           )}
-          
-          <button 
+
+          <button
             onClick={handleSearchTrigger}
-            className="bg-[#116d62] text-white px-8 h-14 rounded-[1.75rem] text-base font-semibold hover:bg-[#0e5c53] transition-all duration-300 active:scale-95 shadow-md flex items-center justify-center gap-2 w-full md:w-auto"
+            className="bg-aahar-dark text-white pl-5 pr-4 h-12 rounded-xl text-[14px] font-semibold hover:bg-aahar-dark/90 transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
           >
-            <Search className="h-5 w-5" />
             Search
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
           </button>
         </div>
       </div>

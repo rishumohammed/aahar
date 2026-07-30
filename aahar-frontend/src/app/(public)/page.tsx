@@ -41,33 +41,29 @@ export default async function HomePage() {
   const promotions  = promotionsRes.status === "fulfilled"  ? (promotionsRes.value || []) : [];
 
   return (
-    <div className="flex flex-col min-h-screen bg-aahar-wash">
-      {/* Hero Section (Part of Discovery Zone) */}
-      <section className="w-full py-12 sm:py-16 md:py-24 lg:py-28 bg-gradient-to-b from-[#F4F7F7] via-[#EFF4F4] to-[#F4F7F7] relative overflow-hidden">
-        {/* Ambient Blur Lights */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none -z-10">
-          <div className="absolute -top-24 left-1/4 w-72 h-72 bg-aahar-teal/10 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-aahar-rose/10 rounded-full blur-3xl" />
-        </div>
-
-        <div className="container mx-auto max-w-7xl px-4 text-center">
-          <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
-            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.15]">
-              <span className="text-[#1A2E2E] block">
-                Trust every meal.
-              </span>
-              <span className="text-aahar-teal block">
-                Verify every stay.
-              </span>
+    <div className="flex flex-col min-h-screen bg-white">
+      {/* ── Hero Section ── */}
+      <section className="w-full bg-[#F2F4F5] relative overflow-hidden py-16 sm:py-20 md:py-24">
+        <div className="container mx-auto max-w-7xl px-6 sm:px-8 text-center">
+          <div className="max-w-3xl mx-auto flex flex-col items-center">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.08]">
+              <span className="text-aahar-dark block">Trust every meal.</span>
+              <span className="text-aahar-teal block">Verify every stay.</span>
             </h1>
 
-            
-            <div className="mt-8 sm:mt-12 max-w-5xl mx-auto">
+            <p className="mt-5 text-base sm:text-lg text-aahar-body/80 font-normal leading-relaxed max-w-lg mx-auto">
+              AAHAR helps you discover and verify trusted restaurants
+              and stays — so you can focus on what matters.
+            </p>
+
+            {/* Search Bar */}
+            <div className="mt-8 sm:mt-10 w-full max-w-2xl mx-auto">
               <FilterBar hideTrustStandard hideMoreFilters hideReset hideLabels />
             </div>
           </div>
         </div>
       </section>
+
 
       {/* Stats/Trust Bar */}
       <div className="bg-white border-b border-aahar-border">
