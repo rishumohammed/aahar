@@ -48,7 +48,6 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
     try {
-      // Register with role default as consumer
       const response = await authApi.register({
         name: values.name,
         email: values.email,
@@ -57,18 +56,24 @@ export default function RegisterPage() {
         role: "consumer"
       });
 
-      const { token, user } = response.data.data;
+      const resData = response.data?.data;
+      const token = resData?.token;
+      const user = resData?.user;
       
-      // Save auth state via Zustand store
-      useAuthStore.getState().setAuth(user, token);
-      
-      // Save cookies for middleware redirect verification
-      document.cookie = `aahar-token=${token}; path=/; max-age=604800`;
-      document.cookie = `aahar-role=${user.role}; path=/; max-age=604800`;
+      if (token && user) {
+        // Save auth state via Zustand store
+        useAuthStore.getState().setAuth(user, token);
+        
+        // Save cookies for middleware redirect verification
+        document.cookie = `aahar-token=${token}; path=/; max-age=604800; SameSite=Lax`;
+        document.cookie = `aahar-role=${user.role}; path=/; max-age=604800; SameSite=Lax`;
 
-      router.push("/account");
+        router.push("/account");
+      } else {
+        router.push("/auth/login");
+      }
     } catch (err: any) {
-      setError(err?.response?.data?.message ?? "Registration failed. Email might already be taken.");
+      setError(err?.response?.data?.message ?? err?.message ?? "Registration failed. Email might already be taken.");
     } finally {
       setLoading(false);
     }

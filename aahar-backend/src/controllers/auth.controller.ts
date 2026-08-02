@@ -9,6 +9,7 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   name: z.string(),
+  phone: z.string().optional(),
   role: z.enum(['consumer', 'owner', 'manager', 'auditor', 'admin', 'super_admin']),
 });
 
@@ -26,20 +27,34 @@ export const register = async (req: Request, res: Response) => {
     });
 
     if (existingUser) {
-      return badRequest(res, 'User already exists');
+      return badRequest(res, 'User already exists with this email');
     }
 
-    const { password, ...userData } = validatedData;
+    const { password, phone, ...userData } = validatedData;
     const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
       data: {
         ...userData,
+        phone: phone || null,
         passwordHash,
       },
     });
 
-    return created(res, { id: user.id, email: user.email, name: user.name, role: user.role }, 'User registered successfully');
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET || 'secret',
+      { expiresIn: '7d' }
+    );
+
+    return created(
+      res,
+      {
+        token,
+        user: { id: user.id, email: user.email, name: user.name, role: user.role, phone: user.phone },
+      },
+      'User registered successfully'
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
       return badRequest(res, (error as any).errors[0].message);
