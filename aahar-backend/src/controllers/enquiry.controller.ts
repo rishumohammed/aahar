@@ -300,11 +300,13 @@ export const updateEnquiryStatus = async (req: any, res: any) => {
     });
     if (!enquiry) return notFound(res, "Enquiry not found");
 
-    // Only hotel manager or admin can update status
+    // Hotel manager or admin can update status; guest can cancel (decline) their own booking
     const isManager = enquiry.hotel.managerId === req.user.id;
     const isAdmin   = ["admin","super_admin"].includes(req.user.role);
-    if (!isManager && !isAdmin)
-      return forbidden(res, "Only the property manager can update this enquiry");
+    const isGuest   = enquiry.guestId === req.user.id;
+
+    if (!isManager && !isAdmin && !(isGuest && status === "declined"))
+      return forbidden(res, "Only the property manager or guest (for cancellation) can update this enquiry");
 
     if (status === "quoted" && !quoteAmount)
       return badRequest(res, "quoteAmount is required when sending a quote");
@@ -328,7 +330,9 @@ export const updateEnquiryStatus = async (req: any, res: any) => {
     const systemMessages: Record<string, string> = {
       quoted:    `Rate quoted: ₹${quoteAmount?.toLocaleString("en-IN")} — ${enquiry.hotel.name}`,
       confirmed: "Booking confirmed by the property. Check your email for details.",
-      declined:  reason ? `Enquiry declined: ${reason}` : "Enquiry declined by the property.",
+      declined:  isGuest
+        ? (reason ? `Booking cancelled by guest: ${reason}` : "Booking cancelled by guest.")
+        : (reason ? `Enquiry declined: ${reason}` : "Enquiry declined by the property."),
     };
     if (systemMessages[status]) {
       await prisma.enquiryMessage.create({
@@ -341,16 +345,22 @@ export const updateEnquiryStatus = async (req: any, res: any) => {
       });
     }
 
-    // Emit real-time status update to guest
+    // Emit real-time status update to both guest and hotel rooms
     const io = getIO();
     io.to(`user_${enquiry.guestId}`).emit("enquiry_status_changed", {
       enquiryId: enquiry.id,
       status,
       quoteAmount: quoteAmount ?? null,
       bookingLink: bookingLink ?? null,
+      reason: reason ?? null
+    });
+    io.to(`hotel_${enquiry.hotelId}`).emit("enquiry_status_changed", {
+      enquiryId: enquiry.id,
+      status,
+      reason: reason ?? null
     });
 
-    // Create DB notifications for the guest
+    // Create DB notifications
     if (status === "quoted") {
       await prisma.notification.create({
         data: {
@@ -371,8 +381,30 @@ export const updateEnquiryStatus = async (req: any, res: any) => {
           actionUrl: `/enquiries/${enquiry.id}`,
         }
       });
+    } else if (status === "declined") {
+      if (isGuest && enquiry.hotel.managerId) {
+        await prisma.notification.create({
+          data: {
+            userId:    enquiry.hotel.managerId,
+            type:      "enquiry_response",
+            title:     "Booking Cancelled by Guest",
+            message:   `${enquiry.guest.name} has cancelled their booking for ${enquiry.hotel.name}.`,
+            actionUrl: `/manager/enquiries`,
+          }
+        });
+      } else if (!isGuest) {
+        await prisma.notification.create({
+          data: {
+            userId:    enquiry.guestId,
+            type:      "enquiry_response",
+            title:     "Booking Declined",
+            message:   `${enquiry.hotel.name} was unable to confirm your booking.`,
+            actionUrl: `/account`,
+          }
+        });
+      }
     }
 
-    return ok(res, updated, `Enquiry ${status}`);
+    return ok(res, updated, isGuest && status === "declined" ? "Booking cancelled successfully" : `Enquiry ${status}`);
   } catch (e) { return serverError(res, e); }
 };

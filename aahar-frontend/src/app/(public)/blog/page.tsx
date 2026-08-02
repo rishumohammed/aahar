@@ -9,21 +9,18 @@ export default async function BlogPage() {
   let blogs: BlogPost[] = [];
   try {
     const res = await blogApi.list();
-    blogs = res.data.data || [];
+    const rawData = res.data?.data;
+    if (Array.isArray(rawData)) {
+      blogs = rawData;
+    } else if (Array.isArray(rawData?.blogs)) {
+      blogs = rawData.blogs;
+    } else if (Array.isArray(rawData?.items)) {
+      blogs = rawData.items;
+    } else {
+      blogs = [];
+    }
   } catch (e) {
-    // Mock data for build
-    blogs = [
-      {
-        id: "1", slug: "mock-blog", title: "Mock Blog Post",
-        excerpt: "This is a mock blog post.", content: "Mock",
-        coverImage: "https://images.unsplash.com/photo-1566073771259-6a8506099945",
-        category: "hygiene", readingTime: "5 min",
-        publishedAt: new Date().toISOString(),
-        author: { name: "Author" },
-        tags: [],
-        isFeatured: false
-      }
-    ];
+    blogs = [];
   }
 
   return (

@@ -130,7 +130,8 @@ export default function Navbar() {
       case "auditor":       return "/auditor/dashboard";
       case "owner":         return "/owner/dashboard";
       case "hotel_manager": return "/manager/dashboard";
-      default:              return "/profile";
+      case "consumer":
+      default:              return "/account";
     }
   };
 
