@@ -127,7 +127,7 @@ export default function SearchPage() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="aspect-[4/5] bg-white border-2 border-aahar-border animate-pulse rounded-[2.5rem]" />
+              <div key={i} className="aspect-[4/5] bg-white border-2 border-aahar-border animate-pulse rounded-xl" />
             ))}
           </div>
         ) : (
@@ -145,7 +145,7 @@ export default function SearchPage() {
             </div>
 
             {results.restaurants.length === 0 && results.hotels.length === 0 && (
-              <div className="text-center py-40 bg-white rounded-[4rem] border-2 border-dashed border-aahar-border space-y-6">
+              <div className="text-center py-40 bg-white rounded-xl border-2 border-dashed border-aahar-border space-y-6">
                 <div className="w-20 h-20 bg-aahar-wash rounded-full flex items-center justify-center mx-auto text-aahar-body/20">
                   <Filter className="h-10 w-10" />
                 </div>

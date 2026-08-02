@@ -151,7 +151,7 @@ export default function PhotoGalleryPage() {
  <input {...getInputProps()} />
  
  {isDragActive && (
- <div className="absolute inset-0 z-50 bg-admin-primary/90 backdrop-blur-sm rounded-3xl flex flex-col items-center justify-center border-4 border-dashed border-white m-4 pointer-events-none">
+ <div className="absolute inset-0 z-50 bg-admin-primary/90 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center border-4 border-dashed border-white m-4 pointer-events-none">
  <UploadCloud className="h-20 w-20 text-white animate-bounce mb-4" />
  <h2 className="text-3xl font-bold text-white tracking-tight uppercase">Drop photos here</h2>
  </div>

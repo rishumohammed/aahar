@@ -168,7 +168,7 @@ export default function PromotionsPage() {
             </Card>
           ))}
           {promotions.length === 0 && (
-            <div className="col-span-full text-center py-20 bg-white rounded-3xl border border-slate-200 border-dashed">
+            <div className="col-span-full text-center py-20 bg-white rounded-xl border border-slate-200 border-dashed">
               <ImageIcon className="w-12 h-12 mx-auto text-slate-300 mb-4" />
               <p className="text-slate-500 font-medium text-lg">No promotions found.</p>
             </div>
@@ -178,7 +178,7 @@ export default function PromotionsPage() {
 
       {/* Editor Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl bg-white rounded-3xl p-0 overflow-hidden border-slate-200 shadow-2xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl bg-white rounded-xl p-0 overflow-hidden border-slate-200 shadow-2xl">
           <div className="bg-slate-50 px-8 py-6 border-b border-slate-200">
             <DialogTitle className="text-xl font-bold text-slate-900 tracking-tight">
               {editingPromo ? "Edit Promotion" : "Create New Promotion"}

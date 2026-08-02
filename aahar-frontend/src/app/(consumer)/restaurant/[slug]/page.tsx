@@ -445,7 +445,7 @@ function RestaurantProfilePageContent({
 
                   if (!filteredPhotos.length) {
                     return (
-                      <div className="text-center py-20 bg-aahar-wash/30 border-2 border-dashed border-aahar-border rounded-[2.5rem]">
+                      <div className="text-center py-20 bg-aahar-wash/30 border-2 border-dashed border-aahar-border rounded-xl">
                         <ImageIcon className="h-10 w-10 text-aahar-body/20 mx-auto mb-4" />
                         <p className="text-aahar-body font-bold">No photos in this category yet.</p>
                       </div>
@@ -456,7 +456,7 @@ function RestaurantProfilePageContent({
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                       {filteredPhotos.map((url: string, i: number) => (
                         <div key={i}
-                          className="aspect-square rounded-2xl overflow-hidden cursor-pointer border border-aahar-border shadow-sm
+                          className="aspect-square rounded-xl overflow-hidden cursor-pointer border border-aahar-border shadow-sm
                                      hover:shadow-md transition-all active:scale-95"
                           onClick={() => setLightboxIndex(i)}>
                           <img
@@ -477,7 +477,7 @@ function RestaurantProfilePageContent({
               <div className="py-4 animate-in fade-in duration-500">
                 {restaurant.googleRating ? (
                   <div className="space-y-10">
-                    <div className="flex flex-col md:flex-row items-center gap-10 p-10 bg-white border border-aahar-border rounded-[2.5rem] shadow-sm">
+                    <div className="flex flex-col md:flex-row items-center gap-10 p-10 bg-white border border-aahar-border rounded-xl shadow-sm">
                       <div className="text-center">
                         <div className="text-4xl font-bold text-aahar-dark tracking-tight">
                           {restaurant.googleRating.toFixed(1)}
@@ -513,7 +513,7 @@ function RestaurantProfilePageContent({
                       </div>
                     </div>
 
-                    <div className="p-12 text-center bg-aahar-wash/30 rounded-[3rem] border-2 border-dashed border-aahar-border">
+                    <div className="p-12 text-center bg-aahar-wash/30 rounded-xl border-2 border-dashed border-aahar-border">
                       <MessageSquare className="h-10 w-10 text-aahar-body/20 mx-auto mb-4" />
                       <p className="text-sm text-aahar-body font-bold">
                         Detailed review highlights require Google Places API Premium.
@@ -521,7 +521,7 @@ function RestaurantProfilePageContent({
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-20 bg-aahar-wash/30 rounded-[2.5rem] border-2 border-dashed border-aahar-border">
+                  <div className="text-center py-20 bg-aahar-wash/30 rounded-xl border-2 border-dashed border-aahar-border">
                     <p className="text-aahar-body font-bold">No verified reviews data available yet.</p>
                   </div>
                 )}
@@ -533,7 +533,7 @@ function RestaurantProfilePageContent({
               <div className="py-4 animate-in fade-in duration-500">
                 {restaurant.certification ? (
                   <div className="space-y-10">
-                    <div className="flex flex-col md:flex-row items-center gap-10 p-10 bg-aahar-teal/5 border-2 border-aahar-teal/20 rounded-[2.5rem] shadow-sm">
+                    <div className="flex flex-col md:flex-row items-center gap-10 p-10 bg-aahar-teal/5 border-2 border-aahar-teal/20 rounded-xl shadow-sm">
                       <div className="text-center w-32">
                         <div className="text-4xl font-bold text-aahar-teal tracking-tight">
                           {restaurant.certification.hygieneScore?.toFixed(1) ?? "—"}
@@ -572,7 +572,7 @@ function RestaurantProfilePageContent({
                       ))}
                     </div>
 
-                    <div className="p-8 bg-aahar-dark text-white rounded-[2.5rem] shadow-2xl space-y-6 relative overflow-hidden">
+                    <div className="p-8 bg-aahar-dark text-white rounded-xl shadow-2xl space-y-6 relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[80px] -mr-32 -mt-32" />
                       <div className="flex items-center gap-4 relative z-10">
                         <CheckCircle2 className="h-10 w-10 text-aahar-teal" />
@@ -584,7 +584,7 @@ function RestaurantProfilePageContent({
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-20 bg-aahar-wash/30 rounded-[3rem] border-2 border-dashed border-aahar-border">
+                  <div className="text-center py-20 bg-aahar-wash/30 rounded-xl border-2 border-dashed border-aahar-border">
                     <p className="text-aahar-body font-bold mb-6">This restaurant has not been AAHAR certified yet.</p>
                     <a href="/apply/restaurant">
                       <Button type="button"  className="bg-aahar-dark text-white rounded-xl px-10 py-6 font-black uppercase tracking-widest">Apply for Certification</Button>
@@ -600,10 +600,10 @@ function RestaurantProfilePageContent({
             <BookingCard restaurant={restaurant} />
 
             {/* Dine-in Table Ordering Card */}
-            <Card className="p-8 rounded-[2.5rem] border-aahar-border shadow-xl space-y-6 bg-white overflow-hidden relative">
+            <Card className="p-8 rounded-xl border-aahar-border shadow-xl space-y-6 bg-white overflow-hidden relative">
               <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl -mr-8 -mt-8" />
               <div className="flex items-center gap-3 relative z-10">
-                <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-600">
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600">
                   <ChefHat className="h-5 w-5" />
                 </div>
                 <h3 className="text-xl font-bold text-aahar-dark tracking-tighter uppercase">Dine-in Ordering</h3>
@@ -611,7 +611,7 @@ function RestaurantProfilePageContent({
 
               {activeTable ? (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-between">
+                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-between">
                     <div>
                       <p className="text-[9px] font-black uppercase tracking-widest text-emerald-600">Ordering At</p>
                       <h4 className="text-md font-black text-aahar-dark">Table {activeTable}</h4>
@@ -622,7 +622,7 @@ function RestaurantProfilePageContent({
                         setCart([]);
                       }} 
                       variant="ghost" 
-                      className="text-[10px] text-rose-500 hover:bg-rose-50 hover:text-rose-600 font-bold uppercase tracking-widest h-auto px-2.5 py-1.5 rounded-lg"
+                      className="text-[10px] text-rose-500 hover:bg-rose-50 hover:text-rose-600 font-bold uppercase tracking-widest h-auto px-2.5 py-1.5 rounded-xl"
                     >
                       Clear
                     </Button>
@@ -633,7 +633,7 @@ function RestaurantProfilePageContent({
                   {cartCount > 0 && (
                     <Button 
                       onClick={() => setShowCartSheet(true)}
-                      className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl py-6 font-bold uppercase tracking-widest shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
+                      className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl py-6 font-bold uppercase tracking-widest shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
                     >
                       <ShoppingBag className="h-4 w-4" />
                       View Cart ({cartCount})
@@ -650,7 +650,7 @@ function RestaurantProfilePageContent({
                       setTempTable("");
                       setShowTableModal(true);
                     }}
-                    className="w-full bg-aahar-teal text-white rounded-2xl py-6 font-bold uppercase tracking-widest shadow-xl shadow-aahar-teal/20 transition-all active:scale-95 hover:bg-aahar-teal/90"
+                    className="w-full bg-aahar-teal text-white rounded-xl py-6 font-bold uppercase tracking-widest shadow-xl shadow-aahar-teal/20 transition-all active:scale-95 hover:bg-aahar-teal/90"
                   >
                     Start Table Order
                   </Button>
@@ -658,7 +658,7 @@ function RestaurantProfilePageContent({
               )}
             </Card>
 
-            <Card className="p-8 rounded-[2.5rem] border-aahar-border shadow-md space-y-8">
+            <Card className="p-8 rounded-xl border-aahar-border shadow-md space-y-8">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-aahar-body/40">Operational Details</h3>
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
@@ -712,7 +712,7 @@ function RestaurantProfilePageContent({
       {/* Table Number Prompt Modal */}
       {showTableModal && (
         <div className="fixed inset-0 z-50 bg-aahar-dark/65 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 space-y-6 animate-in zoom-in-95 duration-300">
+          <div className="bg-white w-full max-w-sm rounded-xl shadow-2xl p-8 space-y-6 animate-in zoom-in-95 duration-300">
             <div className="text-center space-y-2">
               <h3 className="text-xl font-bold text-aahar-dark uppercase tracking-tight">Enter Table Number</h3>
               <p className="text-xs text-aahar-body">Check the QR code sticker placed on your table</p>
@@ -724,7 +724,7 @@ function RestaurantProfilePageContent({
                 placeholder="E.g., 5"
                 value={tempTable}
                 onChange={(e) => setTempTable(e.target.value)}
-                className="w-full px-4 py-4 rounded-2xl border border-aahar-border bg-aahar-wash/30 text-center text-lg font-black focus:ring-2 focus:ring-aahar-teal outline-none transition-all"
+                className="w-full px-4 py-4 rounded-xl border border-aahar-border bg-aahar-wash/30 text-center text-lg font-black focus:ring-2 focus:ring-aahar-teal outline-none transition-all"
               />
               <div className="flex gap-4">
                 <Button 
@@ -871,7 +871,7 @@ function RestaurantProfilePageContent({
             <img 
               src={(photoCategory === "all" ? Object.values(restaurant.photos ?? {}).flat() : restaurant.photos?.[photoCategory])[lightboxIndex] as string} 
               alt="Lightbox" 
-              className="w-full h-full object-contain rounded-3xl"
+              className="w-full h-full object-contain rounded-xl"
             />
           </div>
         </div>

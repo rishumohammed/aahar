@@ -8,11 +8,11 @@ export default function AdminLoading() {
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-32 bg-white border border-aahar-border rounded-[2rem]" />
+          <div key={i} className="h-32 bg-white border border-aahar-border rounded-xl" />
         ))}
       </div>
 
-      <div className="h-[400px] w-full bg-white border border-aahar-border rounded-[2rem]" />
+      <div className="h-[400px] w-full bg-white border border-aahar-border rounded-xl" />
     </div>
   );
 }

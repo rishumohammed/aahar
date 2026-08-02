@@ -20,7 +20,7 @@ export default function LinkedRestaurant({ restaurantId }: { restaurantId: strin
 
   return (
     <Link href={`/restaurant/${restaurant.slug}`}
-      className="flex items-center gap-4 p-4 border border-aahar-border rounded-[2rem] bg-white
+      className="flex items-center gap-4 p-4 border border-aahar-border rounded-xl bg-white
                  hover:border-aahar-teal hover:bg-aahar-teal/5 transition-all group">
       <div className="w-16 h-16 rounded-xl overflow-hidden bg-aahar-wash flex-shrink-0 relative">
         {restaurant.photos?.cover ? (

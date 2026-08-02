@@ -20,11 +20,11 @@ export default function HotelLoading() {
               <div className="h-6 w-2/3 bg-aahar-wash rounded-md" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {[1,2].map(i => <div key={i} className="h-[400px] w-full bg-aahar-wash rounded-[2.5rem]" />)}
+              {[1,2].map(i => <div key={i} className="h-[400px] w-full bg-aahar-wash rounded-xl" />)}
             </div>
           </div>
           <div className="space-y-10">
-            <div className="h-[500px] w-full bg-aahar-wash rounded-3xl" />
+            <div className="h-[500px] w-full bg-aahar-wash rounded-xl" />
           </div>
         </div>
       </main>

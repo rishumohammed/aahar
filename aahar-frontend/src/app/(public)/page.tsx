@@ -73,7 +73,7 @@ export default async function HomePage() {
             <MemberCountWidget />
 
             {/* Card 2: Audited */}
-            <div className="rounded-2xl sm:rounded-3xl bg-white p-6 shadow-sm border border-aahar-border hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="rounded-xl bg-white p-6 shadow-sm border border-aahar-border hover:shadow-md hover:-translate-y-1 transition-all duration-300">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-aahar-teal/10 text-aahar-teal">
                   <CheckCircle2 className="h-5 w-5" />
@@ -90,7 +90,7 @@ export default async function HomePage() {
             </div>
 
             {/* Card 3: Region */}
-            <div className="rounded-2xl sm:rounded-3xl bg-white p-6 shadow-sm border border-aahar-border hover:shadow-md hover:-translate-y-1 transition-all duration-300 sm:col-span-2 md:col-span-1">
+            <div className="rounded-xl bg-white p-6 shadow-sm border border-aahar-border hover:shadow-md hover:-translate-y-1 transition-all duration-300 sm:col-span-2 md:col-span-1">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-aahar-rose/10 text-aahar-rose">
                   <ArrowRight className="h-5 w-5" />
@@ -213,7 +213,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-10">
             {blogs.slice(0, 3).map((blog: any) => (
               <Link key={blog.id} href={`/blog/${blog.slug}`} className="group space-y-4 sm:space-y-6">
-                <div className="relative aspect-[16/10] rounded-[1.75rem] sm:rounded-[2.5rem] overflow-hidden shadow-xl shadow-aahar-teal/5 border border-aahar-border/50">
+                <div className="relative aspect-[16/10] rounded-xl overflow-hidden shadow-xl shadow-aahar-teal/5 border border-aahar-border/50">
                   <Image 
                     src={blog.coverImage} 
                     alt={blog.title} 

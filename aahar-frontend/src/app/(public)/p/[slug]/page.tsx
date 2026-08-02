@@ -47,7 +47,7 @@ export default async function CustomPage({ params }: { params: { slug: string } 
         </div>
 
         <div className="max-w-4xl mx-auto relative z-10">
-          <div className="bg-white/80 backdrop-blur-xl border border-aahar-border shadow-[0_32px_64px_-16px_rgba(0,0,0,0.05)] rounded-[2.5rem] p-8 md:p-16">
+          <div className="bg-white/80 backdrop-blur-xl border border-aahar-border shadow-xl rounded-xl p-8 md:p-16">
             <h1 className="text-4xl md:text-5xl font-black text-aahar-dark tracking-tighter mb-8 pb-8 border-b border-aahar-wash">
               {pageData.label}
             </h1>

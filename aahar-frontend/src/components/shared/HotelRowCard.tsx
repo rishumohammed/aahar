@@ -40,7 +40,7 @@ export function HotelRowCard({ hotel }: HotelRowCardProps) {
             }}
           />
           <div className="absolute top-4 left-4">
-             <div className="bg-white/90 backdrop-blur-md text-aahar-rose flex items-center gap-2 px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-widest shadow-xl">
+             <div className="bg-white/90 backdrop-blur-md text-aahar-rose flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-xl">
                 <Bed className="h-4 w-4" />
                 {hotel.starRating || 5} Stars
              </div>

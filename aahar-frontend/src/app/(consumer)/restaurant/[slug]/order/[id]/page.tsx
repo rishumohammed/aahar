@@ -123,7 +123,7 @@ export default function OrderTrackerPage({
       <main className="container mx-auto max-w-2xl px-4 mt-10 space-y-8 animate-in fade-in duration-500">
         
         {/* Status Spotlight */}
-        <Card className="p-8 rounded-[2.5rem] border-aahar-border shadow-xl bg-white space-y-8 relative overflow-hidden">
+        <Card className="p-8 rounded-xl border-aahar-border shadow-xl bg-white space-y-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-aahar-teal/5 rounded-full blur-3xl -mr-12 -mt-12" />
           
           <div className="text-center space-y-2 relative z-10">
@@ -197,7 +197,7 @@ export default function OrderTrackerPage({
         </Card>
 
         {/* receipt Summary Card */}
-        <Card className="p-8 rounded-[2.5rem] border-aahar-border shadow-md bg-white space-y-6">
+        <Card className="p-8 rounded-xl border-aahar-border shadow-md bg-white space-y-6">
           <div className="border-b border-aahar-wash pb-4">
             <h3 className="text-xs font-black uppercase tracking-[0.2em] text-aahar-body/40">Dine-in Receipt</h3>
             <p className="text-xs font-bold text-aahar-dark mt-1">Order Ref: #{order.id.substring(order.id.length - 7).toUpperCase()}</p>
@@ -219,7 +219,7 @@ export default function OrderTrackerPage({
           </div>
 
           {order.notes && (
-            <div className="p-4 bg-aahar-wash/50 rounded-2xl border border-aahar-border/30 text-xs leading-relaxed text-aahar-body">
+            <div className="p-4 bg-aahar-wash/50 rounded-xl border border-aahar-border/30 text-xs leading-relaxed text-aahar-body">
               <span className="font-bold text-aahar-dark uppercase tracking-widest text-[9px] block mb-1">Diner Notes</span>
               "{order.notes}"
             </div>
@@ -232,7 +232,7 @@ export default function OrderTrackerPage({
         </Card>
 
         {/* Live Support / Counter Card */}
-        <Card className="p-6 rounded-[2rem] border-aahar-border shadow-sm bg-white/50 flex flex-col md:flex-row items-center justify-between gap-4">
+        <Card className="p-6 rounded-xl border-aahar-border shadow-sm bg-white/50 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-center md:text-left space-y-1">
             <h4 className="text-xs font-black uppercase tracking-wider text-aahar-dark">Need anything else?</h4>
             <p className="text-xs text-aahar-body leading-relaxed">

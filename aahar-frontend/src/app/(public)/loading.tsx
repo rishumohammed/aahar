@@ -10,7 +10,7 @@ export default function PublicLoading() {
             <div className="h-16 w-1/2 bg-aahar-rose/10 rounded-xl mx-auto" />
           </div>
           <div className="h-6 w-full bg-aahar-body/10 rounded-md mx-auto" />
-          <div className="h-14 w-full max-w-2xl bg-white rounded-2xl mx-auto border border-aahar-border" />
+          <div className="h-14 w-full max-w-2xl bg-white rounded-xl mx-auto border border-aahar-border" />
         </div>
       </section>
 
@@ -20,7 +20,7 @@ export default function PublicLoading() {
           <div className="h-10 w-64 bg-aahar-dark/10 rounded-lg" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1,2,3,4].map(i => (
-              <div key={i} className="h-[350px] bg-white rounded-3xl border border-aahar-border" />
+              <div key={i} className="h-[350px] bg-white rounded-xl border border-aahar-border" />
             ))}
           </div>
         </div>

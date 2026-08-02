@@ -2,7 +2,7 @@ import { ClipboardCheck, ShieldCheck } from "lucide-react";
 
 export function MemberCountWidget() {
   return (
-    <div className="rounded-2xl sm:rounded-3xl bg-white p-6 shadow-sm border border-aahar-border hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+    <div className="rounded-xl bg-white p-6 shadow-sm border border-aahar-border hover:shadow-md hover:-translate-y-1 transition-all duration-300">
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-aahar-teal/10 text-aahar-teal">
           <ClipboardCheck className="h-5 w-5" />

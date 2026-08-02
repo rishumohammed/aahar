@@ -202,7 +202,7 @@ export default function ContentPage() {
             ))}
           </div>
           {filtered.length === 0 && (
-            <div className="text-center py-20 bg-slate-50 rounded-3xl border border-slate-200 border-dashed">
+            <div className="text-center py-20 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
               <FileText className="w-12 h-12 mx-auto text-slate-300 mb-4" />
               <p className="text-slate-500 font-medium text-lg">No {activeTab} articles found.</p>
             </div>
@@ -212,7 +212,7 @@ export default function ContentPage() {
 
       {/* Editor Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-3xl lg:max-w-5xl bg-white rounded-3xl p-0 overflow-hidden border-slate-200 shadow-2xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-3xl lg:max-w-5xl bg-white rounded-xl p-0 overflow-hidden border-slate-200 shadow-2xl">
           <div className="bg-slate-50 px-8 py-6 border-b border-slate-200">
             <DialogTitle className="text-xl font-bold text-slate-900 tracking-tight">
               {editingBlog ? "Edit Article" : "Compose New Article"}

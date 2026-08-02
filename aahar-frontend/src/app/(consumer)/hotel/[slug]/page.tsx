@@ -95,7 +95,7 @@ export default function HotelProfilePage({
             </div>
 
             {hotel.certification && (
-              <div className="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-2xl">
+              <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl border border-white/20 shadow-2xl">
                 <AaharBadge 
                   type="accommodation" 
                   status={hotel.certification.status}
@@ -152,14 +152,14 @@ export default function HotelProfilePage({
                 </div>
 
                 {/* AAHAR Accommodation Score */}
-                <div className="bg-white rounded-[3rem] p-12 border-2 border-aahar-border shadow-sm relative overflow-hidden">
+                <div className="bg-white rounded-xl p-12 border-2 border-aahar-border shadow-sm relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-aahar-rose/5 rounded-full blur-3xl -mr-32 -mt-32" />
                   <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6 relative z-10">
                     <div className="space-y-2">
                       <h2 className="text-2xl font-bold text-aahar-dark tracking-tight uppercase">Trust Score</h2>
                       <p className="text-sm text-aahar-body font-medium">Verified by AAHAR Regional Inspectors</p>
                     </div>
-                    <div className="flex items-center gap-4 p-4 bg-aahar-rose/10 rounded-[2rem] border border-aahar-rose/20">
+                    <div className="flex items-center gap-4 p-4 bg-aahar-rose/10 rounded-xl border border-aahar-rose/20">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-aahar-rose">{hotel.accommodationScore?.overall.toFixed(1)}</div>
                         <div className="text-[10px] uppercase font-black text-aahar-rose tracking-widest">Trust Index</div>
@@ -197,7 +197,7 @@ export default function HotelProfilePage({
                     <Card 
                       key={room.id}
                       className={cn(
-                        "overflow-hidden rounded-[2.5rem] border-2 transition-all hover:shadow-xl",
+                        "overflow-hidden rounded-xl border-2 transition-all hover:shadow-xl",
                         room.isPopular ? "border-aahar-teal ring-4 ring-aahar-teal/5" : "border-aahar-border"
                       )}
                     >
@@ -269,7 +269,7 @@ export default function HotelProfilePage({
 
                   if (!photos.length) {
                     return (
-                      <div className="text-center py-20 bg-aahar-wash/30 rounded-[3rem] border-2 border-dashed border-aahar-border">
+                      <div className="text-center py-20 bg-aahar-wash/30 rounded-xl border-2 border-dashed border-aahar-border">
                         <ImageIcon className="h-10 w-10 text-aahar-body/20 mx-auto mb-4" />
                         <p className="text-aahar-body font-bold">No photos available yet.</p>
                       </div>
@@ -279,7 +279,7 @@ export default function HotelProfilePage({
                   return (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       {photos.map((url: string, i: number) => (
-                        <div key={i} className="aspect-video rounded-2xl overflow-hidden border border-aahar-border shadow-sm hover:shadow-lg transition-all group">
+                        <div key={i} className="aspect-video rounded-xl overflow-hidden border border-aahar-border shadow-sm hover:shadow-lg transition-all group">
                           <img src={url} alt={`Photo ${i+1}`}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform cursor-pointer" />
                         </div>
@@ -293,7 +293,7 @@ export default function HotelProfilePage({
             {/* Reviews Section */}
             {activeTab === "reviews" && (
               <div className="py-4 animate-in fade-in duration-500">
-                <div className="p-20 text-center bg-aahar-wash/30 rounded-[3rem] border-2 border-dashed border-aahar-border">
+                <div className="p-20 text-center bg-aahar-wash/30 rounded-xl border-2 border-dashed border-aahar-border">
                   <MessageSquare className="h-10 w-10 text-aahar-body/20 mx-auto mb-4" />
                   <h3 className="text-lg font-bold text-aahar-dark">Guest Experiences</h3>
                   <p className="text-sm text-aahar-body font-medium mt-2">Verified reviews coming soon via AAHAR Guest Connect.</p>
@@ -362,14 +362,14 @@ export default function HotelProfilePage({
                       <LinkedRestaurant restaurantId={hotel.linkedRestaurantId} />
                     </div>
                   ) : hotel.amenities?.restaurant ? (
-                    <div className="p-8 bg-aahar-wash/50 border border-aahar-border rounded-[2.5rem]">
+                    <div className="p-8 bg-aahar-wash/50 border border-aahar-border rounded-xl">
                       <p className="text-sm font-medium text-aahar-body leading-relaxed">
                         This property features an in-house restaurant. 
                         Detailed hygiene metrics will be visible once the linked F&B audit is finalized.
                       </p>
                     </div>
                   ) : (
-                    <div className="p-12 text-center bg-aahar-wash/30 rounded-[3rem] border-2 border-dashed border-aahar-border">
+                    <div className="p-12 text-center bg-aahar-wash/30 rounded-xl border-2 border-dashed border-aahar-border">
                       <p className="text-sm font-bold text-aahar-body">No in-house restaurant available at this property.</p>
                     </div>
                   )}
@@ -414,16 +414,16 @@ export default function HotelProfilePage({
 
             {/* AAHAR Certification Side Widget */}
             {hotel.certification && (
-              <div className="p-8 rounded-[3rem] border-2 border-aahar-rose bg-white relative overflow-hidden group shadow-xl">
+              <div className="p-8 rounded-xl border-2 border-aahar-rose bg-white relative overflow-hidden group shadow-xl">
                 <div className="space-y-6 relative z-10">
-                  <div className="w-16 h-16 rounded-3xl bg-aahar-rose/10 flex items-center justify-center text-aahar-rose">
+                  <div className="w-16 h-16 rounded-xl bg-aahar-rose/10 flex items-center justify-center text-aahar-rose">
                     <ShieldCheck className="h-8 w-8" />
                   </div>
                   <div className="space-y-1">
                     <h4 className="font-bold text-aahar-dark text-xl tracking-tight">CERTIFIED STAY</h4>
                     <p className="text-[10px] text-aahar-body uppercase font-black tracking-[0.2em]">Regional Compliance Passed</p>
                   </div>
-                  <div className="bg-aahar-wash rounded-2xl p-6 border border-aahar-border space-y-4">
+                  <div className="bg-aahar-wash rounded-xl p-6 border border-aahar-border space-y-4">
                     <div className="space-y-1">
                       <div className="text-[10px] uppercase font-black text-aahar-body tracking-widest">Certificate ID</div>
                       <div className="text-sm font-mono font-bold text-aahar-dark">{hotel.certification.certNumber}</div>

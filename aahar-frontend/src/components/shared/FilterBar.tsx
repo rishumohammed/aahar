@@ -155,7 +155,7 @@ export default function FilterBar({
   return (
     <div className={cn("w-full space-y-4", className)}>
       {/* Main Filter Bar */}
-      <div className="w-full bg-white border border-aahar-border rounded-2xl shadow-lg shadow-black/5 p-1.5 flex flex-col md:flex-row items-stretch md:items-center gap-0">
+      <div className="w-full bg-white border border-aahar-border rounded-xl shadow-lg shadow-black/5 p-1.5 flex flex-col md:flex-row items-stretch md:items-center gap-0">
 
         {!hideTrustStandard && (
           <div className="px-4 py-1 flex flex-col justify-center min-w-[200px]">
@@ -163,7 +163,7 @@ export default function FilterBar({
             <button
               onClick={() => setIsCertified(!isCertified)}
               className={cn(
-                "flex items-center gap-3 px-4 h-14 rounded-[1.5rem] border-2 transition-all duration-300 font-bold text-sm",
+                "flex items-center gap-3 px-4 h-14 rounded-xl border-2 transition-all duration-300 font-bold text-sm",
                 isCertified 
                   ? "bg-aahar-teal/5 border-aahar-teal text-aahar-teal shadow-sm" 
                   : "bg-transparent border-aahar-border text-aahar-body/60 hover:border-aahar-teal/50"

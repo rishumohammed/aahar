@@ -18,7 +18,7 @@ export default function SearchError({
   return (
     <div className="container mx-auto max-w-7xl px-4 py-32">
       <div className="max-w-md mx-auto text-center space-y-8">
-        <div className="w-20 h-20 bg-rose-50 rounded-[2rem] flex items-center justify-center mx-auto">
+        <div className="w-20 h-20 bg-rose-50 rounded-xl flex items-center justify-center mx-auto">
           <AlertCircle className="h-10 w-10 text-rose-500" />
         </div>
         

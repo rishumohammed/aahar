@@ -140,10 +140,10 @@ export default function AccountPage() {
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Header Summary */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-aahar-border/60 rounded-[2.5rem] p-6 md:p-8 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-aahar-border/60 rounded-xl p-6 md:p-8 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-aahar-teal/10 flex items-center justify-center text-aahar-teal shadow-inner">
-              <UserIcon className="h-8 w-8" />
+            <div className="w-14 h-14 rounded-xl bg-aahar-teal/10 flex items-center justify-center text-aahar-teal shadow-inner">
+              <UserIcon className="h-7 w-7" />
             </div>
             <div>
               <h1 className="text-2xl font-black text-aahar-dark tracking-tight">{user?.name || "My Account"}</h1>
@@ -156,7 +156,7 @@ export default function AccountPage() {
           <div className="flex items-center gap-2 border-t md:border-t-0 pt-4 md:pt-0 border-aahar-wash">
             <button
               onClick={() => setActiveTab("profile")}
-              className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
                 activeTab === "profile" 
                   ? "bg-aahar-teal text-white shadow-lg shadow-aahar-teal/20" 
                   : "bg-white text-aahar-body border border-aahar-border/50 hover:bg-aahar-wash"
@@ -166,7 +166,7 @@ export default function AccountPage() {
             </button>
             <button
               onClick={() => setActiveTab("orders")}
-              className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
                 activeTab === "orders" 
                   ? "bg-aahar-teal text-white shadow-lg shadow-aahar-teal/20" 
                   : "bg-white text-aahar-body border border-aahar-border/50 hover:bg-aahar-wash"
@@ -181,15 +181,15 @@ export default function AccountPage() {
         {activeTab === "profile" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* User Profile details card */}
-            <Card className="lg:col-span-1 bg-white border-aahar-border/60 rounded-[2.5rem] p-6 md:p-8 shadow-sm space-y-6 flex flex-col justify-between">
+            <Card className="lg:col-span-1 bg-white border-aahar-border/60 rounded-xl p-6 md:p-8 shadow-sm space-y-6 flex flex-col justify-between">
               <div>
                 <h2 className="text-lg font-black uppercase tracking-wider text-aahar-dark border-b border-aahar-wash pb-3 mb-6">
                   Account Details
                 </h2>
                 
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 bg-aahar-wash/30 p-3.5 rounded-2xl border border-aahar-border/40">
-                    <div className="w-10 h-10 rounded-xl bg-aahar-teal/10 flex items-center justify-center text-aahar-teal shrink-0">
+                  <div className="flex items-center gap-3 bg-aahar-wash/30 p-3.5 rounded-xl border border-aahar-border/40">
+                    <div className="w-10 h-10 rounded-lg bg-aahar-teal/10 flex items-center justify-center text-aahar-teal shrink-0">
                       <Mail className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
@@ -198,8 +198,8 @@ export default function AccountPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 bg-aahar-wash/30 p-3.5 rounded-2xl border border-aahar-border/40">
-                    <div className="w-10 h-10 rounded-xl bg-aahar-teal/10 flex items-center justify-center text-aahar-teal shrink-0">
+                  <div className="flex items-center gap-3 bg-aahar-wash/30 p-3.5 rounded-xl border border-aahar-border/40">
+                    <div className="w-10 h-10 rounded-lg bg-aahar-teal/10 flex items-center justify-center text-aahar-teal shrink-0">
                       <Phone className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
@@ -208,8 +208,8 @@ export default function AccountPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 bg-aahar-wash/30 p-3.5 rounded-2xl border border-aahar-border/40">
-                    <div className="w-10 h-10 rounded-xl bg-aahar-teal/10 flex items-center justify-center text-aahar-teal shrink-0">
+                  <div className="flex items-center gap-3 bg-aahar-wash/30 p-3.5 rounded-xl border border-aahar-border/40">
+                    <div className="w-10 h-10 rounded-lg bg-aahar-teal/10 flex items-center justify-center text-aahar-teal shrink-0">
                       <Calendar className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
@@ -223,7 +223,7 @@ export default function AccountPage() {
               </div>
 
               <div className="pt-4 border-t border-aahar-wash text-center">
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3.5 py-1.5 rounded-full border border-emerald-100 inline-flex items-center gap-1.5">
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3.5 py-1.5 rounded-lg border border-emerald-100 inline-flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                   Verified Consumer Account
                 </span>
@@ -231,7 +231,7 @@ export default function AccountPage() {
             </Card>
 
             {/* Profile editor form */}
-            <Card className="lg:col-span-2 bg-white border-aahar-border/60 rounded-[2.5rem] p-6 md:p-8 shadow-sm">
+            <Card className="lg:col-span-2 bg-white border-aahar-border/60 rounded-xl p-6 md:p-8 shadow-sm">
               <div className="flex items-center justify-between border-b border-aahar-wash pb-3 mb-6">
                 <div>
                   <h2 className="text-lg font-black uppercase tracking-wider text-aahar-dark">
@@ -324,7 +324,7 @@ export default function AccountPage() {
 
         {/* Tab 2: Orders View */}
         {activeTab === "orders" && (
-          <Card className="bg-white border-aahar-border/60 rounded-[2.5rem] p-6 md:p-8 shadow-sm">
+          <Card className="bg-white border-aahar-border/60 rounded-xl p-6 md:p-8 shadow-sm">
             <h2 className="text-lg font-black uppercase tracking-wider text-aahar-dark border-b border-aahar-wash pb-3 mb-6">
               Dining Table Orders
             </h2>

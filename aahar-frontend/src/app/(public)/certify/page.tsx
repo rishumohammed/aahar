@@ -58,7 +58,7 @@ export default async function CertifyPage() {
 
       {/* Trust Stats Bar */}
       <section className="relative -mt-16 z-20 container mx-auto px-6">
-        <div className="bg-white rounded-3xl shadow-2xl border border-aahar-border p-8 md:p-12">
+        <div className="bg-white rounded-xl shadow-2xl border border-aahar-border p-8 md:p-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-aahar-border">
             <div className="flex flex-col items-center justify-center pt-4 md:pt-0">
               <span className="text-4xl font-black text-aahar-dark mb-2">500+</span>
@@ -87,8 +87,8 @@ export default async function CertifyPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-10 rounded-[2.5rem] border border-aahar-border hover:shadow-xl transition-all hover:-translate-y-2 group">
-              <div className="w-16 h-16 bg-aahar-teal/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <div className="bg-white p-10 rounded-xl border border-aahar-border hover:shadow-xl transition-all hover:-translate-y-2 group">
+              <div className="w-16 h-16 bg-aahar-teal/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <TrendingUp className="h-8 w-8 text-aahar-teal" />
               </div>
               <h3 className="text-2xl font-black text-aahar-dark tracking-tight mb-4">Premium Visibility</h3>
@@ -97,8 +97,8 @@ export default async function CertifyPage() {
               </p>
             </div>
             
-            <div className="bg-white p-10 rounded-[2.5rem] border border-aahar-border hover:shadow-xl transition-all hover:-translate-y-2 group">
-              <div className="w-16 h-16 bg-aahar-rose/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <div className="bg-white p-10 rounded-xl border border-aahar-border hover:shadow-xl transition-all hover:-translate-y-2 group">
+              <div className="w-16 h-16 bg-aahar-rose/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <ShieldCheck className="h-8 w-8 text-aahar-rose" />
               </div>
               <h3 className="text-2xl font-black text-aahar-dark tracking-tight mb-4">Unmatched Trust</h3>
@@ -107,8 +107,8 @@ export default async function CertifyPage() {
               </p>
             </div>
 
-            <div className="bg-white p-10 rounded-[2.5rem] border border-aahar-border hover:shadow-xl transition-all hover:-translate-y-2 group">
-              <div className="w-16 h-16 bg-[#F4F7F7] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <div className="bg-white p-10 rounded-xl border border-aahar-border hover:shadow-xl transition-all hover:-translate-y-2 group">
+              <div className="w-16 h-16 bg-[#F4F7F7] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Users className="h-8 w-8 text-aahar-dark" />
               </div>
               <h3 className="text-2xl font-black text-aahar-dark tracking-tight mb-4">Actionable Insights</h3>

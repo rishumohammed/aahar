@@ -9,14 +9,14 @@ export default function SearchLoading() {
         </div>
 
         {/* Filter Bar Skeleton */}
-        <div className="h-20 w-full bg-white rounded-[2rem] border border-aahar-border shadow-sm" />
+        <div className="h-20 w-full bg-white rounded-xl border border-aahar-border shadow-sm" />
       </div>
 
       {/* Results Grid Skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {[...Array(8)].map((_, i) => (
           <div key={i} className="space-y-4">
-            <div className="aspect-[4/5] bg-white border-2 border-aahar-border rounded-[2.5rem]" />
+            <div className="aspect-[4/5] bg-white border-2 border-aahar-border rounded-xl" />
             <div className="space-y-2 px-2">
               <div className="h-5 w-3/4 bg-aahar-dark/10 rounded-md" />
               <div className="h-4 w-1/2 bg-aahar-body/10 rounded-md" />

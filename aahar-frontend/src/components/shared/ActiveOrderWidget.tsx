@@ -114,12 +114,12 @@ export default function ActiveOrderWidget() {
   return (
     <div className="fixed bottom-6 right-6 z-50 w-full max-w-sm px-4 md:px-0 animate-in slide-in-from-bottom-8 duration-500">
       <div className={cn(
-        "relative rounded-[2rem] border border-white/20 bg-white/80 backdrop-blur-xl shadow-2xl p-5 transition-all duration-300",
+        "relative rounded-xl border border-white/20 bg-white/80 backdrop-blur-xl shadow-2xl p-5 transition-all duration-300",
         isMinimized ? "max-h-16 py-3" : "max-h-[300px]"
       )}>
         {/* Glowing Ambient Aura */}
         <div className={cn(
-          "absolute -inset-px rounded-[2rem] opacity-30 blur-md transition-all duration-1000 -z-10",
+          "absolute -inset-px rounded-xl opacity-30 blur-md transition-all duration-1000 -z-10",
           order.status === "served" ? "bg-emerald-500" :
           order.status === "preparing" ? "bg-blue-500" : "bg-amber-500"
         )} />

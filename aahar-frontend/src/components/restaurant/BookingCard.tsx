@@ -63,9 +63,9 @@ export default function BookingCard({ restaurant }: { restaurant: any }) {
   };
 
   return (
-    <Card id="booking-card" className="p-8 rounded-[2.5rem] border-aahar-border shadow-xl space-y-8 overflow-hidden relative">
+    <Card id="booking-card" className="p-8 rounded-xl border-aahar-border shadow-xl space-y-8 overflow-hidden relative">
       <div className="flex items-center gap-3">
-        <div className="p-2.5 rounded-2xl bg-aahar-teal/10">
+        <div className="p-2.5 rounded-xl bg-aahar-teal/10">
           <Calendar className="h-5 w-5 text-aahar-teal" />
         </div>
         <h3 className="text-xl font-bold text-aahar-dark tracking-tighter uppercase">Reserve a Table</h3>
@@ -104,7 +104,7 @@ export default function BookingCard({ restaurant }: { restaurant: any }) {
                 min={todayStr}
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 rounded-2xl border border-aahar-border bg-aahar-wash/30 text-sm font-bold focus:ring-2 focus:ring-aahar-teal outline-none transition-all"
+                className="w-full pl-12 pr-4 py-4 rounded-xl border border-aahar-border bg-aahar-wash/30 text-sm font-bold focus:ring-2 focus:ring-aahar-teal outline-none transition-all"
               />
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function BookingCard({ restaurant }: { restaurant: any }) {
           {/* Guests Counter */}
           <div className="space-y-2">
             <Label className="text-[10px] font-bold uppercase tracking-widest text-aahar-body/60 pl-1">Number of Guests</Label>
-            <div className="flex items-center justify-between p-2 rounded-2xl border border-aahar-border bg-aahar-wash/30">
+            <div className="flex items-center justify-between p-2 rounded-xl border border-aahar-border bg-aahar-wash/30">
               <button 
                 onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
                 disabled={guestCount <= 1}
@@ -159,7 +159,7 @@ export default function BookingCard({ restaurant }: { restaurant: any }) {
           <Button 
             onClick={handleRequestBooking}
             disabled={!selectedDate || !selectedTime}
-            className="w-full bg-aahar-teal text-white rounded-2xl py-7 font-bold uppercase tracking-widest shadow-xl shadow-aahar-teal/20 disabled:opacity-40 disabled:shadow-none transition-all active:scale-95"
+            className="w-full bg-aahar-teal text-white rounded-xl py-7 font-bold uppercase tracking-widest shadow-xl shadow-aahar-teal/20 disabled:opacity-40 disabled:shadow-none transition-all active:scale-95"
           >
             Request Table
           </Button>

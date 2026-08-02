@@ -17,10 +17,10 @@ export default function RestaurantLoading() {
               <div className="h-4 w-full bg-aahar-wash rounded-md" />
               <div className="h-4 w-2/3 bg-aahar-wash rounded-md" />
             </div>
-            <div className="h-[300px] w-full bg-aahar-wash rounded-3xl" />
+            <div className="h-[300px] w-full bg-aahar-wash rounded-xl" />
           </div>
           <div className="space-y-8">
-            <div className="h-[400px] w-full bg-aahar-wash rounded-3xl" />
+            <div className="h-[400px] w-full bg-aahar-wash rounded-xl" />
           </div>
         </div>
       </main>

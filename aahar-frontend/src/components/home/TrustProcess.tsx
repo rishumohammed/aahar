@@ -81,13 +81,13 @@ export default function TrustProcess() {
                     key={step.step}
                     initial={{ opacity: 1, scale: 1, y: 0 }}
                     whileHover={{ y: -8, scale: 1.02 }}
-                    className={`relative p-6 rounded-[2.5rem] bg-white border border-aahar-border shadow-sm hover:shadow-xl hover:border-aahar-teal/20 transition-all group ${
+                    className={`relative p-6 rounded-xl bg-white border border-aahar-border shadow-sm hover:shadow-xl hover:border-aahar-teal/20 transition-all group ${
                       index === 4 ? "md:col-span-2 lg:col-span-1" : ""
                     }`}
                   >
                     {/* Step Number & Icon */}
                     <div className="flex items-start justify-between mb-6">
-                      <div className="w-12 h-12 rounded-2xl bg-aahar-wash flex items-center justify-center group-hover:bg-aahar-teal group-hover:text-white transition-all duration-300">
+                      <div className="w-12 h-12 rounded-xl bg-aahar-wash flex items-center justify-center group-hover:bg-aahar-teal group-hover:text-white transition-all duration-300">
                         <Icon className="w-6 h-6" />
                       </div>
                       <span className="text-3xl font-bold text-aahar-teal/5 group-hover:text-aahar-teal/10 transition-colors">

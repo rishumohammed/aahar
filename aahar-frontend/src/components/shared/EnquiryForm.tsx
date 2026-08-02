@@ -76,7 +76,7 @@ export function EnquiryForm({ hotelId, hotelSlug, roomTypes }: EnquiryFormProps)
   }
 
   return (
-    <div className="p-6 rounded-3xl border border-aahar-border bg-white space-y-6">
+    <div className="p-6 rounded-xl border border-aahar-border bg-white space-y-6">
       <div className="space-y-1">
         <h4 className="font-bold text-lg text-aahar-dark">Check Availability</h4>
         <p className="text-xs text-aahar-body">Usually responds within 2 hours</p>
