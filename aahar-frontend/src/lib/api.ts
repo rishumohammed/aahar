@@ -49,7 +49,7 @@ export const authApi = {
     api.post<ApiResponse<{ user: any; token: string }>>("/auth/register", data),
   me:       () =>
     api.get<ApiResponse<any>>("/auth/me"),
-  updateProfile: (data: { name?: string; phone?: string; password?: string }) =>
+  updateProfile: (data: { name?: string; email?: string; phone?: string; password?: string }) =>
     api.patch<ApiResponse<any>>("/auth/profile", data),
 };
 

@@ -81,7 +81,22 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: '7d' }
     );
 
-    return ok(res, { token, user: { id: user.id, email: user.email, name: user.name, role: user.role } }, 'Login successful');
+    return ok(
+      res,
+      {
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          phone: user.phone,
+          role: user.role,
+          avatar: user.avatar,
+          createdAt: user.createdAt,
+        },
+      },
+      'Login successful'
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
       return badRequest(res, (error as any).errors[0].message);
@@ -96,7 +111,7 @@ export const getMe = async (req: any, res: Response) => {
 
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
-      select: { id: true, email: true, name: true, role: true, createdAt: true },
+      select: { id: true, email: true, name: true, phone: true, role: true, avatar: true, createdAt: true },
     });
 
     if (!user) {
@@ -111,6 +126,7 @@ export const getMe = async (req: any, res: Response) => {
 
 const updateProfileSchema = z.object({
   name: z.string().min(2).optional(),
+  email: z.string().email().optional(),
   phone: z.string().optional(),
   password: z.string().min(6).optional(),
 });
@@ -122,7 +138,19 @@ export const updateProfile = async (req: any, res: Response) => {
 
     const updateData: any = {};
     if (validatedData.name) updateData.name = validatedData.name;
-    if (validatedData.phone !== undefined) updateData.phone = validatedData.phone;
+    if (validatedData.email) {
+      const existing = await prisma.user.findFirst({
+        where: {
+          email: validatedData.email,
+          NOT: { id: req.user.id },
+        },
+      });
+      if (existing) {
+        return badRequest(res, 'Email already in use by another account');
+      }
+      updateData.email = validatedData.email;
+    }
+    if (validatedData.phone !== undefined) updateData.phone = validatedData.phone || null;
     if (validatedData.password) {
       updateData.passwordHash = await bcrypt.hash(validatedData.password, 10);
     }
@@ -130,7 +158,7 @@ export const updateProfile = async (req: any, res: Response) => {
     const updatedUser = await prisma.user.update({
       where: { id: req.user.id },
       data: updateData,
-      select: { id: true, email: true, name: true, phone: true, role: true, createdAt: true }
+      select: { id: true, email: true, name: true, phone: true, role: true, avatar: true, createdAt: true },
     });
 
     return ok(res, updatedUser, 'Profile updated successfully');
