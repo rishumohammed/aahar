@@ -152,37 +152,43 @@ export default function HotelProfilePage({
                 </div>
 
                 {/* AAHAR Accommodation Score */}
-                <div className="bg-white rounded-xl p-12 border-2 border-aahar-border shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-aahar-rose/5 rounded-full blur-3xl -mr-32 -mt-32" />
-                  <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6 relative z-10">
-                    <div className="space-y-2">
-                      <h2 className="text-2xl font-bold text-aahar-dark tracking-tight uppercase">Trust Score</h2>
-                      <p className="text-sm text-aahar-body font-medium">Verified by AAHAR Regional Inspectors</p>
-                    </div>
-                    <div className="flex items-center gap-4 p-4 bg-aahar-rose/10 rounded-xl border border-aahar-rose/20">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-aahar-rose">{hotel.accommodationScore?.overall.toFixed(1)}</div>
-                        <div className="text-[10px] uppercase font-black text-aahar-rose tracking-widest">Trust Index</div>
+                {hotel.certification ? (
+                  <div className="bg-white rounded-xl p-12 border-2 border-aahar-border shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-aahar-rose/5 rounded-full blur-3xl -mr-32 -mt-32" />
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6 relative z-10">
+                      <div className="space-y-2">
+                        <h2 className="text-2xl font-bold text-aahar-dark tracking-tight uppercase">Trust Score</h2>
+                        <p className="text-sm text-aahar-body font-medium">Verified by AAHAR Regional Inspectors</p>
                       </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-10 relative z-10">
-                    {SCORE_METRICS.map((metric: any) => (
-                      <div key={metric.label || metric.section} className="space-y-4">
-                        <div className="flex justify-between items-center text-sm font-black uppercase tracking-widest">
-                          <span className="text-aahar-dark">{metric.label || metric.section || metric.criterion}</span>
-                          <span className="text-aahar-rose">{metric.score?.toFixed(1) || "—"} / 5</span>
-                        </div>
-                        <div className="h-2.5 w-full bg-aahar-wash rounded-full overflow-hidden border border-aahar-border">
-                          <div 
-                            className="h-full bg-aahar-rose transition-all duration-1000"
-                            style={{ width: `${((metric.score || 0) / 5) * 100}%` }}
-                          />
+                      <div className="flex items-center gap-4 p-4 bg-aahar-rose/10 rounded-xl border border-aahar-rose/20">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-aahar-rose">{hotel.accommodationScore?.overall ? hotel.accommodationScore.overall.toFixed(1) : (hotel.starRating || "4.0")}</div>
+                          <div className="text-[10px] uppercase font-black text-aahar-rose tracking-widest">Trust Index</div>
                         </div>
                       </div>
-                    ))}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-10 relative z-10">
+                      {SCORE_METRICS.map((metric: any) => (
+                        <div key={metric.label || metric.section} className="space-y-4">
+                          <div className="flex justify-between items-center text-sm font-black uppercase tracking-widest">
+                            <span className="text-aahar-dark">{metric.label || metric.section || metric.criterion}</span>
+                            <span className="text-aahar-rose">{metric.score?.toFixed(1) || "—"} / 5</span>
+                          </div>
+                          <div className="h-2.5 w-full bg-aahar-wash rounded-full overflow-hidden border border-aahar-border">
+                            <div 
+                              className="h-full bg-aahar-rose transition-all duration-1000"
+                              style={{ width: `${((metric.score || 0) / 5) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center py-20 bg-aahar-wash/30 rounded-xl border-2 border-dashed border-aahar-border">
+                    <p className="text-aahar-body font-bold">This hotel has not been AAHAR certified yet.</p>
+                  </div>
+                )}
               </section>
             )}
 

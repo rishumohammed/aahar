@@ -585,10 +585,7 @@ function RestaurantProfilePageContent({
                   </div>
                 ) : (
                   <div className="text-center py-20 bg-aahar-wash/30 rounded-xl border-2 border-dashed border-aahar-border">
-                    <p className="text-aahar-body font-bold mb-6">This restaurant has not been AAHAR certified yet.</p>
-                    <a href="/apply/restaurant">
-                      <Button type="button"  className="bg-aahar-dark text-white rounded-xl px-10 py-6 font-black uppercase tracking-widest">Apply for Certification</Button>
-                    </a>
+                    <p className="text-aahar-body font-bold">This restaurant has not been AAHAR certified yet.</p>
                   </div>
                 )}
               </div>
