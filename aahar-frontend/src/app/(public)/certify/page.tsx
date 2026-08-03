@@ -38,7 +38,7 @@ export default async function CertifyPage() {
 
             {/* Subtitle */}
             <p className="mt-5 text-base sm:text-lg text-aahar-body/80 font-normal leading-relaxed max-w-xl mx-auto">
-              Get your restaurant or hotel evaluated against comprehensive safety & hygiene benchmarks. Build authentic guest trust and stand out with verified recognition.
+              List your restaurant or hotel on AAHAR to begin. Once listed, you can apply for an on-site 250+ point inspection audit directly from your Owner Portal to earn the verified AAHAR Gold Trust Badge.
             </p>
 
             {/* Action Buttons */}
@@ -47,7 +47,7 @@ export default async function CertifyPage() {
                 <Link href="/enquiry">List Your Establishment</Link>
               </Button>
               <Button asChild variant="outline" className="bg-white hover:bg-aahar-wash text-aahar-dark hover:text-aahar-dark border border-aahar-border rounded-xl h-14 px-8 font-black uppercase tracking-wider text-xs shadow-sm transition-all hover:border-aahar-dark hover:shadow-md">
-                <a href="#how-it-works">See How It Works</a>
+                <a href="#how-it-works">Explore The Workflow</a>
               </Button>
             </div>
           </div>
@@ -122,7 +122,7 @@ export default async function CertifyPage() {
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-black text-aahar-dark tracking-tighter mb-4">How It Works</h2>
             <p className="text-lg text-aahar-body max-w-2xl mx-auto">
-              A transparent, rigorous, and straightforward 250+ point evaluation process to elevate your business standards.
+              A transparent, 4-step pathway from listing your establishment to earning verified recognition.
             </p>
           </div>
 
@@ -130,37 +130,37 @@ export default async function CertifyPage() {
             {/* Connecting Line positioned behind badges */}
             <div className="hidden md:block absolute top-10 left-12 right-12 h-0.5 border-t-2 border-dashed border-aahar-teal/30 -z-0" />
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-6 relative z-10">
               <div className="flex flex-col items-center text-center">
-                <div className="w-20 h-20 bg-white border-4 border-aahar-teal text-aahar-teal rounded-full flex items-center justify-center mb-6 shadow-xl text-2xl font-black">
-                  1
+                <div className="w-20 h-20 bg-white border-4 border-aahar-teal text-aahar-teal rounded-full flex items-center justify-center mb-6 shadow-xl">
+                  <Building2 className="h-8 w-8" />
                 </div>
-                <h4 className="text-xl font-bold text-aahar-dark mb-2">Apply Online</h4>
-                <p className="text-sm text-aahar-body">Submit your property details and requested documents through our secure portal.</p>
+                <h4 className="text-xl font-bold text-aahar-dark mb-2">1. List Property</h4>
+                <p className="text-sm text-aahar-body">Submit your establishment details to get listed on AAHAR and receive Owner Portal access.</p>
+              </div>
+
+              <div className="flex flex-col items-center text-center">
+                <div className="w-20 h-20 bg-white border-4 border-aahar-teal text-aahar-teal rounded-full flex items-center justify-center mb-6 shadow-xl">
+                  <ShieldCheck className="h-8 w-8" />
+                </div>
+                <h4 className="text-xl font-bold text-aahar-dark mb-2">2. Apply in Portal</h4>
+                <p className="text-sm text-aahar-body">From your secure Owner Dashboard, initiate your AAHAR Certification request when ready.</p>
               </div>
 
               <div className="flex flex-col items-center text-center">
                 <div className="w-20 h-20 bg-white border-4 border-aahar-teal text-aahar-teal rounded-full flex items-center justify-center mb-6 shadow-xl">
                   <ClipboardCheck className="h-8 w-8" />
                 </div>
-                <h4 className="text-xl font-bold text-aahar-dark mb-2">Expert Audit</h4>
-                <p className="text-sm text-aahar-body">Our certified auditors visit your premises for a comprehensive 250+ point inspection.</p>
-              </div>
-
-              <div className="flex flex-col items-center text-center">
-                <div className="w-20 h-20 bg-white border-4 border-aahar-teal text-aahar-teal rounded-full flex items-center justify-center mb-6 shadow-xl">
-                  <TrendingUp className="h-8 w-8" />
-                </div>
-                <h4 className="text-xl font-bold text-aahar-dark mb-2">Implement Fixes</h4>
-                <p className="text-sm text-aahar-body">Receive a detailed report and implement necessary operational improvements.</p>
+                <h4 className="text-xl font-bold text-aahar-dark mb-2">3. 250+ Pt Audit</h4>
+                <p className="text-sm text-aahar-body">Certified food safety & hygiene auditors conduct an in-person physical inspection of your premises.</p>
               </div>
 
               <div className="flex flex-col items-center text-center">
                 <div className="w-20 h-20 bg-aahar-teal text-white rounded-full flex items-center justify-center mb-6 shadow-xl shadow-aahar-teal/30 ring-4 ring-white">
                   <Award className="h-8 w-8" />
                 </div>
-                <h4 className="text-xl font-bold text-aahar-dark mb-2">Get Certified</h4>
-                <p className="text-sm text-aahar-body">Earn your AAHAR Trust Badge and gain immediate premium placement on our platform.</p>
+                <h4 className="text-xl font-bold text-aahar-dark mb-2">4. Get Certified</h4>
+                <p className="text-sm text-aahar-body">Earn your AAHAR Gold Trust Badge, instant QR verification, and top placement in search.</p>
               </div>
             </div>
           </div>
@@ -242,15 +242,15 @@ export default async function CertifyPage() {
                 {/* Pill Badge */}
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm">
                   <ShieldCheck className="h-4 w-4 text-aahar-teal" />
-                  <span className="text-[11px] font-black uppercase tracking-widest text-white">Certification Process</span>
+                  <span className="text-[11px] font-black uppercase tracking-widest text-white">Certification Pathway</span>
                 </div>
 
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.15]">
-                  Ready to stand out with verified trust?
+                  Ready to list your property and get certified?
                 </h2>
 
                 <p className="text-base sm:text-lg text-white/80 font-normal leading-relaxed">
-                  Start your certification journey today. Show your guests that food safety, hygiene, and exceptional standards are your top priority.
+                  Start by listing your restaurant or hotel on AAHAR. Once your listing is active, you can apply for full on-site certification audits directly from your Owner Portal.
                 </p>
 
                 {/* Standard Guarantees */}
