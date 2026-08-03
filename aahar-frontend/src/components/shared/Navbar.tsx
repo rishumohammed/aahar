@@ -44,7 +44,7 @@ function DesktopNavLinks() {
   };
 
   return (
-    <div className="hidden lg:flex items-center gap-1 bg-[#F2F4F5] p-1 rounded-full border border-aahar-border/70 shadow-xs">
+    <div className="hidden lg:flex items-center justify-center gap-8">
       {NAV_LINKS.map((link) => {
         const active = isLinkActive(link.href);
         return (
@@ -52,13 +52,16 @@ function DesktopNavLinks() {
             key={link.href}
             href={link.href}
             className={cn(
-              "px-4 py-1.5 rounded-full text-xs uppercase tracking-wider transition-all duration-200",
+              "text-sm tracking-wide transition-colors duration-200 relative py-1.5",
               active
-                ? "bg-aahar-dark text-white font-extrabold shadow-sm"
-                : "text-aahar-body/75 hover:text-aahar-dark hover:bg-white/60 font-bold"
+                ? "text-aahar-teal font-bold"
+                : "text-aahar-body hover:text-aahar-dark font-medium"
             )}
           >
             {link.label}
+            {active && (
+              <span className="absolute -bottom-0.5 left-0 right-0 h-[2px] bg-aahar-teal rounded-full" />
+            )}
           </Link>
         );
       })}
@@ -88,7 +91,7 @@ function MobileNavLinks({ onSelect }: { onSelect: () => void }) {
   };
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1">
       {NAV_LINKS.map((link) => {
         const active = isLinkActive(link.href);
         return (
@@ -99,12 +102,12 @@ function MobileNavLinks({ onSelect }: { onSelect: () => void }) {
             className={cn(
               "flex items-center justify-between text-sm px-4 py-3 rounded-xl transition-all",
               active
-                ? "bg-aahar-dark text-white font-bold shadow-xs"
-                : "text-aahar-body hover:text-aahar-dark hover:bg-aahar-wash font-medium"
+                ? "text-aahar-teal bg-aahar-wash font-bold"
+                : "text-aahar-body hover:text-aahar-dark hover:bg-aahar-wash/50 font-medium"
             )}
           >
             <span>{link.label}</span>
-            {active && <span className="w-2 h-2 rounded-full bg-aahar-teal ring-2 ring-white/30" />}
+            {active && <span className="w-1.5 h-1.5 rounded-full bg-aahar-teal" />}
           </Link>
         );
       })}
@@ -114,11 +117,11 @@ function MobileNavLinks({ onSelect }: { onSelect: () => void }) {
 
 function NavLinksFallback() {
   return (
-    <div className="hidden lg:flex items-center gap-1 bg-[#F2F4F5] p-1 rounded-full border border-aahar-border/70">
+    <div className="hidden lg:flex items-center justify-center gap-8">
       {NAV_LINKS.map((link) => (
         <span
           key={link.href}
-          className="px-4 py-1.5 rounded-full text-xs uppercase tracking-wider text-aahar-body/75 font-bold"
+          className="text-sm font-medium text-aahar-body tracking-wide py-1.5"
         >
           {link.label}
         </span>
