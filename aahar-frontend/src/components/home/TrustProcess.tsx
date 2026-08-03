@@ -61,7 +61,7 @@ export default function TrustProcess() {
               initial={{ opacity: 1, y: 0 }}
             >
               <Link href="/enquiry">
-                <Button className="bg-aahar-teal hover:bg-aahar-teal/90 text-white rounded-xl px-8 py-6 text-sm font-bold shadow-lg shadow-aahar-teal/20 group transition-all">
+                <Button className="bg-aahar-teal hover:bg-aahar-teal/90 text-white rounded-xl h-14 px-8 text-xs font-black uppercase tracking-wider shadow-lg shadow-aahar-teal/20 group transition-all">
                   Get Certified Now
                   <motion.span className="ml-2 inline-block" animate={{ x: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
                     →
@@ -81,7 +81,7 @@ export default function TrustProcess() {
                     key={step.step}
                     initial={{ opacity: 1, scale: 1, y: 0 }}
                     whileHover={{ y: -8, scale: 1.02 }}
-                    className={`relative p-6 rounded-xl bg-white border border-aahar-border shadow-sm hover:shadow-xl hover:border-aahar-teal/20 transition-all group ${
+                    className={`relative p-6 rounded-2xl bg-white border border-aahar-border shadow-sm hover:shadow-xl hover:border-aahar-teal/20 transition-all group ${
                       index === 4 ? "md:col-span-2 lg:col-span-1" : ""
                     }`}
                   >

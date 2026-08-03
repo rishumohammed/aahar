@@ -73,7 +73,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
       {/* Featured Image */}
       <div className="container mx-auto max-w-5xl px-4">
-        <div className="relative aspect-[21/9] rounded-xl overflow-hidden shadow-2xl shadow-aahar-teal/5 border border-aahar-wash">
+        <div className="relative aspect-[21/9] rounded-2xl overflow-hidden shadow-2xl shadow-aahar-teal/5 border border-aahar-border">
           <Image
             src={blog.coverImage}
             alt={blog.title}
@@ -88,10 +88,10 @@ export default async function BlogPostPage({ params }: PageProps) {
       <div className="container mx-auto max-w-7xl px-4 mt-20 flex flex-col lg:flex-row gap-16">
         {/* Sidebar Actions */}
         <aside className="lg:w-20 flex lg:flex-col items-center gap-6 lg:sticky lg:top-32 h-fit">
-          <button className="w-12 h-12 rounded-xl bg-white border border-aahar-wash flex items-center justify-center text-aahar-body hover:text-aahar-teal hover:border-aahar-teal hover:bg-aahar-teal/5 transition-all group">
+          <button className="w-12 h-12 rounded-xl bg-white border border-aahar-border flex items-center justify-center text-aahar-body hover:text-aahar-teal hover:border-aahar-teal hover:bg-aahar-teal/5 transition-all group shadow-sm">
             <Share2 className="h-5 w-5 transition-transform group-hover:scale-110" />
           </button>
-          <button className="w-12 h-12 rounded-xl bg-white border border-aahar-wash flex items-center justify-center text-aahar-body hover:text-aahar-teal hover:border-aahar-teal hover:bg-aahar-teal/5 transition-all group">
+          <button className="w-12 h-12 rounded-xl bg-white border border-aahar-border flex items-center justify-center text-aahar-body hover:text-aahar-teal hover:border-aahar-teal hover:bg-aahar-teal/5 transition-all group shadow-sm">
             <Bookmark className="h-5 w-5 transition-transform group-hover:scale-110" />
           </button>
         </aside>
@@ -103,13 +103,13 @@ export default async function BlogPostPage({ params }: PageProps) {
               prose-headings:text-aahar-dark prose-headings:font-bold prose-headings:tracking-tight
               prose-p:text-aahar-body/80 prose-p:leading-relaxed prose-p:font-medium
               prose-blockquote:border-l-4 prose-blockquote:border-aahar-teal prose-blockquote:bg-aahar-teal/5 prose-blockquote:px-8 prose-blockquote:py-4 prose-blockquote:rounded-r-xl prose-blockquote:italic prose-blockquote:text-aahar-teal
-              prose-img:rounded-xl
+              prose-img:rounded-2xl
               prose-strong:text-aahar-dark prose-strong:font-bold"
             dangerouslySetInnerHTML={{ __html: blog.content }}
           />
 
           {/* Tags */}
-          <div className="mt-16 pt-12 border-t border-aahar-wash flex flex-wrap gap-3">
+          <div className="mt-16 pt-12 border-t border-aahar-border/60 flex flex-wrap gap-3">
             {blog.tags.map(tag => (
               <span key={tag} className="px-5 py-2 bg-aahar-wash text-aahar-body text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-aahar-teal hover:text-white transition-colors cursor-pointer">
                 #{tag}
@@ -119,11 +119,11 @@ export default async function BlogPostPage({ params }: PageProps) {
         </div>
 
         {/* Author Bio (Optional Sidebar) */}
-        <aside className="hidden xl:block w-80 space-y-10 sticky top-32 h-fit">
-          <div className="p-8 bg-aahar-wash/50 rounded-xl border border-aahar-wash">
+        <aside className="hidden xl:block w-80 space-y-8 sticky top-32 h-fit">
+          <div className="p-8 bg-white rounded-2xl border border-aahar-border shadow-sm">
             <h3 className="text-xs font-black uppercase tracking-widest text-aahar-dark mb-6">About the Author</h3>
             <div className="space-y-4">
-              <div className="relative w-16 h-16 rounded-xl overflow-hidden">
+              <div className="relative w-16 h-16 rounded-2xl overflow-hidden border border-aahar-border">
                 <Image src={blog.author.avatar || ""} alt={blog.author.name} fill className="object-cover" />
               </div>
               <div>
@@ -135,13 +135,13 @@ export default async function BlogPostPage({ params }: PageProps) {
             </div>
           </div>
           
-          <div className="p-8 bg-aahar-dark rounded-xl text-white">
-            <h3 className="text-xs font-black uppercase tracking-widest text-white/40 mb-6">Want to get certified?</h3>
-            <p className="text-sm font-medium text-white/80 leading-relaxed mb-8">
-              Join the Aahar network and build trust with your customers today.
+          <div className="p-8 bg-aahar-dark rounded-2xl text-white shadow-xl">
+            <h3 className="text-xs font-black uppercase tracking-widest text-white/40 mb-4">Want to get certified?</h3>
+            <p className="text-sm font-medium text-white/80 leading-relaxed mb-6">
+              Join the AAHAR network and build trust with your customers today.
             </p>
-            <Link href="/certify">
-              <button className="w-full bg-aahar-teal py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-aahar-teal/90 transition-colors shadow-lg shadow-aahar-teal/20">
+            <Link href="/certify" className="block">
+              <button className="w-full h-14 bg-aahar-teal rounded-xl text-xs font-black uppercase tracking-wider hover:bg-aahar-teal/90 transition-colors shadow-lg shadow-aahar-teal/20">
                 Apply Now
               </button>
             </Link>

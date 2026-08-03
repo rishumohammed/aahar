@@ -22,7 +22,7 @@ export function HotelCard({ hotel, className }: HotelCardProps) {
   return (
     <Link 
       href={`/hotel/${hotel.slug}`}
-      className={`group flex flex-col relative overflow-hidden rounded-xl bg-white border border-aahar-border transition-all duration-500 hover:shadow-2xl hover:shadow-aahar-dark/5 hover:-translate-y-2 w-full ${className || ""}`}
+      className={`group flex flex-col relative overflow-hidden rounded-2xl bg-white border border-aahar-border transition-all duration-500 hover:shadow-2xl hover:shadow-aahar-dark/5 hover:-translate-y-2 w-full ${className || ""}`}
     >
       {/* Top Image Section */}
       <div className="relative aspect-[4/3] w-full overflow-hidden">

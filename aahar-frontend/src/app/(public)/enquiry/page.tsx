@@ -120,13 +120,13 @@ export default function EnquiryPage() {
           Back to Home
         </Link>
 
-        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-0 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-xl border border-aahar-border overflow-hidden">
           {/* Header */}
           <div className="bg-aahar-teal text-white py-8 sm:py-12 px-4 sm:px-8 text-center relative">
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070')] opacity-10 bg-cover bg-center mix-blend-overlay" />
             <div className="relative z-10">
-              <h1 className="text-4xl md:text-5xl font-bold font-serif italic mb-4">List your business</h1>
-              <p className="text-lg text-white/80 max-w-xl mx-auto">
+              <h1 className="text-3xl md:text-5xl font-black tracking-tight uppercase mb-3">List your business</h1>
+              <p className="text-base sm:text-lg text-white/80 max-w-xl mx-auto font-medium">
                 Join India & GCC's fastest growing hospitality trust platform.
               </p>
             </div>
@@ -370,7 +370,7 @@ export default function EnquiryPage() {
                 <div className="pt-6 border-t border-aahar-wash">
                   <Button 
                     type="submit" 
-                    className="w-full bg-aahar-teal hover:bg-aahar-teal/90 text-white rounded-xl py-7 font-black text-lg uppercase tracking-widest shadow-[0_4px_14px_0_rgba(10,123,123,0.39)] transition-all hover:shadow-[0_6px_20px_rgba(10,123,123,0.23)] hover:-translate-y-0.5"
+                    className="w-full bg-aahar-teal hover:bg-aahar-teal/90 text-white rounded-xl h-14 font-black text-sm uppercase tracking-widest shadow-xl shadow-aahar-teal/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
                   >
                     Submit Enquiry
                   </Button>

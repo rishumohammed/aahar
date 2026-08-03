@@ -253,10 +253,10 @@ export default async function HomePage() {
               Join our certified network today.
             </h3>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto shrink-0">
-              <Button asChild className="bg-white text-aahar-teal hover:bg-white/90 rounded-2xl px-6 sm:px-8 py-6 font-extrabold text-xs sm:text-sm shadow-xl transition-all hover:scale-105 active:scale-95">
+              <Button asChild className="bg-white text-aahar-teal hover:bg-white/90 rounded-xl h-14 px-8 font-black uppercase tracking-wider text-xs shadow-xl transition-all hover:scale-105 active:scale-95">
                 <Link href="/enquiry">List your restaurant / hotel</Link>
               </Button>
-              <Button asChild className="bg-aahar-rose text-white hover:bg-aahar-rose/90 rounded-2xl px-6 sm:px-8 py-6 font-extrabold text-xs sm:text-sm border-0 shadow-xl shadow-aahar-rose/30 transition-all hover:scale-105 active:scale-95">
+              <Button asChild className="bg-aahar-rose text-white hover:bg-aahar-rose/90 rounded-xl h-14 px-8 font-black uppercase tracking-wider text-xs border-0 shadow-xl shadow-aahar-rose/30 transition-all hover:scale-105 active:scale-95">
                 <Link href="/enquiry">Get AAHAR certified</Link>
               </Button>
             </div>

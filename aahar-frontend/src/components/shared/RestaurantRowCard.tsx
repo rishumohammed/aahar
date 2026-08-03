@@ -26,7 +26,7 @@ export function RestaurantRowCard({ restaurant }: RestaurantRowCardProps) {
   return (
     <Link 
       href={`/restaurant/${restaurant.slug}`}
-      className="group block relative overflow-hidden rounded-xl bg-white border-2 border-aahar-border transition-all hover:border-aahar-teal hover:shadow-2xl hover:shadow-aahar-teal/5"
+      className="group block relative overflow-hidden rounded-2xl bg-white border border-aahar-border transition-all hover:border-aahar-teal hover:shadow-2xl hover:shadow-aahar-teal/5"
     >
       <div className="flex flex-col md:flex-row p-4 md:p-6 gap-6 md:gap-10">
         {/* Left Image Section */}

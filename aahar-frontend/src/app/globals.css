@@ -105,7 +105,13 @@
 
   /* AAHAR UI Components */
   .badge {
-    @apply px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border;
+    @apply px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border inline-flex items-center gap-1;
+  }
+  .badge-micro {
+    @apply px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border inline-flex items-center gap-1;
+  }
+  .badge-standard {
+    @apply px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border inline-flex items-center gap-1.5;
   }
   .badge-pending {
     @apply bg-amber-50 text-amber-700 border-amber-200;
@@ -150,7 +156,7 @@
   }
 
   .card {
-    @apply bg-white border border-aahar-border rounded-[2rem] shadow-sm;
+    @apply bg-white border border-aahar-border rounded-2xl shadow-sm;
   }
 
   .tab-nav {

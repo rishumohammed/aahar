@@ -51,7 +51,7 @@ export default async function BlogPage() {
               <Link 
                 key={blog.id} 
                 href={`/blog/${blog.slug}`}
-                className="group flex flex-col h-full bg-white rounded-xl border border-aahar-wash overflow-hidden hover:shadow-2xl hover:shadow-aahar-teal/5 transition-all duration-500 hover:-translate-y-2"
+                className="group flex flex-col h-full bg-white rounded-2xl border border-aahar-border overflow-hidden hover:shadow-2xl hover:shadow-aahar-teal/5 transition-all duration-500 hover:-translate-y-2"
               >
                 {/* Image Container */}
                 <div className="relative aspect-[16/10] overflow-hidden">
@@ -114,7 +114,7 @@ export default async function BlogPage() {
           </div>
 
           {blogs.length === 0 && (
-            <div className="text-center py-32 bg-aahar-wash/30 rounded-xl border-2 border-dashed border-aahar-border">
+            <div className="text-center py-32 bg-aahar-wash/30 rounded-2xl border border-dashed border-aahar-border">
               <p className="text-aahar-body/60 font-medium">No blog posts found yet. Check back soon!</p>
             </div>
           )}
@@ -124,22 +124,22 @@ export default async function BlogPage() {
       {/* Newsletter / CTA */}
       <section className="pb-24">
         <div className="container mx-auto max-w-7xl px-4">
-          <div className="bg-aahar-dark rounded-xl p-6 sm:p-12 md:p-20 relative overflow-hidden text-center">
+          <div className="bg-aahar-dark rounded-2xl p-6 sm:p-12 md:p-20 relative overflow-hidden text-center shadow-2xl">
             <div className="absolute top-0 right-0 w-64 h-64 bg-aahar-teal/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-aahar-rose/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
             
             <div className="relative z-10 max-w-2xl mx-auto">
-              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Stay in the loop</h2>
-              <p className="text-white/60 mb-10 text-lg">Subscribe to our newsletter for exclusive insights and updates from the world of Aahar.</p>
+              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">Stay in the loop</h2>
+              <p className="text-white/60 mb-10 text-base sm:text-lg">Subscribe to our newsletter for exclusive insights and updates from the world of AAHAR.</p>
               
-              <form className="flex flex-col sm:flex-row gap-4">
+              <form className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
                 <input 
                   type="email" 
                   placeholder="Enter your email address"
-                  className="flex-grow bg-white/5 border border-white/10 rounded-xl px-6 py-4 text-white focus:outline-none focus:border-aahar-teal transition-colors"
+                  className="flex-grow bg-white/10 border border-white/15 rounded-xl px-6 h-14 text-white placeholder:text-white/40 focus:outline-none focus:border-aahar-teal transition-colors"
                   required
                 />
-                <button type="submit" className="bg-aahar-teal text-white hover:bg-aahar-teal/90 px-10 py-4 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all active:scale-95 shadow-xl shadow-aahar-teal/20">
+                <button type="submit" className="bg-aahar-teal text-white hover:bg-aahar-teal/90 px-8 h-14 rounded-xl font-black uppercase tracking-wider text-xs transition-all active:scale-95 shadow-xl shadow-aahar-teal/20 shrink-0">
                   Subscribe
                 </button>
               </form>

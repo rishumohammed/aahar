@@ -50,43 +50,43 @@ export default function VerifyPage() {
           <p className="text-aahar-body">Verify AAHAR certification status for any restaurant or hotel</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-card border border-aahar-border mb-8">
+        <div className="bg-white rounded-2xl p-6 shadow-xl border border-aahar-border mb-8">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-aahar-body/50" />
               <Input
                 placeholder="Enter Certificate Number (AHR-...) or Business Name"
-                className="pl-12 h-14 rounded-xl border-aahar-border focus-visible:ring-aahar-teal"
+                className="pl-12 h-14 rounded-xl border-aahar-border focus-visible:ring-aahar-teal text-base"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleVerify()}
               />
             </div>
             <Button 
-              className="h-14 px-8 rounded-xl bg-aahar-teal hover:bg-aahar-teal/90 text-white font-bold w-full sm:w-auto shrink-0"
+              className="h-14 px-8 rounded-xl bg-aahar-teal hover:bg-aahar-teal/90 text-white font-black uppercase tracking-wider text-xs w-full sm:w-auto shrink-0 shadow-xl shadow-aahar-teal/20 transition-all hover:scale-105 active:scale-95"
               onClick={() => handleVerify()}
               disabled={loading}
             >
               {loading ? "Verifying..." : "Verify Now"}
             </Button>
           </div>
-          {error && <p className="mt-4 text-sm text-red-500 text-center">{error}</p>}
+          {error && <p className="mt-4 text-sm text-rose-600 font-bold text-center">{error}</p>}
         </div>
 
         {result && !Array.isArray(result) && (
-          <div className="bg-white rounded-2xl overflow-hidden shadow-card border border-aahar-border animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="bg-white rounded-2xl overflow-hidden shadow-xl border border-aahar-border animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className={`p-6 text-center ${
-              result.status === "active" ? "bg-green-50" : 
-              result.status === "expiring" ? "bg-amber-50" : "bg-red-50"
+              result.status === "active" ? "bg-emerald-50 border-b border-emerald-100" : 
+              result.status === "expiring" ? "bg-amber-50 border-b border-amber-100" : "bg-rose-50 border-b border-rose-100"
             }`}>
               {result.status === "active" ? (
-                <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-2" />
+                <CheckCircle2 className="h-12 w-12 text-emerald-600 mx-auto mb-2" />
               ) : result.status === "expiring" ? (
-                <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-2" />
+                <AlertTriangle className="h-12 w-12 text-amber-600 mx-auto mb-2" />
               ) : (
-                <XCircle className="h-12 w-12 text-red-500 mx-auto mb-2" />
+                <XCircle className="h-12 w-12 text-rose-600 mx-auto mb-2" />
               )}
-              <h2 className="text-2xl font-bold text-aahar-dark uppercase tracking-wider">
+              <h2 className="text-2xl font-black text-aahar-dark uppercase tracking-wider">
                 {result.status === "active" ? "Verified Active" : 
                  result.status === "expiring" ? "Expiring Soon" : "Certificate Expired"}
               </h2>

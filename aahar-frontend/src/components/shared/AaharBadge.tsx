@@ -12,11 +12,11 @@ interface Props {
 }
 
 const STATUS_STYLES: Record<CertStatus, { ring: string; dot: string; label: string }> = {
-  active:    { ring: "border-teal-400",  dot: "bg-teal-400",  label: "Certified" },
-  expiring:  { ring: "border-warning",   dot: "bg-warning",   label: "Expiring soon" },
-  expired:   { ring: "border-error",     dot: "bg-error",     label: "Expired" },
-  suspended: { ring: "border-error",     dot: "bg-error/60",  label: "Suspended" },
-  revoked:   { ring: "border-mid",       dot: "bg-mid",       label: "Revoked" },
+  active:    { ring: "border-aahar-teal",  dot: "bg-aahar-teal",  label: "Certified" },
+  expiring:  { ring: "border-amber-500",   dot: "bg-amber-500",   label: "Expiring soon" },
+  expired:   { ring: "border-rose-500",    dot: "bg-rose-500",    label: "Expired" },
+  suspended: { ring: "border-rose-500",    dot: "bg-rose-500/60", label: "Suspended" },
+  revoked:   { ring: "border-aahar-body/40", dot: "bg-aahar-body/40", label: "Revoked" },
 };
 
 export default function AaharBadge({
@@ -30,8 +30,8 @@ export default function AaharBadge({
 }: Props) {
   const styles = STATUS_STYLES[status];
   const isAccommodation = type === "accommodation";
-  const borderColor = isAccommodation ? "border-rose-400" : styles.ring;
-  const logoColor   = isAccommodation ? "text-rose-400"   : "text-teal-400";
+  const borderColor = isAccommodation ? "border-aahar-rose" : styles.ring;
+  const logoColor   = isAccommodation ? "text-aahar-rose"   : "text-aahar-teal";
 
   const certYear = expiresAt
     ? new Date(expiresAt).getFullYear().toString()
@@ -44,7 +44,7 @@ export default function AaharBadge({
         ? "badge-cert"
         : status === "expiring"
         ? "badge-pending"
-        : "badge bg-error-bg text-error border border-error/30";
+        : "badge bg-rose-50 text-rose-600 border border-rose-200";
     return (
       <span className={chip}>
         <ShieldCheck size={10} />
@@ -65,19 +65,19 @@ export default function AaharBadge({
 
     return (
       <div
-        className={`inline-flex flex-col items-center border-[1.5px] rounded-lg bg-white
+        className={`inline-flex flex-col items-center border-[1.5px] rounded-xl bg-white
                     ${borderColor} ${sizes[size]}`}
       >
         <span className={`font-bold tracking-[0.12em] ${logoSizes[size]} ${logoColor}`}>
           AAHAR
         </span>
-        <span className={`tracking-wider text-mid ${subSizes[size]}`}>
+        <span className={`tracking-wider text-aahar-body/60 ${subSizes[size]}`}>
           {isAccommodation ? "ACCOMMODATION" : "CERTIFIED"}
         </span>
         {isAccommodation && starRating ? (
-          <span className="text-rose-400 text-[9px]">{"★".repeat(starRating)}</span>
+          <span className="text-aahar-rose text-[9px]">{"★".repeat(starRating)}</span>
         ) : (
-          <span className={`${subSizes[size]} text-rose-400`}>{certYear}</span>
+          <span className={`${subSizes[size]} text-aahar-rose`}>{certYear}</span>
         )}
       </div>
     );
@@ -86,10 +86,10 @@ export default function AaharBadge({
   // ── Widget variant (sidebar / profile page) ──────────
   return (
     <div
-      className={`border-2 rounded-xl p-3 text-center
-                  ${isAccommodation ? "border-rose-400 bg-rose-50" : "border-teal-400 bg-teal-50"}`}
+      className={`border-2 rounded-xl p-4 text-center
+                  ${isAccommodation ? "border-aahar-rose/40 bg-aahar-rose/5" : "border-aahar-teal/40 bg-aahar-teal/5"}`}
     >
-      <div className="text-2xs text-mid tracking-widest uppercase mb-1">
+      <div className="text-[10px] text-aahar-body/60 tracking-widest uppercase mb-1 font-bold">
         {isAccommodation ? "AAHAR Accommodation" : "AAHAR Certification"}
       </div>
       <div className={`text-xl font-bold tracking-[0.15em] ${logoColor}`}>AAHAR</div>
@@ -99,7 +99,7 @@ export default function AaharBadge({
           {Array.from({ length: 5 }).map((_, i) => (
             <span
               key={i}
-              className={`text-base ${i < starRating ? "text-teal-400" : "text-border"}`}
+              className={`text-base ${i < starRating ? "text-amber-400" : "text-aahar-border"}`}
             >
               ★
             </span>
@@ -108,17 +108,17 @@ export default function AaharBadge({
       ) : (
         <div className="flex items-center justify-center gap-1.5 my-1">
           <span className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
-          <span className="text-2xs text-mid">{styles.label}</span>
+          <span className="text-[10px] font-bold text-aahar-body/70">{styles.label}</span>
         </div>
       )}
 
       {expiresAt && (
-        <div className="text-2xs text-mid">
+        <div className="text-[10px] text-aahar-body/60 mt-1">
           Valid until {new Date(expiresAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
         </div>
       )}
       {certNumber && (
-        <div className="text-[9px] text-rose-400 mt-0.5 font-mono">{certNumber}</div>
+        <div className="text-[10px] text-aahar-rose mt-1 font-mono font-bold">{certNumber}</div>
       )}
     </div>
   );

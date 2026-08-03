@@ -127,7 +127,7 @@ export default function SearchPage() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="aspect-[4/5] bg-white border-2 border-aahar-border animate-pulse rounded-xl" />
+              <div key={i} className="aspect-[4/5] bg-white border border-aahar-border animate-pulse rounded-2xl" />
             ))}
           </div>
         ) : (
@@ -145,8 +145,8 @@ export default function SearchPage() {
             </div>
 
             {results.restaurants.length === 0 && results.hotels.length === 0 && (
-              <div className="text-center py-40 bg-white rounded-xl border-2 border-dashed border-aahar-border space-y-6">
-                <div className="w-20 h-20 bg-aahar-wash rounded-full flex items-center justify-center mx-auto text-aahar-body/20">
+              <div className="text-center py-40 bg-white rounded-2xl border border-dashed border-aahar-border space-y-6 shadow-sm">
+                <div className="w-20 h-20 bg-aahar-wash rounded-full flex items-center justify-center mx-auto text-aahar-body/30">
                   <Filter className="h-10 w-10" />
                 </div>
                 <div>
@@ -156,7 +156,7 @@ export default function SearchPage() {
                 <Button 
                   variant="link" 
                   onClick={() => setFilters(prev => ({ ...prev, certified: false, price: "", category: "" }))}
-                  className="text-aahar-teal font-bold uppercase tracking-widest mt-4"
+                  className="text-aahar-teal font-black uppercase tracking-widest text-xs mt-4"
                 >
                   Clear Standard Filters
                 </Button>
@@ -171,9 +171,9 @@ export default function SearchPage() {
               variant="outline" 
               disabled={page === 1} 
               onClick={() => { setPage(p => p - 1); window.scrollTo(0, 0); }}
-              className="h-16 px-10 rounded-2xl border-2 border-aahar-border font-black uppercase text-[10px] tracking-widest hover:border-aahar-teal hover:text-aahar-teal transition-all disabled:opacity-20"
+              className="h-14 px-8 rounded-xl border border-aahar-border font-black uppercase text-xs tracking-wider hover:border-aahar-teal hover:text-aahar-teal transition-all disabled:opacity-20 shadow-sm"
             >
-              Previous Wave
+              Previous Page
             </Button>
             <div className="flex items-center gap-2">
                {[...Array(Math.ceil(total / 20))].map((_, i) => (
@@ -184,9 +184,9 @@ export default function SearchPage() {
               variant="outline" 
               disabled={page * 20 >= total} 
               onClick={() => { setPage(p => p + 1); window.scrollTo(0, 0); }}
-              className="h-16 px-10 rounded-2xl border-2 border-aahar-border font-black uppercase text-[10px] tracking-widest hover:border-aahar-teal hover:text-aahar-teal transition-all disabled:opacity-20"
+              className="h-14 px-8 rounded-xl border border-aahar-border font-black uppercase text-xs tracking-wider hover:border-aahar-teal hover:text-aahar-teal transition-all disabled:opacity-20 shadow-sm"
             >
-              Next Discovery
+              Next Page
             </Button>
           </div>
         )}
