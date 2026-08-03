@@ -1,8 +1,9 @@
 "use client";
 
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { getSocket } from "@/lib/socket";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,111 @@ const NAV_LINKS = [
   { label: "Certify", href: "/certify" },
   { label: "Verify", href: "/verify" },
 ];
+
+function DesktopNavLinks() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const mode = searchParams?.get("mode");
+
+  const isLinkActive = (href: string) => {
+    if (href === "/search?mode=eat") {
+      return (pathname === "/search" && (mode === "eat" || !mode)) || pathname?.startsWith("/restaurant");
+    }
+    if (href === "/search?mode=stay") {
+      return (pathname === "/search" && mode === "stay") || pathname?.startsWith("/hotel");
+    }
+    if (href === "/certify") {
+      return pathname === "/certify" || pathname?.startsWith("/certify");
+    }
+    if (href === "/verify") {
+      return pathname === "/verify" || pathname?.startsWith("/verify");
+    }
+    return pathname === href;
+  };
+
+  return (
+    <div className="hidden lg:flex items-center gap-1 bg-[#F2F4F5] p-1 rounded-full border border-aahar-border/70 shadow-xs">
+      {NAV_LINKS.map((link) => {
+        const active = isLinkActive(link.href);
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={cn(
+              "px-4 py-1.5 rounded-full text-xs uppercase tracking-wider transition-all duration-200",
+              active
+                ? "bg-aahar-dark text-white font-extrabold shadow-sm"
+                : "text-aahar-body/75 hover:text-aahar-dark hover:bg-white/60 font-bold"
+            )}
+          >
+            {link.label}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+function MobileNavLinks({ onSelect }: { onSelect: () => void }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const mode = searchParams?.get("mode");
+
+  const isLinkActive = (href: string) => {
+    if (href === "/search?mode=eat") {
+      return (pathname === "/search" && (mode === "eat" || !mode)) || pathname?.startsWith("/restaurant");
+    }
+    if (href === "/search?mode=stay") {
+      return (pathname === "/search" && mode === "stay") || pathname?.startsWith("/hotel");
+    }
+    if (href === "/certify") {
+      return pathname === "/certify" || pathname?.startsWith("/certify");
+    }
+    if (href === "/verify") {
+      return pathname === "/verify" || pathname?.startsWith("/verify");
+    }
+    return pathname === href;
+  };
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      {NAV_LINKS.map((link) => {
+        const active = isLinkActive(link.href);
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={onSelect}
+            className={cn(
+              "flex items-center justify-between text-sm px-4 py-3 rounded-xl transition-all",
+              active
+                ? "bg-aahar-dark text-white font-bold shadow-xs"
+                : "text-aahar-body hover:text-aahar-dark hover:bg-aahar-wash font-medium"
+            )}
+          >
+            <span>{link.label}</span>
+            {active && <span className="w-2 h-2 rounded-full bg-aahar-teal ring-2 ring-white/30" />}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+function NavLinksFallback() {
+  return (
+    <div className="hidden lg:flex items-center gap-1 bg-[#F2F4F5] p-1 rounded-full border border-aahar-border/70">
+      {NAV_LINKS.map((link) => (
+        <span
+          key={link.href}
+          className="px-4 py-1.5 rounded-full text-xs uppercase tracking-wider text-aahar-body/75 font-bold"
+        >
+          {link.label}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export default function Navbar() {
   const { user, isAuthenticated, token, clearAuth } = useAuthStore();
@@ -154,16 +260,10 @@ export default function Navbar() {
           </Link>
 
           {/* Center: Nav Links */}
-          <div className="hidden lg:flex items-center justify-center gap-8 flex-1">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-aahar-body hover:text-aahar-dark transition-colors duration-200"
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="hidden lg:flex items-center justify-center flex-1">
+            <Suspense fallback={<NavLinksFallback />}>
+              <DesktopNavLinks />
+            </Suspense>
           </div>
 
           {/* Right: Icons + Auth Buttons */}
@@ -327,17 +427,10 @@ export default function Navbar() {
               transition={{ duration: 0.2, ease: "easeInOut" }}
               className="lg:hidden bg-white border-t border-aahar-border overflow-hidden"
             >
-              <div className="container mx-auto max-w-7xl px-6 py-5 flex flex-col gap-1">
-                {NAV_LINKS.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="text-sm font-medium text-aahar-body hover:text-aahar-dark py-3 border-b border-aahar-border/40 last:border-0 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
+              <div className="container mx-auto max-w-7xl px-6 py-5 flex flex-col gap-2">
+                <Suspense>
+                  <MobileNavLinks onSelect={() => setMobileMenuOpen(false)} />
+                </Suspense>
                 <div className="pt-4 flex flex-col gap-2.5">
                   {isAuthenticated ? (
                     <>
