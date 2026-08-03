@@ -44,7 +44,7 @@ export default async function CertifyPage() {
             {/* Action Buttons */}
             <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button asChild className="bg-aahar-teal text-white hover:bg-aahar-teal/90 rounded-xl h-14 px-8 font-black uppercase tracking-wider text-xs border-0 shadow-xl shadow-aahar-teal/20 transition-all hover:scale-105 active:scale-95">
-                <Link href="/enquiry">Apply for Certification</Link>
+                <Link href="/enquiry">List Your Establishment</Link>
               </Button>
               <Button asChild variant="outline" className="bg-white hover:bg-aahar-wash text-aahar-dark hover:text-aahar-dark border border-aahar-border rounded-xl h-14 px-8 font-black uppercase tracking-wider text-xs shadow-sm transition-all hover:border-aahar-dark hover:shadow-md">
                 <a href="#how-it-works">See How It Works</a>
@@ -276,7 +276,7 @@ export default async function CertifyPage() {
                 {/* Action Buttons */}
                 <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                   <Button asChild className="bg-aahar-teal text-white hover:bg-aahar-teal/90 rounded-xl h-14 px-8 font-black uppercase tracking-wider text-xs border-0 shadow-xl shadow-aahar-teal/30 transition-all hover:scale-105 active:scale-95">
-                    <Link href="/enquiry">Begin Application Process</Link>
+                    <Link href="/enquiry">List Your Establishment</Link>
                   </Button>
                   <Button asChild variant="outline" className="bg-white/10 hover:bg-white/20 text-white hover:text-white backdrop-blur-md border border-white/20 rounded-xl h-14 px-8 font-black uppercase tracking-wider text-xs transition-all hover:border-white/40">
                     <Link href="/verify">Verify Existing Certificate</Link>

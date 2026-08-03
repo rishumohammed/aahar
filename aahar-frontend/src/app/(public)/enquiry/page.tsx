@@ -29,9 +29,7 @@ import { useSearchParams } from "next/navigation";
 import { INDIA_STATES, INDIA_STATES_AND_DISTRICTS } from "@/lib/mock/india-states";
 
 const formSchema = z.object({
-  enquiryType: z.enum(["list_business", "get_certified"], {
-    required_error: "Please select an enquiry type.",
-  }),
+  enquiryType: z.enum(["list_business", "get_certified"]).default("list_business"),
   entityType: z.enum(["restaurant", "hotel"], {
     required_error: "Please select a business type.",
   }),
@@ -77,10 +75,10 @@ export default function EnquiryPage() {
 
   async function onSubmit(data: FormValues) {
     try {
-      await leadApi.create(data);
+      await leadApi.create({ ...data, enquiryType: "list_business" });
       console.log("Enquiry submitted:", data);
-      toast.success("Enquiry Submitted Successfully!", {
-        description: "Our team will reach out to you within 24 hours.",
+      toast.success("Listing Enquiry Submitted!", {
+        description: "Our onboarding team will reach out to you within 24 hours.",
       });
       setSubmitted(true);
     } catch (error: any) {
@@ -100,7 +98,7 @@ export default function EnquiryPage() {
           </div>
           <h2 className="text-3xl font-bold text-aahar-dark">Thank You!</h2>
           <p className="text-aahar-body">
-            Your enquiry has been received. Our certification team will contact you shortly to begin the process.
+            Your listing enquiry has been received. Our onboarding team will contact you shortly to complete your establishment setup and grant Owner Portal access.
           </p>
           <Link href="/">
             <Button className="mt-4 bg-aahar-teal text-white hover:bg-aahar-teal/90 rounded-xl px-8 py-6 font-bold w-full uppercase tracking-wider shadow-md transition-all hover:shadow-lg">
@@ -125,9 +123,9 @@ export default function EnquiryPage() {
           <div className="bg-aahar-teal text-white py-8 sm:py-12 px-4 sm:px-8 text-center relative">
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070')] opacity-10 bg-cover bg-center mix-blend-overlay" />
             <div className="relative z-10">
-              <h1 className="text-3xl md:text-5xl font-black tracking-tight uppercase mb-3">List your business</h1>
+              <h1 className="text-3xl md:text-5xl font-black tracking-tight uppercase mb-3">List your establishment</h1>
               <p className="text-base sm:text-lg text-white/80 max-w-xl mx-auto font-medium">
-                Join India & GCC's fastest growing hospitality trust platform.
+                Join India & GCC's fastest growing hospitality trust network. Once listed, you can apply for AAHAR Certification directly from your Owner Portal.
               </p>
             </div>
           </div>
@@ -137,32 +135,6 @@ export default function EnquiryPage() {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-x-10">
-                  {/* Row 0: Enquiry Type */}
-                  <FormField
-                    control={form.control}
-                    name="enquiryType"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel className="text-[10px] font-black uppercase tracking-wider text-aahar-body mb-2 block">I want to...</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="py-6 rounded-xl border-aahar-border text-base h-[58px] bg-transparent focus:ring-0 focus:border-aahar-teal transition-colors">
-                              <SelectValue placeholder="Select an option" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="get_certified" className="py-3">
-                              <span className="text-base font-medium">Apply for Aahar Certification</span>
-                            </SelectItem>
-                            <SelectItem value="list_business" className="py-3">
-                              <span className="text-base font-medium">List my business on Aahar</span>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
 
                   {/* Row 1: Business Type */}
                   <FormField

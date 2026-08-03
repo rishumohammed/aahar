@@ -250,14 +250,11 @@ export default async function HomePage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12 max-w-5xl mx-auto">
             <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white text-center md:text-left leading-tight tracking-tight">
               Grow your trust with AAHAR. <br className="hidden md:block"/>
-              Join our certified network today.
+              List your establishment today.
             </h3>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto shrink-0">
+            <div className="flex justify-center md:justify-end w-full md:w-auto shrink-0">
               <Button asChild className="bg-white text-aahar-teal hover:bg-white/90 rounded-xl h-14 px-8 font-black uppercase tracking-wider text-xs shadow-xl transition-all hover:scale-105 active:scale-95">
                 <Link href="/enquiry">List your restaurant / hotel</Link>
-              </Button>
-              <Button asChild className="bg-aahar-rose text-white hover:bg-aahar-rose/90 rounded-xl h-14 px-8 font-black uppercase tracking-wider text-xs border-0 shadow-xl shadow-aahar-rose/30 transition-all hover:scale-105 active:scale-95">
-                <Link href="/enquiry">Get AAHAR certified</Link>
               </Button>
             </div>
           </div>

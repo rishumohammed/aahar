@@ -60,9 +60,9 @@ export default function TrustProcess() {
             <motion.div
               initial={{ opacity: 1, y: 0 }}
             >
-              <Link href="/enquiry">
+              <Link href="/certify">
                 <Button className="bg-aahar-teal hover:bg-aahar-teal/90 text-white rounded-xl h-14 px-8 text-xs font-black uppercase tracking-wider shadow-lg shadow-aahar-teal/20 group transition-all">
-                  Get Certified Now
+                  Explore Certification
                   <motion.span className="ml-2 inline-block" animate={{ x: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
                     →
                   </motion.span>
