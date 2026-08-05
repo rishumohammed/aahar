@@ -109,15 +109,19 @@ export const resetUserPassword = async (req: any, res: any) => {
     const user = await prisma.user.findUnique({ where: { id: req.params.id } });
     if (!user) return notFound(res, "User not found");
 
-    const defaultPassword = "Admin@123";
-    const passwordHash = await bcrypt.hash(defaultPassword, 10);
+    const newPassword = req.body?.newPassword?.trim() || "Admin@123";
+    if (newPassword.length < 6) {
+      return badRequest(res, "Password must be at least 6 characters long");
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
 
     await prisma.user.update({
       where: { id: req.params.id },
       data: { passwordHash }
     });
 
-    return ok(res, { email: user.email, password: defaultPassword }, "Password reset successfully");
+    return ok(res, { email: user.email, password: newPassword }, `Password for ${user.name} reset successfully`);
   } catch (e) { return serverError(res, e); }
 };
 

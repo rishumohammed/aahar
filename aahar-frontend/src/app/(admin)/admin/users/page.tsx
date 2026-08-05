@@ -10,20 +10,23 @@ import {
   ShieldCheck, 
   Mail, 
   Calendar, 
-  MoreVertical,
-  Loader2,
-  X,
-  Power,
-  PowerOff,
-  Pencil,
-  Trash2,
-  Building2,
-  Eye,
-  Key
+  MoreVertical, 
+  Loader2, 
+  X, 
+  Power, 
+  PowerOff, 
+  Pencil, 
+  Trash2, 
+  Building2, 
+  Eye, 
+  Key,
+  Copy,
+  Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const ROLE_BADGE: Record<string, string> = {
   super_admin: "bg-teal-50 text-teal-700 border border-teal-200",
@@ -46,6 +49,14 @@ export default function UserManagementPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [viewingUser, setViewingUser] = useState<any>(null);
   const [editingUser, setEditingUser] = useState<any>(null);
+  
+  // Reset Password State
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [userToReset, setUserToReset] = useState<any>(null);
+  const [newPasswordInput, setNewPasswordInput] = useState("Admin@123");
+  const [copied, setCopied] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "", email: "", phone: "", password: "", role: "consumer"
   });
@@ -144,14 +155,49 @@ export default function UserManagementPage() {
     }
   };
 
-  const handleResetPassword = async (user: any) => {
-    if (!confirm(`Are you sure you want to reset the password for ${user.name}?`)) return;
-    try {
-      await adminApi.resetPassword(user.id);
-      alert("Password reset successfully. The new password is: Admin@123");
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to reset password");
+  const handleOpenResetModal = (user: any) => {
+    setUserToReset(user);
+    setNewPasswordInput("Admin@123");
+    setCopied(false);
+    setResetSuccess(false);
+    setShowResetModal(true);
+  };
+
+  const handleGeneratePassword = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";
+    let pass = "";
+    for (let i = 0; i < 10; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
     }
+    setNewPasswordInput(pass);
+  };
+
+  const confirmResetPassword = async () => {
+    if (!userToReset) return;
+    if (!newPasswordInput || newPasswordInput.length < 6) {
+      toast.error("Password must be at least 6 characters long");
+      return;
+    }
+    setSaving(true);
+    try {
+      await adminApi.resetPassword(userToReset.id, newPasswordInput);
+      setResetSuccess(true);
+      toast.success(`Password for ${userToReset.name} has been reset successfully!`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to reset password");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const copyCredentials = () => {
+    if (!userToReset) return;
+    const originUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+    const text = `AAHAR Platform Credentials:\nEmail: ${userToReset.email}\nPassword: ${newPasswordInput}\nLogin URL: ${originUrl}/auth/login`;
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast.success("Credentials copied to clipboard!");
+    setTimeout(() => setCopied(false), 2500);
   };
 
   const filtered = users.filter(u => {
@@ -325,6 +371,14 @@ export default function UserManagementPage() {
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
+
+                      <button 
+                        onClick={() => handleOpenResetModal(user)}
+                        className="p-2 rounded-xl text-amber-600 bg-amber-50 hover:bg-amber-500 hover:text-white transition-all shadow-sm active:scale-95"
+                        title="Reset Password"
+                      >
+                        <Key className="h-4 w-4" />
+                      </button>
                       
                       {!["super_admin", "admin"].includes(user.role) && (
                         <button 
@@ -350,16 +404,6 @@ export default function UserManagementPage() {
                             <Trash2 className="h-4 w-4" />
                           </button>
                         )}
-                      
-                      {activeSection === "establishment" && (
-                        <button 
-                          onClick={() => handleResetPassword(user)}
-                          className="p-2 rounded-xl text-amber-600 bg-amber-50 hover:bg-amber-500 hover:text-white transition-all shadow-sm active:scale-95"
-                          title="Reset Password"
-                        >
-                          <Key className="h-4 w-4" />
-                        </button>
-                      )}
                     </div>
                   </td>
                 </tr>
@@ -541,6 +585,107 @@ export default function UserManagementPage() {
                   Cancel
                 </Button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Password Modal */}
+      {showResetModal && userToReset && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowResetModal(false)} />
+          <div className="relative w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 border border-amber-100">
+            <button onClick={() => setShowResetModal(false)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+              <X className="h-5 w-5" />
+            </button>
+            <div className="space-y-5">
+              <div className="space-y-1">
+                <div className="w-12 h-12 bg-amber-50 border border-amber-100 rounded-2xl flex items-center justify-center text-amber-600 mb-3 shadow-sm">
+                  <Key className="h-6 w-6" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">Reset User Password</h2>
+                <p className="text-sm font-medium text-slate-500">
+                  Assign a new password or generate a secure key for this account.
+                </p>
+              </div>
+
+              {/* User Identity Preview */}
+              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-bold text-slate-900">{userToReset.name}</p>
+                  <p className="text-xs font-medium text-slate-500">{userToReset.email}</p>
+                </div>
+                <span className={cn("px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider", ROLE_BADGE[userToReset.role] ?? "bg-slate-200 text-slate-800")}>
+                  {userToReset.role.replace(/_/g, " ")}
+                </span>
+              </div>
+
+              {!resetSuccess ? (
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">New Password</label>
+                      <button 
+                        type="button" 
+                        onClick={handleGeneratePassword} 
+                        className="text-xs font-bold text-admin-primary hover:underline flex items-center gap-1"
+                      >
+                        ⚡ Generate Secure
+                      </button>
+                    </div>
+                    <input 
+                      className="w-full px-4 h-11 text-sm font-mono font-medium bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-amber-500 outline-none transition-all" 
+                      placeholder="Enter new password" 
+                      value={newPasswordInput} 
+                      onChange={e => setNewPasswordInput(e.target.value)} 
+                    />
+                    <p className="text-[11px] text-slate-500">Default is <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700 font-bold">Admin@123</code></p>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <Button 
+                      onClick={confirmResetPassword} 
+                      disabled={saving || !newPasswordInput} 
+                      className="bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl h-11 flex-1 shadow-sm"
+                    >
+                      {saving ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Confirm Reset"}
+                    </Button>
+                    <Button onClick={() => setShowResetModal(false)} variant="outline" className="flex-1 rounded-xl h-11 border-slate-200 font-semibold text-slate-700 hover:bg-slate-50">
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 pt-1">
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center space-y-2">
+                    <div className="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto">
+                      <Check className="h-5 w-5" />
+                    </div>
+                    <p className="text-sm font-bold text-emerald-900">Password Updated Successfully!</p>
+                    <p className="text-xs text-emerald-700">The new login password is ready to share.</p>
+                    <div className="bg-white border border-emerald-200 rounded-lg p-2.5 font-mono text-sm font-bold text-slate-800 tracking-wide mt-2 select-all">
+                      {newPasswordInput}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button 
+                      onClick={copyCredentials} 
+                      className="bg-admin-primary hover:bg-admin-hover text-white font-semibold rounded-xl h-11 flex-1 shadow-sm flex items-center justify-center gap-2"
+                    >
+                      {copied ? <Check className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
+                      {copied ? "Copied!" : "Copy Details"}
+                    </Button>
+                    <Button 
+                      onClick={() => setShowResetModal(false)} 
+                      variant="outline" 
+                      className="flex-1 rounded-xl h-11 border-slate-200 font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                      Done
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
