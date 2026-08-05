@@ -88,7 +88,11 @@ export default function OwnerProfilePage() {
 
   // VIEW MODE
   const coverImage = restaurant.image || restaurant.photos?.cover || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80";
-  const amenitiesList = Object.keys(restaurant.amenities || {}).filter(k => restaurant.amenities[k]);
+  const amenitiesList = Array.isArray(restaurant.amenities)
+    ? restaurant.amenities
+    : (typeof restaurant.amenities === "object" && restaurant.amenities !== null)
+      ? Object.keys(restaurant.amenities).filter(k => (restaurant.amenities as any)[k])
+      : [];
 
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-8">
@@ -169,9 +173,9 @@ export default function OwnerProfilePage() {
             <div className="space-y-4">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Operating Amenities</h4>
               <div className="flex flex-wrap gap-2">
-                {amenitiesList.length > 0 ? amenitiesList.map(am => (
-                  <Badge key={am} variant="outline" className="px-3 py-1.5 border-slate-200 text-slate-600 font-medium bg-slate-50 capitalize">
-                    {am.replace(/([A-Z])/g, ' $1').trim()}
+                {amenitiesList.length > 0 ? amenitiesList.map((am: any) => (
+                  <Badge key={typeof am === "string" ? am : am.key || JSON.stringify(am)} variant="outline" className="px-3 py-1.5 border-slate-200 text-slate-600 font-medium bg-slate-50 capitalize">
+                    {typeof am === "string" ? am.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').trim() : am.label || am.key}
                   </Badge>
                 )) : (
                   <span className="text-sm text-slate-400 font-medium italic">No amenities specified.</span>
