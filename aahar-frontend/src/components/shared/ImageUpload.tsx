@@ -4,6 +4,8 @@ import { useState, useRef } from "react";
 import { uploadApi } from "@/lib/api";
 import { Upload, X, Loader2, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { MAX_PHOTO_SIZE_MB, validateFileSize } from "@/lib/upload";
 
 interface ImageUploadProps {
   value: string;
@@ -20,6 +22,13 @@ export function ImageUpload({ value, onChange, label, className }: ImageUploadPr
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const sizeError = validateFileSize(file, MAX_PHOTO_SIZE_MB);
+    if (sizeError) {
+      toast.error(sizeError);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     setUploading(true);
     try {
       const res = await uploadApi.singlePhoto(file);
@@ -27,11 +36,14 @@ export function ImageUpload({ value, onChange, label, className }: ImageUploadPr
       // Convert to full URL for preview
       const fullUrl = url.startsWith("http") ? url : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5000"}${url}`;
       onChange(fullUrl);
-    } catch (error) {
+      toast.success("Image uploaded successfully");
+    } catch (error: any) {
       console.error("Upload failed", error);
-      alert("Failed to upload image. Please try again.");
+      const errMsg = error.response?.data?.message || error.message || `Failed to upload image. Maximum allowed size is ${MAX_PHOTO_SIZE_MB}MB.`;
+      toast.error(errMsg);
     } finally {
       setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -70,7 +82,7 @@ export function ImageUpload({ value, onChange, label, className }: ImageUploadPr
                 </div>
                 <div className="text-center">
                   <p className="text-xs font-black text-aahar-dark uppercase tracking-widest">Select Image</p>
-                  <p className="text-[9px] text-aahar-body/40 mt-1 uppercase font-bold tracking-tight">JPG, PNG or WEBP (Max 5MB)</p>
+                  <p className="text-[9px] text-aahar-body/40 mt-1 uppercase font-bold tracking-tight">JPG, PNG or WEBP (Max {MAX_PHOTO_SIZE_MB}MB)</p>
                 </div>
               </>
             )}

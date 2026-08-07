@@ -14,7 +14,8 @@ import {
 import { restaurantApi } from"@/lib/api";
 import { 
  uploadRestaurantPhotos, 
- deleteRestaurantPhoto 
+ deleteRestaurantPhoto,
+ MAX_PHOTO_SIZE_MB 
 } from"@/lib/upload";
 import { Button } from"@/components/ui/button";
 import { Card } from"@/components/ui/card";
@@ -75,18 +76,18 @@ export default function PhotoGalleryPage() {
  setToasts(prev => [...prev, { id, message, type }]);
  setTimeout(() => {
  setToasts(prev => prev.filter(t => t.id !== id));
- }, 3000);
+ }, 3500);
  }, []);
 
  // ── Dropzone Handlers ─────────────────────────────────────
  const onDrop = useCallback(async (acceptedFiles: File[]) => {
  const valid = acceptedFiles.filter(f => {
  if (!f.type.startsWith("image/")) {
- showToast(`${f.name} — not an image`,"error");
+ showToast(`"${f.name}" is not an image file`,"error");
  return false;
  }
- if (f.size > 5 * 1024 * 1024) {
- showToast(`${f.name} — exceeds 5MB`,"error");
+ if (f.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) {
+ showToast(`"${f.name}" (${(f.size / (1024 * 1024)).toFixed(1)}MB) exceeds the maximum allowed size of ${MAX_PHOTO_SIZE_MB}MB.`,"error");
  return false;
  }
  return true;
@@ -111,9 +112,9 @@ export default function PhotoGalleryPage() {
  };
  setPhotos(photosToSave);
  await restaurantApi.update(restaurantId, { photos: photosToSave }).catch(console.error);
- showToast(`${urls.length} photo(s) uploaded`,"success");
+ showToast(`${urls.length} photo(s) uploaded successfully`,"success");
  } catch (err: any) {
- showToast(err.message ??"Upload failed","error");
+ showToast(err.message ?? `Upload failed. Maximum allowed size is ${MAX_PHOTO_SIZE_MB}MB.`,"error");
  } finally {
  setUploading(false);
  setProgress(0);
@@ -153,13 +154,14 @@ export default function PhotoGalleryPage() {
  <div className="absolute inset-0 z-50 bg-admin-primary/90 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center border-4 border-dashed border-white m-4 pointer-events-none">
  <UploadCloud className="h-20 w-20 text-white animate-bounce mb-4" />
  <h2 className="text-3xl font-bold text-white tracking-tight uppercase">Drop photos here</h2>
+ <p className="text-white/80 text-sm font-medium mt-1">Supports JPG, PNG, WEBP up to {MAX_PHOTO_SIZE_MB}MB each</p>
  </div>
  )}
  {/* Header */}
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
  <div>
  <h1 className="text-3xl font-bold text-slate-800 tracking-tighter">Photo Gallery</h1>
- <p className="text-slate-500 font-medium mt-1">Manage high-quality visuals for your business profile.</p>
+ <p className="text-slate-500 font-medium mt-1">Manage high-quality visuals for your business profile. Maximum file size allowed is {MAX_PHOTO_SIZE_MB}MB per photo.</p>
  </div>
  <Button onClick={open} disabled={uploading} className="bg-admin-primary hover:bg-admin-primary-hover text-white shadow-md font-semibold h-12 px-6 rounded-lg text-base">
  <UploadCloud className="h-5 w-5 mr-2" /> 

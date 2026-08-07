@@ -23,20 +23,54 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 1 * 1024 * 1024 }, // 1MB max for photos
   fileFilter: (req, file, cb) => {
-    const allowed = /jpeg|jpg|png|webp/;
+    const allowed = /jpeg|jpg|png|webp|gif|svg/;
     const ext = allowed.test(path.extname(file.originalname).toLowerCase());
-    const mime = allowed.test(file.mimetype);
-    if (ext && mime) return cb(null, true);
-    cb(new Error("Only images are allowed"));
+    const mime = file.mimetype.startsWith("image/");
+    if (ext || mime) return cb(null, true);
+    cb(new Error("Only image files (JPEG, JPG, PNG, WEBP) are allowed. Maximum size: 1MB."));
   },
 });
 
+// Middleware wrapper for single photo upload error handling
+const handleSinglePhoto = (req: any, res: any, next: any) => {
+  upload.single("file")(req, res, (err: any) => {
+    if (err) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return badRequest(res, "File size exceeds the maximum allowed limit of 1MB for photos.");
+      }
+      return badRequest(res, err.message || "Failed to upload image.");
+    }
+    next();
+  });
+};
+
+// Middleware wrapper for multiple photos upload error handling
+const handleMultiplePhotos = (req: any, res: any, next: any) => {
+  upload.array("files", 10)(req, res, (err: any) => {
+    if (err) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return badRequest(res, "One or more files exceed the maximum allowed limit of 1MB per photo.");
+      }
+      if (err.code === "LIMIT_UNEXPECTED_FILE") {
+        return badRequest(res, "Maximum of 10 photos can be uploaded at once.");
+      }
+      return badRequest(res, err.message || "Failed to upload images.");
+    }
+    next();
+  });
+};
+
+// GET /api/upload/provider
+router.get("/provider", (req: any, res: any) => {
+  return ok(res, { provider: process.env.STORAGE_PROVIDER || "local" });
+});
+
 // POST /api/upload/photo
-router.post("/photo", verifyToken, upload.single("file"), (req: any, res: any) => {
+router.post("/photo", verifyToken, handleSinglePhoto, (req: any, res: any) => {
   try {
-    if (!req.file) return badRequest(res, "No file uploaded");
+    if (!req.file) return badRequest(res, "No file uploaded. Please select an image file (max 1MB).");
     const url = `/uploads/photos/${req.file.filename}`;
     return ok(res, { url }, "File uploaded successfully");
   } catch (e) {
@@ -45,9 +79,11 @@ router.post("/photo", verifyToken, upload.single("file"), (req: any, res: any) =
 });
 
 // POST /api/upload/photos (Multiple)
-router.post("/photos", verifyToken, upload.array("files", 10), (req: any, res: any) => {
+router.post("/photos", verifyToken, handleMultiplePhotos, (req: any, res: any) => {
   try {
-    if (!req.files || req.files.length === 0) return badRequest(res, "No files uploaded");
+    if (!req.files || (req.files as any[]).length === 0) {
+      return badRequest(res, "No files uploaded. Please select image files (max 1MB each).");
+    }
     const urls = (req.files as any[]).map(f => `/uploads/photos/${f.filename}`);
     return ok(res, { urls }, "Files uploaded successfully");
   } catch (e) {
@@ -70,20 +106,33 @@ const docStorage = multer.diskStorage({
 
 const uploadDoc = multer({
   storage: docStorage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max for documents
   fileFilter: (req, file, cb) => {
-    const allowed = /jpeg|jpg|png|webp|pdf/;
+    const allowed = /jpeg|jpg|png|webp|pdf|doc|docx/;
     const ext = allowed.test(path.extname(file.originalname).toLowerCase());
-    const mime = allowed.test(file.mimetype) || file.mimetype === 'application/pdf';
-    if (ext && mime) return cb(null, true);
-    cb(new Error("Invalid file type"));
+    const mime = allowed.test(file.mimetype) || file.mimetype === 'application/pdf' || file.mimetype.startsWith("image/");
+    if (ext || mime) return cb(null, true);
+    cb(new Error("Invalid file type. Allowed formats: PDF, JPG, PNG, WEBP, DOC, DOCX. Maximum size: 5MB."));
   },
 });
 
+// Middleware wrapper for document upload error handling
+const handleDocUpload = (req: any, res: any, next: any) => {
+  uploadDoc.single("file")(req, res, (err: any) => {
+    if (err) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return badRequest(res, "File size exceeds the maximum allowed limit of 5MB for documents.");
+      }
+      return badRequest(res, err.message || "Failed to upload document.");
+    }
+    next();
+  });
+};
+
 // POST /api/upload/document/:applicationId
-router.post("/document/:applicationId", verifyToken, uploadDoc.single("file"), async (req: any, res: any) => {
+router.post("/document/:applicationId", verifyToken, handleDocUpload, async (req: any, res: any) => {
   try {
-    if (!req.file) return badRequest(res, "No file uploaded");
+    if (!req.file) return badRequest(res, "No file uploaded. Please select a document file (max 5MB).");
     const { docType } = req.body;
     const applicationId = req.params.applicationId;
     const url = `/uploads/documents/${req.file.filename}`;

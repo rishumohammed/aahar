@@ -400,7 +400,7 @@ export default function Navbar() {
               </>
             ) : (
               <div className="hidden lg:flex items-center gap-2.5">
-                <Button asChild variant="outline" className="h-9 px-5 rounded-xl border-aahar-border text-aahar-dark bg-white hover:bg-aahar-wash text-[13px] font-semibold shadow-none transition-all">
+                <Button asChild variant="outline" className="h-9 px-5 rounded-xl border-aahar-border text-aahar-dark bg-white hover:bg-aahar-wash hover:text-aahar-dark text-[13px] font-semibold shadow-none transition-all">
                   <Link href="/auth/register">Sign Up</Link>
                 </Button>
                 <Button asChild className="h-9 px-5 rounded-xl bg-aahar-dark text-white hover:bg-aahar-dark/90 text-[13px] font-semibold shadow-none border-0 transition-all">
@@ -449,7 +449,7 @@ export default function Navbar() {
                       <Button asChild className="w-full h-11 rounded-xl bg-aahar-dark text-white text-sm font-semibold border-0">
                         <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
                       </Button>
-                      <Button asChild variant="outline" className="w-full h-11 rounded-xl border-aahar-border text-aahar-dark bg-white text-sm font-semibold">
+                      <Button asChild variant="outline" className="w-full h-11 rounded-xl border-aahar-border text-aahar-dark bg-white hover:bg-aahar-wash hover:text-aahar-dark text-sm font-semibold">
                         <Link href="/auth/register" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
                       </Button>
                     </>

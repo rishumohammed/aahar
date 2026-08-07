@@ -5,6 +5,7 @@ import { Send, MessageSquare, Loader2, AlertCircle, Paperclip, X, ChevronDown } 
 import { format } from "date-fns";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { applicationApi, ownerApi, uploadApi } from "@/lib/api";
+import { MAX_PHOTO_SIZE_MB, validateFileSize } from "@/lib/upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { io, Socket } from "socket.io-client";
@@ -278,7 +279,17 @@ export function FloatingSupportChat() {
                 ref={fileInputRef} 
                 className="hidden" 
                 accept="image/*" 
-                onChange={(e) => setAttachment(e.target.files?.[0] || null)}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const err = validateFileSize(file, MAX_PHOTO_SIZE_MB);
+                  if (err) {
+                    toast.error(err);
+                    if (fileInputRef.current) fileInputRef.current.value = "";
+                    return;
+                  }
+                  setAttachment(file);
+                }}
               />
               <button 
                 type="button" 

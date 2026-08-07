@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { auditorApi, uploadApi } from "@/lib/api";
+import { MAX_PHOTO_SIZE_MB, validateFileSize } from "@/lib/upload";
+import { toast } from "sonner";
 import { 
   ChevronLeft, 
   CheckCircle2, 
@@ -384,13 +386,21 @@ export default function AuditChecklistPage() {
                     onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
+                      const sizeErr = validateFileSize(file, MAX_PHOTO_SIZE_MB);
+                      if (sizeErr) {
+                        toast.error(sizeErr);
+                        e.target.value = "";
+                        return;
+                      }
+                      const loadToast = toast.loading("Uploading site photo...");
                       try {
                         const res = await uploadApi.singlePhoto(file);
                         const url = res.data.data.url;
                         const fullUrl = url.startsWith("http") ? url : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5000"}${url}`;
                         setSitePhotos(prev => [...prev, fullUrl]);
-                      } catch (error) {
-                        alert("Failed to upload image");
+                        toast.success("Site photo uploaded", { id: loadToast });
+                      } catch (error: any) {
+                        toast.error(error.response?.data?.message || error.message || `Upload failed (Max allowed: ${MAX_PHOTO_SIZE_MB}MB)`, { id: loadToast });
                       }
                     }} 
                   />

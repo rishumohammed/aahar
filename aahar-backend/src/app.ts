@@ -45,7 +45,8 @@ app.use(cors({
   methods: ["GET","POST","PATCH","PUT","DELETE","OPTIONS"],
   allowedHeaders: ["Content-Type","Authorization"],
 }));
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // Health Check
@@ -78,8 +79,19 @@ app.use("/api/owner",         ownerRoutes);
 
 // Error Handler
 app.use((err: any, req: any, res: any, next: any) => {
-  console.error(err);
-  res.status(500).json({ success: false, message: 'Internal server error' });
+  console.error("Express Error:", err);
+  if (err?.name === "MulterError" || err?.code === "LIMIT_FILE_SIZE") {
+    return res.status(400).json({ 
+      success: false, 
+      message: err.code === "LIMIT_FILE_SIZE" 
+        ? "File size exceeds the allowed limit (Maximum: 1MB for photos, 5MB for documents)."
+        : err.message || "File upload error."
+    });
+  }
+  if (err?.message && (err.message.includes("allowed") || err.message.includes("Invalid file type"))) {
+    return res.status(400).json({ success: false, message: err.message });
+  }
+  res.status(500).json({ success: false, message: err?.message || 'Internal server error' });
 });
 
 export default app;

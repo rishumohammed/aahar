@@ -5,6 +5,7 @@ import { Send, X, MessageSquare, Paperclip, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { applicationApi, uploadApi } from "@/lib/api";
+import { MAX_PHOTO_SIZE_MB, validateFileSize } from "@/lib/upload";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -244,7 +245,17 @@ export function ComplianceChatDialog({ applicationId, trigger }: ChatDialogProps
               ref={fileInputRef} 
               className="hidden" 
               accept="image/*" 
-              onChange={(e) => setAttachment(e.target.files?.[0] || null)}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const sizeErr = validateFileSize(file, MAX_PHOTO_SIZE_MB);
+                if (sizeErr) {
+                  toast.error(sizeErr);
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                  return;
+                }
+                setAttachment(file);
+              }}
             />
             <button 
               type="button" 

@@ -13,160 +13,162 @@ import {
 } from"lucide-react";
 import { hotelApi } from"@/lib/api";
 import { 
- uploadHotelPhotos, 
- deleteHotelPhoto 
-} from"@/lib/upload";
-import { Button } from"@/components/ui/button";
-import { Card } from"@/components/ui/card";
-import { Badge } from"@/components/ui/badge";
-import { cn } from"@/lib/utils";
+  uploadHotelPhotos, 
+  deleteHotelPhoto,
+  MAX_PHOTO_SIZE_MB 
+} from "@/lib/upload";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 
 // ── Types ──────────────────────────────────────────────────
 interface Toast {
- id: string;
- message: string;
- type:"success"|"error";
+  id: string;
+  message: string;
+  type: "success" | "error";
 }
 
 const CATEGORIES = [
- { id:"lobby", label:"Lobby"},
- { id:"rooms", label:"Rooms"},
- { id:"exterior", label:"Exterior"},
- { id:"pool", label:"Pool"},
- { id:"restaurant", label:"Restaurant"},
- { id:"spa", label:"Spa"},
- { id:"beach", label:"Beach"},
- { id:"events", label:"Events"},
+  { id: "lobby", label: "Lobby" },
+  { id: "rooms", label: "Rooms" },
+  { id: "exterior", label: "Exterior" },
+  { id: "pool", label: "Pool" },
+  { id: "restaurant", label: "Restaurant" },
+  { id: "spa", label: "Spa" },
+  { id: "beach", label: "Beach" },
+  { id: "events", label: "Events" },
 ];
 
 export default function PhotoGalleryPage() {
- const [photos, setPhotos] = useState<Record<string, string[]>>({});
- const [activeCategory, setActiveCategory] = useState("rooms");
- const [uploading, setUploading] = useState(false);
- const [progress, setProgress] = useState(0);
- const [hotelId, setHotelId] = useState<string | null>(null);
- const [storageProvider, setStorageProvider] = useState("local");
- const [toasts, setToasts] = useState<Toast[]>([]);
+  const [photos, setPhotos] = useState<Record<string, string[]>>({});
+  const [activeCategory, setActiveCategory] = useState("rooms");
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [hotelId, setHotelId] = useState<string | null>(null);
+  const [storageProvider, setStorageProvider] = useState("local");
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
- // ── Load Hotel & Provider ────────────────────────────
- useEffect(() => {
- // 1. Get restaurant ID
- const user = useAuthStore.getState().user;
- hotelApi.list({ managerId: user?.id, limit: 1 })
- .then(r => {
- const res = r.data.data.items[0];
- if (res) {
- setHotelId(res.id);
- setPhotos(res.photos || {});
- }
- })
- .catch(console.error);
+  // ── Load Hotel & Provider ────────────────────────────
+  useEffect(() => {
+    // 1. Get restaurant ID
+    const user = useAuthStore.getState().user;
+    hotelApi.list({ managerId: user?.id, limit: 1 })
+      .then(r => {
+        const res = r.data.data.items[0];
+        if (res) {
+          setHotelId(res.id);
+          setPhotos(res.photos || {});
+        }
+      })
+      .catch(console.error);
 
- // 2. Get storage provider
- fetch(`${process.env.NEXT_PUBLIC_API_URL ||"http://localhost:5000/api"}/upload/provider`)
- .then(r => r.json())
- .then(d => setStorageProvider(d.data.provider))
- .catch(() => setStorageProvider("local"));
- }, []);
+    // 2. Get storage provider
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/upload/provider`)
+      .then(r => r.json())
+      .then(d => setStorageProvider(d.data.provider))
+      .catch(() => setStorageProvider("local"));
+  }, []);
 
- // ── Toast Logic ──────────────────────────────────────────
- const showToast = useCallback((message: string, type: Toast["type"] ="success") => {
- const id = Math.random().toString(36).substring(7);
- setToasts(prev => [...prev, { id, message, type }]);
- setTimeout(() => {
- setToasts(prev => prev.filter(t => t.id !== id));
- }, 3000);
- }, []);
+  // ── Toast Logic ──────────────────────────────────────────
+  const showToast = useCallback((message: string, type: Toast["type"] = "success") => {
+    const id = Math.random().toString(36).substring(7);
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3500);
+  }, []);
 
- // ── Dropzone Handlers ─────────────────────────────────────
- const onDrop = useCallback(async (acceptedFiles: File[]) => {
- const valid = acceptedFiles.filter(f => {
- if (!f.type.startsWith("image/")) {
- showToast(`${f.name} — not an image`,"error");
- return false;
- }
- if (f.size > 5 * 1024 * 1024) {
- showToast(`${f.name} — exceeds 5MB`,"error");
- return false;
- }
- return true;
- });
+  // ── Dropzone Handlers ─────────────────────────────────────
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const valid = acceptedFiles.filter(f => {
+      if (!f.type.startsWith("image/")) {
+        showToast(`"${f.name}" is not an image file`, "error");
+        return false;
+      }
+      if (f.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) {
+        showToast(`"${f.name}" (${(f.size / (1024 * 1024)).toFixed(1)}MB) exceeds the maximum allowed size of ${MAX_PHOTO_SIZE_MB}MB.`, "error");
+        return false;
+      }
+      return true;
+    });
 
- if (!valid.length || !hotelId) return;
+    if (!valid.length || !hotelId) return;
 
- setUploading(true);
- setProgress(0);
+    setUploading(true);
+    setProgress(0);
 
- try {
- const urls = await uploadHotelPhotos(
- hotelId,
- activeCategory,
- valid,
- (pct) => setProgress(pct),
- );
- // Add real URLs to state
- const photosToSave = {
-   ...photos,
-   [activeCategory]: [...(photos[activeCategory] || []), ...urls],
- };
- setPhotos(photosToSave);
- await hotelApi.update(hotelId, { photos: photosToSave }).catch(console.error);
- showToast(`${urls.length} photo(s) uploaded`,"success");
- } catch (err: any) {
- showToast(err.message ??"Upload failed","error");
- } finally {
- setUploading(false);
- setProgress(0);
- }
- }, [hotelId, activeCategory, photos, showToast]);
+    try {
+      const urls = await uploadHotelPhotos(
+        hotelId,
+        activeCategory,
+        valid,
+        (pct) => setProgress(pct),
+      );
+      // Add real URLs to state
+      const photosToSave = {
+        ...photos,
+        [activeCategory]: [...(photos[activeCategory] || []), ...urls],
+      };
+      setPhotos(photosToSave);
+      await hotelApi.update(hotelId, { photos: photosToSave }).catch(console.error);
+      showToast(`${urls.length} photo(s) uploaded successfully`, "success");
+    } catch (err: any) {
+      showToast(err.message ?? `Upload failed. Maximum allowed size is ${MAX_PHOTO_SIZE_MB}MB.`, "error");
+    } finally {
+      setUploading(false);
+      setProgress(0);
+    }
+  }, [hotelId, activeCategory, photos, showToast]);
 
- const handleDelete = async (url: string) => {
- if (!hotelId) return;
- try {
- await deleteHotelPhoto(hotelId, activeCategory, url).catch(() => {});
- const photosToSave = {
-   ...photos,
-   [activeCategory]: (photos[activeCategory] || []).filter(u => u !== url),
- };
- setPhotos(photosToSave);
- await hotelApi.update(hotelId, { photos: photosToSave }).catch(console.error);
- showToast("Photo deleted","success");
- } catch {
- showToast("Failed to delete photo","error");
- }
- };
+  const handleDelete = async (url: string) => {
+    if (!hotelId) return;
+    try {
+      await deleteHotelPhoto(hotelId, activeCategory, url).catch(() => {});
+      const photosToSave = {
+        ...photos,
+        [activeCategory]: (photos[activeCategory] || []).filter(u => u !== url),
+      };
+      setPhotos(photosToSave);
+      await hotelApi.update(hotelId, { photos: photosToSave }).catch(console.error);
+      showToast("Photo deleted", "success");
+    } catch {
+      showToast("Failed to delete photo", "error");
+    }
+  };
 
- const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
- onDrop,
- accept: {"image/*": [] },
- maxFiles: 10,
- disabled: uploading,
- noClick: true,
- noKeyboard: true
- });
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+    onDrop,
+    accept: { "image/*": [] },
+    maxFiles: 10,
+    disabled: uploading,
+    noClick: true,
+    noKeyboard: true
+  });
 
- return (
- <div {...getRootProps()} className="p-8 max-w-6xl mx-auto space-y-10 pb-32 focus:outline-none relative">
- <input {...getInputProps()} />
- 
- {isDragActive && (
- <div className="absolute inset-0 z-50 bg-admin-primary/90 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center border-4 border-dashed border-white m-4 pointer-events-none">
- <UploadCloud className="h-20 w-20 text-white animate-bounce mb-4" />
- <h2 className="text-3xl font-bold text-white tracking-tight uppercase">Drop photos here</h2>
- </div>
- )}
- {/* Header */}
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
- <div>
- <h1 className="text-3xl font-bold text-slate-800 tracking-tighter">Photo Gallery</h1>
- <p className="text-slate-500 font-medium mt-1">Manage high-quality visuals for your business profile.</p>
- </div>
- <Button onClick={open} disabled={uploading} className="bg-admin-primary hover:bg-admin-primary-hover text-white shadow-md font-semibold h-12 px-6 rounded-lg text-base">
- <UploadCloud className="h-5 w-5 mr-2" /> 
- {uploading ? `Uploading ${progress}%...` : "Add Images"}
- </Button>
- </div>
+  return (
+    <div {...getRootProps()} className="p-8 max-w-6xl mx-auto space-y-10 pb-32 focus:outline-none relative">
+      <input {...getInputProps()} />
+      
+      {isDragActive && (
+        <div className="absolute inset-0 z-50 bg-admin-primary/90 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center border-4 border-dashed border-white m-4 pointer-events-none">
+          <UploadCloud className="h-20 w-20 text-white animate-bounce mb-4" />
+          <h2 className="text-3xl font-bold text-white tracking-tight uppercase">Drop photos here</h2>
+          <p className="text-white/80 text-sm font-medium mt-1">Supports JPG, PNG, WEBP up to {MAX_PHOTO_SIZE_MB}MB each</p>
+        </div>
+      )}
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800 tracking-tighter">Photo Gallery</h1>
+          <p className="text-slate-500 font-medium mt-1">Manage high-quality visuals for your business profile. Maximum file size allowed is {MAX_PHOTO_SIZE_MB}MB per photo.</p>
+        </div>
+        <Button onClick={open} disabled={uploading} className="bg-admin-primary hover:bg-admin-primary-hover text-white shadow-md font-semibold h-12 px-6 rounded-lg text-base">
+          <UploadCloud className="h-5 w-5 mr-2" /> 
+          {uploading ? `Uploading ${progress}%...` : "Add Images"}
+        </Button>
+      </div>
 
  {/* Storage Provider Badge */}
  <div className="flex items-center gap-2 mb-4">

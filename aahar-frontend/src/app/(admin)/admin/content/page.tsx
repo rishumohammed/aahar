@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { blogApi, uploadApi } from "@/lib/api";
+import { MAX_PHOTO_SIZE_MB, validateFileSize } from "@/lib/upload";
 
 export default function ContentPage() {
   const [activeTab, setActiveTab] = useState("published");
@@ -269,14 +270,20 @@ export default function ContentPage() {
                     onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
+                      const sizeErr = validateFileSize(file, MAX_PHOTO_SIZE_MB);
+                      if (sizeErr) {
+                        toast.error(sizeErr);
+                        e.target.value = "";
+                        return;
+                      }
+                      const toastId = toast.loading("Uploading image...");
                       try {
-                        const toastId = toast.loading("Uploading image...");
                         const res = await uploadApi.singlePhoto(file);
                         const url = res.data?.data?.url || res.data?.url;
                         setFormData({...formData, coverImage: url});
                         toast.success("Image uploaded", { id: toastId });
-                      } catch (err) {
-                        toast.error("Failed to upload image");
+                      } catch (err: any) {
+                        toast.error(err.response?.data?.message || err.message || `Upload failed. Maximum size allowed is ${MAX_PHOTO_SIZE_MB}MB.`, { id: toastId });
                       }
                     }} 
                   />

@@ -22,205 +22,218 @@ import { Badge } from"@/components/ui/badge";
 import { Label } from"@/components/ui/label";
 import { Progress } from"@/components/ui/progress";
 import { cn } from"@/lib/utils";
-import { applicationApi, ownerApi } from"@/lib/api";
-import { uploadDocument } from"@/lib/upload";
+import { applicationApi, ownerApi } from "@/lib/api";
+import { uploadDocument, MAX_DOC_SIZE_MB, validateFileSize } from "@/lib/upload";
 
 // ── Types & Constants ───────────────────────────────────────
 interface DocRequirement {
- id: string;
- label: string;
- hasExpiry: boolean;
+  id: string;
+  label: string;
+  hasExpiry: boolean;
 }
 
 interface DocMetadata {
- url: string;
- documentId: string;
- name: string;
- size: string;
- uploadedAt: string;
- expiryDate?: string;
+  url: string;
+  documentId: string;
+  name: string;
+  size: string;
+  uploadedAt: string;
+  expiryDate?: string;
 }
 
 const REQUIRED_DOCS: DocRequirement[] = [
- { id:"trade_license", label:"Trade License / Registration", hasExpiry: true },
- { id:"fire_safety", label:"Fire Safety Certificate", hasExpiry: true },
- { id:"gst", label:"GST Certificate", hasExpiry: false },
- { id:"lease", label:"Lease/Property Agreement", hasExpiry: true },
- { id:"safety_standards", label:"Emergency & Safety Standards", hasExpiry: false }
+  { id: "trade_license", label: "Trade License / Registration", hasExpiry: true },
+  { id: "fire_safety", label: "Fire Safety Certificate", hasExpiry: true },
+  { id: "gst", label: "GST Certificate", hasExpiry: false },
+  { id: "lease", label: "Lease/Property Agreement", hasExpiry: true },
+  { id: "safety_standards", label: "Emergency & Safety Standards", hasExpiry: false }
 ];
 
 export default function HotelDocumentUploadPage() {
- const [docUrls, setDocUrls] = useState<Record<string, DocMetadata | null>>({});
- const [docProgress, setDocProgress] = useState<Record<string, number>>({});
- const [docStatus, setDocStatus] = useState<Record<string, string>>({});
- const [applicationId, setApplicationId] = useState<string | null>(null);
- const [hotelId, setHotelId] = useState<string | null>(null);
- const [applicationStatus, setApplicationStatus] = useState<string | null>(null);
- const [isSubmitting, setIsSubmitting] = useState(false);
- const fileInputRef = useRef<HTMLInputElement>(null);
- const [activeDocType, setActiveDocType] = useState<string | null>(null);
- const [toasts, setToasts] = useState<any[]>([]);
+  const [docUrls, setDocUrls] = useState<Record<string, DocMetadata | null>>({});
+  const [docProgress, setDocProgress] = useState<Record<string, number>>({});
+  const [docStatus, setDocStatus] = useState<Record<string, string>>({});
+  const [applicationId, setApplicationId] = useState<string | null>(null);
+  const [hotelId, setHotelId] = useState<string | null>(null);
+  const [applicationStatus, setApplicationStatus] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeDocType, setActiveDocType] = useState<string | null>(null);
+  const [toasts, setToasts] = useState<any[]>([]);
 
- const showToast = useCallback((message: string, type:"success"|"error"="success") => {
- const id = Math.random().toString(36).substring(7);
- setToasts(prev => [...prev, { id, message, type }]);
- setTimeout(() => {
- setToasts(prev => prev.filter(t => t.id !== id));
- }, 3000);
- }, []);
+  const showToast = useCallback((message: string, type: "success" | "error" = "success") => {
+    const id = Math.random().toString(36).substring(7);
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3500);
+  }, []);
 
- // ── Load or Create Draft Application ───────────────────────
- const loadApplicationData = useCallback(async () => {
- try {
- const statsRes = await ownerApi.stats();
- const hId = statsRes.data?.data?.hotelId;
- setHotelId(hId);
+  // ── Load or Create Draft Application ───────────────────────
+  const loadApplicationData = useCallback(async () => {
+    try {
+      const statsRes = await ownerApi.stats();
+      const hId = statsRes.data?.data?.hotelId;
+      setHotelId(hId);
 
- if (!hId) {
- showToast("No associated hotel found for this manager.","error");
- return;
- }
+      if (!hId) {
+        showToast("No associated hotel found for this manager.", "error");
+        return;
+      }
 
- const listRes = await applicationApi.list({ limit: 1 });
- let app = listRes.data?.data?.items?.[0];
+      const listRes = await applicationApi.list({ limit: 1 });
+      let app = listRes.data?.data?.items?.[0];
 
- if (!app) {
- const createRes = await applicationApi.submit({
- businessType:"accommodation",
- hotelId: hId,
- status:"draft"
- });
- app = createRes.data?.data;
- }
+      if (!app) {
+        const createRes = await applicationApi.submit({
+          businessType: "accommodation",
+          hotelId: hId,
+          status: "draft"
+        });
+        app = createRes.data?.data;
+      }
 
- if (app) {
- setApplicationId(app.id);
- setApplicationStatus(app.status);
- 
- const mapped: any = {};
- app.documents?.forEach((d: any) => {
- mapped[d.type] = {
- url: d.url,
- documentId: d.id,
- name: d.name ||"document",
- size: d.size ? `${(d.size / 1024 / 1024).toFixed(1)} MB` :"unknown",
- uploadedAt: d.uploadedAt,
- expiryDate: d.expiresAt
- };
- });
- setDocUrls(mapped);
- }
- } catch (err: any) {
- console.error(err);
- showToast(err.response?.data?.message ||"Failed to load application data","error");
- }
- }, [showToast]);
+      if (app) {
+        setApplicationId(app.id);
+        setApplicationStatus(app.status);
+        
+        const mapped: any = {};
+        app.documents?.forEach((d: any) => {
+          mapped[d.type] = {
+            url: d.url,
+            documentId: d.id,
+            name: d.name || "document",
+            size: d.size ? `${(d.size / 1024 / 1024).toFixed(1)} MB` : "unknown",
+            uploadedAt: d.uploadedAt,
+            expiryDate: d.expiresAt
+          };
+        });
+        setDocUrls(mapped);
+      }
+    } catch (err: any) {
+      console.error(err);
+      showToast(err.response?.data?.message || "Failed to load application data", "error");
+    }
+  }, [showToast]);
 
- useEffect(() => {
- loadApplicationData();
- }, [loadApplicationData]);
+  useEffect(() => {
+    loadApplicationData();
+  }, [loadApplicationData]);
 
- // ── Handlers ─────────────────────────────────────────────
- const isReadOnly = applicationStatus ? !["draft", "audit_scheduled"].includes(applicationStatus) : false;
+  // ── Handlers ─────────────────────────────────────────────
+  const isReadOnly = applicationStatus ? !["draft", "audit_scheduled"].includes(applicationStatus) : false;
 
- const handleDocUpload = async (docType: string, file: File) => {
- if (!applicationId) {
- showToast("No active application found","error");
- return;
- }
+  const handleDocUpload = async (docType: string, file: File) => {
+    if (!applicationId) {
+      showToast("No active application found", "error");
+      return;
+    }
 
- setDocProgress(prev => ({ ...prev, [docType]: 0 }));
- setDocStatus(prev => ({ ...prev, [docType]:"uploading"}));
+    const sizeError = validateFileSize(file, MAX_DOC_SIZE_MB);
+    if (sizeError) {
+      showToast(sizeError, "error");
+      return;
+    }
 
- try {
- const { url, documentId } = await uploadDocument(
- applicationId,
- docType,
- file,
- (pct) => setDocProgress(prev => ({ ...prev, [docType]: pct })),
- );
+    setDocProgress(prev => ({ ...prev, [docType]: 0 }));
+    setDocStatus(prev => ({ ...prev, [docType]: "uploading" }));
 
- setDocStatus(prev => ({ ...prev, [docType]:"uploaded"}));
- setDocUrls(prev => ({
- ...prev,
- [docType]: {
- url,
- documentId,
- name: file.name,
- size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
- uploadedAt: new Date().toISOString(),
- }
- }));
- showToast(`${docType} uploaded`,"success");
- } catch (err: any) {
- setDocStatus(prev => ({ ...prev, [docType]:"error"}));
- showToast(err.message ??"Upload failed","error");
- }
- };
+    try {
+      const { url, documentId } = await uploadDocument(
+        applicationId,
+        docType,
+        file,
+        (pct) => setDocProgress(prev => ({ ...prev, [docType]: pct })),
+      );
 
- const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
- const file = e.target.files?.[0];
- if (file && activeDocType) {
- handleDocUpload(activeDocType, file);
- setActiveDocType(null);
- }
- };
+      setDocStatus(prev => ({ ...prev, [docType]: "uploaded" }));
+      setDocUrls(prev => ({
+        ...prev,
+        [docType]: {
+          url,
+          documentId,
+          name: file.name,
+          size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
+          uploadedAt: new Date().toISOString(),
+        }
+      }));
+      showToast(`${docType} uploaded successfully`, "success");
+    } catch (err: any) {
+      setDocStatus(prev => ({ ...prev, [docType]: "error" }));
+      showToast(err.message ?? `Upload failed (Max allowed size: ${MAX_DOC_SIZE_MB}MB)`, "error");
+    }
+  };
 
- const removeDoc = (id: string) => {
- setDocUrls(prev => ({ ...prev, [id]: null }));
- setDocStatus(prev => ({ ...prev, [id]:"pending"}));
- };
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && activeDocType) {
+      const sizeError = validateFileSize(file, MAX_DOC_SIZE_MB);
+      if (sizeError) {
+        showToast(sizeError, "error");
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+      handleDocUpload(activeDocType, file);
+      setActiveDocType(null);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
- const updateExpiry = (id: string, date: string) => {
- setDocUrls(prev => ({
- ...prev,
- [id]: prev[id] ? { ...prev[id]!, expiryDate: date } : null
- }));
- };
+  const removeDoc = (id: string) => {
+    setDocUrls(prev => ({ ...prev, [id]: null }));
+    setDocStatus(prev => ({ ...prev, [id]: "pending" }));
+  };
 
- const getStatus = (id: string) => {
- const doc = docUrls[id];
- if (!doc) return docStatus[id] ||"pending";
- if (!doc.expiryDate) return"uploaded";
+  const updateExpiry = (id: string, date: string) => {
+    setDocUrls(prev => ({
+      ...prev,
+      [id]: prev[id] ? { ...prev[id]!, expiryDate: date } : null
+    }));
+  };
 
- const expiry = parseISO(doc.expiryDate);
- if (isPast(expiry)) return"expired";
- const daysLeft = differenceInDays(expiry, new Date());
- if (daysLeft <= 30) return"expiring";
- 
- return"uploaded";
- };
+  const getStatus = (id: string) => {
+    const doc = docUrls[id];
+    if (!doc) return docStatus[id] || "pending";
+    if (!doc.expiryDate) return "uploaded";
 
- const handleProceed = async () => {
- if (!applicationId || !hotelId) return;
- setIsSubmitting(true);
- try {
- await applicationApi.submit({
- businessType:"accommodation",
- hotelId,
- status:"submitted"
- });
- showToast("Application submitted successfully","success");
- await loadApplicationData();
- } catch (err: any) {
- showToast(err.response?.data?.message ||"Failed to submit application","error");
- } finally {
- setIsSubmitting(false);
- }
- };
+    const expiry = parseISO(doc.expiryDate);
+    if (isPast(expiry)) return "expired";
+    const daysLeft = differenceInDays(expiry, new Date());
+    if (daysLeft <= 30) return "expiring";
+    
+    return "uploaded";
+  };
 
- const uploadedCount = Object.values(docUrls).filter(Boolean).length;
- const isComplete = uploadedCount === REQUIRED_DOCS.length;
+  const handleProceed = async () => {
+    if (!applicationId || !hotelId) return;
+    setIsSubmitting(true);
+    try {
+      await applicationApi.submit({
+        businessType: "accommodation",
+        hotelId,
+        status: "submitted"
+      });
+      showToast("Application submitted successfully", "success");
+      await loadApplicationData();
+    } catch (err: any) {
+      showToast(err.response?.data?.message || "Failed to submit application", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
- return (
- <div className="p-8 max-w-5xl mx-auto space-y-10">
- {/* Header & Overall Progress */}
- <div className="space-y-6">
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
- <div>
- <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Verification Documents</h1>
- <p className="text-slate-500 font-medium text-sm mt-1">Upload the required legal and operational documents to verify your hotel business.</p>
- </div>
+  const uploadedCount = Object.values(docUrls).filter(Boolean).length;
+  const isComplete = uploadedCount === REQUIRED_DOCS.length;
+
+  return (
+    <div className="p-8 max-w-5xl mx-auto space-y-10">
+      {/* Header & Overall Progress */}
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Verification Documents</h1>
+            <p className="text-slate-500 font-medium text-sm mt-1">Upload the required legal and operational documents to verify your hotel business. (PDF, JPG, PNG, WEBP, DOCX — Max {MAX_DOC_SIZE_MB}MB per file)</p>
+          </div>
  <div className="text-right">
  <p className="text-xs font-semibold text-slate-800 tracking-wider uppercase mb-2">
  {uploadedCount} of {REQUIRED_DOCS.length} Uploaded
@@ -379,7 +392,7 @@ export default function HotelDocumentUploadPage() {
  })}
  </div>
 
- <input type="file"ref={fileInputRef} onChange={handleFileSelect} accept=".pdf,.jpg,.jpeg,.png"className="hidden"/>
+  <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx" className="hidden"/>
 
  {/* Form Action Footer */}
  <div className="mt-12 pt-8 flex justify-end border-t border-slate-200">

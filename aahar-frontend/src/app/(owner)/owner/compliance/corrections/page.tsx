@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ownerApi, applicationApi, uploadApi } from "@/lib/api";
+import { MAX_PHOTO_SIZE_MB, validateFileSize } from "@/lib/upload";
 import { Loader2, AlertCircle, Upload, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,13 @@ export default function CorrectionsPage() {
     const file = e.target.files?.[0];
     if (!file || !application) return;
     
+    const sizeErr = validateFileSize(file, MAX_PHOTO_SIZE_MB);
+    if (sizeErr) {
+      toast.error(sizeErr);
+      e.target.value = "";
+      return;
+    }
+
     const loadingToast = toast.loading("Uploading evidence...");
     try {
       // 1. Upload the photo
@@ -83,8 +91,8 @@ export default function CorrectionsPage() {
       );
       
       toast.success("Evidence uploaded successfully", { id: loadingToast });
-    } catch (err) {
-      toast.error("Upload failed", { id: loadingToast });
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || err.message || `Upload failed. Maximum size allowed is ${MAX_PHOTO_SIZE_MB}MB.`, { id: loadingToast });
     }
   };
 
