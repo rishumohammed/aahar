@@ -107,21 +107,28 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
  <div className="flex h-screen print:h-auto print:block bg-slate-50 overflow-hidden print:overflow-visible font-sans">
  {/* Material Drawer (Sidebar) */}
  <aside className="w-64 print:hidden bg-white flex flex-col shrink-0 border-r border-slate-200 z-10 shadow-sm">
- <div className="p-6 border-b border-slate-100 flex items-center gap-3">
- {branding?.logoLight ? (
-   <img src={getImageUrl(branding.logoLight)} alt="AAHAR" className="h-8 max-w-[130px] object-contain" />
- ) : (
-   <div className="w-10 h-10 rounded-full bg-admin-primary flex items-center justify-center shadow-md transition-colors duration-300">
-     <UtensilsCrossed className="h-5 w-5 text-white"/>
-   </div>
- )}
- <div>
- <span className="text-xl font-bold text-slate-800 tracking-tight">AAHAR</span>
- <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
- Owner Portal
- </p>
- </div>
- </div>
+  <div className="p-6 border-b border-slate-100 flex items-center gap-3">
+  {branding?.logoLight ? (
+    <div className="flex flex-col gap-0.5">
+      <img src={getImageUrl(branding.logoLight)} alt="AAHAR" className="h-8 max-w-[150px] object-contain object-left" />
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-0.5 mt-1">
+        Owner Portal
+      </p>
+    </div>
+  ) : (
+    <>
+      <div className="w-10 h-10 rounded-full bg-admin-primary flex items-center justify-center shadow-md transition-colors duration-300">
+        <UtensilsCrossed className="h-5 w-5 text-white"/>
+      </div>
+      <div>
+        <span className="text-xl font-bold text-slate-800 tracking-tight">AAHAR</span>
+        <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+          Owner Portal
+        </p>
+      </div>
+    </>
+  )}
+  </div>
 
  <nav className="flex-1 overflow-y-auto no-scrollbar py-4">
  <ul className="space-y-1">
