@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { authApi } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
+import { useBrandingStore } from "@/store/brandingStore";
+import { getImageUrl } from "@/lib/utils";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -28,6 +30,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { branding } = useBrandingStore();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -89,9 +92,15 @@ export default function RegisterPage() {
 
       <Card className="w-full max-w-md bg-white/80 backdrop-blur-xl border-aahar-border shadow-xl rounded-xl p-6 md:p-10 relative z-10 my-auto">
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-xl mb-4 shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-aahar-border/50 group-hover:rotate-12 transition-transform">
-            <span className="text-aahar-teal font-black text-3xl">A</span>
-          </div>
+          {branding?.logoLight ? (
+            <div className="flex justify-center mb-4">
+              <img src={getImageUrl(branding.logoLight)} alt="AAHAR" className="h-12 max-w-[200px] object-contain" />
+            </div>
+          ) : (
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-xl mb-4 shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-aahar-border/50 group-hover:rotate-12 transition-transform">
+              <span className="text-aahar-teal font-black text-3xl">A</span>
+            </div>
+          )}
           <h1 className="text-3xl font-black text-aahar-dark tracking-tighter uppercase mb-2">Create Account</h1>
           <p className="text-sm font-medium text-aahar-body">Join the AAHAR Hospitality Trust Network</p>
         </div>

@@ -21,9 +21,10 @@ import {
   Star
 } from "lucide-react";
 import { ChevronDown, UserCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getImageUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
+import { useBrandingStore } from "@/store/brandingStore";
 
 import { notificationApi, adminApi } from "@/lib/api";
 
@@ -55,6 +56,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated } = useAuthStore();
+  const { branding } = useBrandingStore();
   const [mounted, setMounted] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -130,9 +132,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Material Drawer (Sidebar) */}
       <aside className="w-64 bg-white flex flex-col shrink-0 border-r border-slate-200 z-10 shadow-sm">
         <div className="p-6 border-b border-slate-100 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-admin-primary flex items-center justify-center shadow-md transition-colors duration-300">
-            <Globe className="h-6 w-6 text-white" />
-          </div>
+          {branding?.logoLight ? (
+            <img src={getImageUrl(branding.logoLight)} alt="AAHAR" className="h-8 max-w-[130px] object-contain" />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-admin-primary flex items-center justify-center shadow-md transition-colors duration-300">
+              <Globe className="h-6 w-6 text-white" />
+            </div>
+          )}
           <div>
             <span className="text-xl font-bold text-slate-800 tracking-tight">AAHAR</span>
             <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">

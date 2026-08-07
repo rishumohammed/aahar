@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import {
   Bell, User, LogOut, Search, Utensils, Trash2, Menu, X,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getImageUrl } from "@/lib/utils";
 import { orderApi } from "@/lib/api";
+import { useBrandingStore } from "@/store/brandingStore";
 import ActiveOrderWidget from "./ActiveOrderWidget";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -132,6 +133,7 @@ function NavLinksFallback() {
 
 export default function Navbar() {
   const { user, isAuthenticated, token, clearAuth } = useAuthStore();
+  const { branding } = useBrandingStore();
   const [unread, setUnread] = useState(0);
   const [notifs, setNotifs] = useState<any[]>([]);
   const [bellOpen, setBellOpen] = useState(false);
@@ -256,10 +258,20 @@ export default function Navbar() {
 
           {/* Left: Logo */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-            <div className="w-9 h-9 bg-aahar-dark rounded-xl flex items-center justify-center shadow-sm group-hover:bg-aahar-teal transition-colors duration-300">
-              <span className="text-white font-bold text-base leading-none">A</span>
-            </div>
-            <span className="text-[15px] font-bold tracking-widest text-aahar-dark uppercase">AAHAR</span>
+            {branding?.logoLight ? (
+              <img 
+                src={getImageUrl(branding.logoLight)} 
+                alt="AAHAR" 
+                className="h-9 max-w-[170px] object-contain" 
+              />
+            ) : (
+              <>
+                <div className="w-9 h-9 bg-aahar-dark rounded-xl flex items-center justify-center shadow-sm group-hover:bg-aahar-teal transition-colors duration-300">
+                  <span className="text-white font-bold text-base leading-none">A</span>
+                </div>
+                <span className="text-[15px] font-bold tracking-widest text-aahar-dark uppercase">AAHAR</span>
+              </>
+            )}
           </Link>
 
           {/* Center: Nav Links */}

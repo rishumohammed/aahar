@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { ShieldCheck, ArrowRight, Instagram, Twitter, Linkedin, Facebook, Mail, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { settingsApi } from "@/lib/api";
+import { useBrandingStore } from "@/store/brandingStore";
+import { getImageUrl } from "@/lib/utils";
 
 type FooterLink = {
   label: string;
@@ -49,6 +51,7 @@ const DEFAULT_CONFIG: FooterConfig = {
 
 export default function Footer() {
   const [config, setConfig] = useState<FooterConfig>(DEFAULT_CONFIG);
+  const { branding } = useBrandingStore();
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -90,7 +93,15 @@ export default function Footer() {
 
             {/* Brand Column */}
             <div className="space-y-6">
-              <span className="text-4xl font-black tracking-tight text-aahar-teal block">AAHAR</span>
+              {branding?.logoDark || branding?.logoLight ? (
+                <img
+                  src={getImageUrl(branding.logoDark || branding.logoLight)}
+                  alt="AAHAR"
+                  className="h-10 max-w-[180px] object-contain"
+                />
+              ) : (
+                <span className="text-4xl font-black tracking-tight text-aahar-teal block">AAHAR</span>
+              )}
               <p className="text-[15px] text-white/70 leading-relaxed font-medium">
                 {config.brandDescription}
               </p>

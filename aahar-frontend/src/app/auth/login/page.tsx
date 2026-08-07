@@ -9,7 +9,8 @@ import { ShieldCheck, Lock, Mail, Loader2, ArrowRight, Eye, EyeOff } from "lucid
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn, getImageUrl } from "@/lib/utils";
+import { useBrandingStore } from "@/store/brandingStore";
 
 const ROLE_REDIRECT: Record<string, string> = {
   super_admin: "/admin/dashboard",
@@ -24,6 +25,7 @@ export default function LoginPage() {
   const router = useRouter();
   const params = useSearchParams();
   const { login } = useAuth();
+  const { branding } = useBrandingStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -60,9 +62,15 @@ export default function LoginPage() {
 
       <Card className="w-full max-w-md bg-white/80 backdrop-blur-xl border-aahar-border shadow-xl rounded-xl p-6 md:p-10 relative z-10 my-auto">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-xl mb-4 shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-aahar-border/50 group-hover:rotate-12 transition-transform">
-            <span className="text-aahar-teal font-black text-3xl">A</span>
-          </div>
+          {branding?.logoLight ? (
+            <div className="flex justify-center mb-4">
+              <img src={getImageUrl(branding.logoLight)} alt="AAHAR" className="h-12 max-w-[200px] object-contain" />
+            </div>
+          ) : (
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-xl mb-4 shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-aahar-border/50 group-hover:rotate-12 transition-transform">
+              <span className="text-aahar-teal font-black text-3xl">A</span>
+            </div>
+          )}
           <h1 className="text-3xl font-black text-aahar-dark tracking-tighter uppercase mb-2">Welcome Back</h1>
           <p className="text-sm font-medium text-aahar-body">Secure access to AAHAR Trust Network</p>
         </div>

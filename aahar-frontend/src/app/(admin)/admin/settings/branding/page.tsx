@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { settingsApi } from "@/lib/api";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/shared/ImageUpload";
+import { useBrandingStore } from "@/store/brandingStore";
 
 export default function BrandingSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -36,6 +37,7 @@ export default function BrandingSettingsPage() {
     setIsSaving(true);
     try {
       await settingsApi.update('branding_config', config);
+      useBrandingStore.getState().setBranding(config);
       toast.success("Branding configuration saved successfully");
     } catch (e) {
       toast.error("Failed to save configuration");
