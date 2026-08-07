@@ -40,7 +40,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn, getImageUrl } from "@/lib/utils";
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -394,7 +394,7 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
 
   const availableAmenities = masterAmenities.length > 0 ? masterAmenities : DEFAULT_AMENITIES_LIST;
 
-  const currentCover = formData.image || formData.photos?.cover || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80";
+  const currentCover = getImageUrl(formData.image || formData.photos?.cover) || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80";
 
   return (
     <div className="space-y-8 pb-20">
@@ -1278,7 +1278,7 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
               <div className="absolute bottom-3 left-3 right-3 flex items-end gap-3">
                 {formData.photos?.logo ? (
                   <div className="w-12 h-12 rounded-xl bg-white p-1 shadow-md shrink-0 overflow-hidden border border-white">
-                    <img src={formData.photos.logo} alt="Logo" className="w-full h-full object-cover rounded-lg" />
+                    <img src={getImageUrl(formData.photos.logo)} alt="Logo" className="w-full h-full object-cover rounded-lg" />
                   </div>
                 ) : (
                   <div className="w-12 h-12 rounded-xl bg-slate-900/80 backdrop-blur-sm p-1 shadow-md shrink-0 flex items-center justify-center border border-white/20 text-white">

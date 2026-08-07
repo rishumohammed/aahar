@@ -20,7 +20,7 @@ import {
   MessageSquare,
   Upload
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getImageUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -364,7 +364,7 @@ export default function AuditChecklistPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {sitePhotos.map((photo, i) => (
                 <div key={i} className="relative aspect-video rounded-lg overflow-hidden border border-slate-200 group">
-                  <img src={photo} alt="evidence" className="w-full h-full object-cover" />
+                  <img src={getImageUrl(photo)} alt="evidence" className="w-full h-full object-cover" />
                   {!isReadOnly && (
                     <button 
                       onClick={() => setSitePhotos(prev => prev.filter((_, idx) => idx !== i))}
@@ -396,8 +396,7 @@ export default function AuditChecklistPage() {
                       try {
                         const res = await uploadApi.singlePhoto(file);
                         const url = res.data.data.url;
-                        const fullUrl = url.startsWith("http") ? url : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5000"}${url}`;
-                        setSitePhotos(prev => [...prev, fullUrl]);
+                        setSitePhotos(prev => [...prev, url]);
                         toast.success("Site photo uploaded", { id: loadToast });
                       } catch (error: any) {
                         toast.error(error.response?.data?.message || error.message || `Upload failed (Max allowed: ${MAX_PHOTO_SIZE_MB}MB)`, { id: loadToast });

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Star, MapPin, ShieldCheck, ArrowRight, Bed } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { getImageUrl } from "@/lib/utils";
 
 interface HotelRowCardProps {
   hotel: {
@@ -21,6 +22,7 @@ interface HotelRowCardProps {
 
 export function HotelRowCard({ hotel }: HotelRowCardProps) {
   const fallbackImage = "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800";
+  const displayImage = getImageUrl(hotel.image) || fallbackImage;
 
   return (
     <Link 
@@ -30,9 +32,10 @@ export function HotelRowCard({ hotel }: HotelRowCardProps) {
       <div className="flex flex-col md:flex-row p-4 md:p-6 gap-6 md:gap-10">
         <div className="relative w-full md:w-80 aspect-[4/3] md:aspect-square shrink-0 overflow-hidden rounded-xl bg-aahar-wash">
           <Image
-            src={hotel.image || fallbackImage}
+            src={displayImage}
             alt={hotel.name}
             fill
+            unoptimized
             className="object-cover transition-transform duration-700 group-hover:scale-110"
             onError={(e) => {
               const target = e.target as HTMLImageElement;

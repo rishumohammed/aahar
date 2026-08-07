@@ -10,14 +10,17 @@ const nextConfig = {
     ],
   },
   async rewrites() {
+    const rawApiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
+    const cleanApiUrl = rawApiUrl.replace(/\/+$/, "");
+    const backendHost = cleanApiUrl.replace(/\/api$/, "");
     return [
       {
         source:      "/api/:path*",
-        destination: `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api"}/:path*`,
+        destination: `${cleanApiUrl}/:path*`,
       },
       {
         source:      "/uploads/:path*",
-        destination: `${(process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace('/api', '')}/uploads/:path*`,
+        destination: `${backendHost}/uploads/:path*`,
       },
     ];
   },

@@ -30,7 +30,7 @@ import { restaurantApi, orderApi } from "@/lib/api";
 import { HygieneScore } from "@/components/shared/HygieneScore";
 import AaharBadge from "@/components/shared/AaharBadge";
 import BookingCard from "@/components/restaurant/BookingCard";
-import { cn } from "@/lib/utils";
+import { cn, getImageUrl } from "@/lib/utils";
 import { notFound, useSearchParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -187,9 +187,10 @@ function RestaurantProfilePageContent({
       {/* Hero Section */}
       <section className="relative h-[450px] w-full overflow-hidden">
         <Image
-          src={restaurant.photos?.cover || "https://picsum.photos/seed/restaurant/1200/800"}
+          src={getImageUrl(restaurant.photos?.cover || restaurant.image) || "https://picsum.photos/seed/restaurant/1200/800"}
           alt={restaurant.name}
           fill
+          unoptimized
           className="object-cover"
           priority
         />

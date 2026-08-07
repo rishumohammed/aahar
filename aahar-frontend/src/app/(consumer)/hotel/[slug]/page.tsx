@@ -24,7 +24,7 @@ import { hotelApi } from "@/lib/api";
 import { EnquiryForm } from "@/components/shared/EnquiryForm";
 import AaharBadge from "@/components/shared/AaharBadge";
 import LinkedRestaurant from "@/components/profile/LinkedRestaurant";
-import { cn } from "@/lib/utils";
+import { cn, getImageUrl } from "@/lib/utils";
 import { notFound } from "next/navigation";
 
 export default function HotelProfilePage({
@@ -68,9 +68,10 @@ export default function HotelProfilePage({
       {/* Hero Section */}
       <section className="relative h-[550px] w-full overflow-hidden">
         <Image
-          src={hotel.photos?.cover || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=80"}
+          src={getImageUrl(hotel.photos?.cover || hotel.image) || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=80"}
           alt={hotel.name}
           fill
+          unoptimized
           className="object-cover"
           priority
         />
@@ -209,7 +210,7 @@ export default function HotelProfilePage({
                     >
                       <div className="relative h-64">
                         <img 
-                          src={room.photos?.[0] || "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80"} 
+                          src={getImageUrl(room.photos?.[0]) || "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80"} 
                           alt={room.name} 
                           className="w-full h-full object-cover"
                         />

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { restaurantApi } from "@/lib/api";
+import { getImageUrl } from "@/lib/utils";
 
 export default function LinkedRestaurant({ restaurantId }: { restaurantId: string }) {
   const [restaurant, setRestaurant] = useState<any>(null);
@@ -18,13 +19,15 @@ export default function LinkedRestaurant({ restaurantId }: { restaurantId: strin
 
   if (!restaurant) return null;
 
+  const coverUrl = getImageUrl(restaurant.photos?.cover || restaurant.image);
+
   return (
     <Link href={`/restaurant/${restaurant.slug}`}
       className="flex items-center gap-4 p-4 border border-aahar-border rounded-xl bg-white
                  hover:border-aahar-teal hover:bg-aahar-teal/5 transition-all group">
       <div className="w-16 h-16 rounded-xl overflow-hidden bg-aahar-wash flex-shrink-0 relative">
-        {restaurant.photos?.cover ? (
-          <img src={restaurant.photos.cover} alt={restaurant.name}
+        {coverUrl ? (
+          <img src={coverUrl} alt={restaurant.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-2xl">🍽️</div>

@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { uploadApi } from "@/lib/api";
 import { Upload, X, Loader2, Image as ImageIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getImageUrl } from "@/lib/utils";
 import { toast } from "sonner";
 import { MAX_PHOTO_SIZE_MB, validateFileSize } from "@/lib/upload";
 
@@ -33,9 +33,8 @@ export function ImageUpload({ value, onChange, label, className }: ImageUploadPr
     try {
       const res = await uploadApi.singlePhoto(file);
       const url = res.data.data.url;
-      // Convert to full URL for preview
-      const fullUrl = url.startsWith("http") ? url : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5000"}${url}`;
-      onChange(fullUrl);
+      // Store clean relative URL (or external URL as is)
+      onChange(url);
       toast.success("Image uploaded successfully");
     } catch (error: any) {
       console.error("Upload failed", error);
@@ -47,14 +46,16 @@ export function ImageUpload({ value, onChange, label, className }: ImageUploadPr
     }
   };
 
+  const previewUrl = getImageUrl(value);
+
   return (
     <div className={cn("space-y-2", className)}>
       {label && <label className="text-[10px] font-black uppercase tracking-widest text-aahar-body/40">{label}</label>}
       
       <div className="relative group">
-        {value ? (
+        {previewUrl ? (
           <div className="relative aspect-video rounded-2xl overflow-hidden border-2 border-aahar-border group-hover:border-aahar-teal transition-all">
-            <img src={value} alt="Preview" className="w-full h-full object-cover" />
+            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
             <button 
               onClick={(e) => {
                 e.preventDefault();

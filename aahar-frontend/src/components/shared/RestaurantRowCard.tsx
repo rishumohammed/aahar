@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Star, MapPin, ShieldCheck, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { getImageUrl } from "@/lib/utils";
 
 interface RestaurantRowCardProps {
   restaurant: {
@@ -22,6 +23,7 @@ interface RestaurantRowCardProps {
 
 export function RestaurantRowCard({ restaurant }: RestaurantRowCardProps) {
   const fallbackImage = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800";
+  const displayImage = getImageUrl(restaurant.image) || fallbackImage;
 
   return (
     <Link 
@@ -32,9 +34,10 @@ export function RestaurantRowCard({ restaurant }: RestaurantRowCardProps) {
         {/* Left Image Section */}
         <div className="relative w-full md:w-80 aspect-[4/3] md:aspect-square shrink-0 overflow-hidden rounded-xl bg-aahar-wash">
           <Image
-            src={restaurant.image || fallbackImage}
+            src={displayImage}
             alt={restaurant.name}
             fill
+            unoptimized
             className="object-cover transition-transform duration-700 group-hover:scale-110"
             onError={(e) => {
               const target = e.target as HTMLImageElement;

@@ -24,7 +24,7 @@ import {
   RefreshCcw
 } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn, getImageUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -217,7 +217,7 @@ export default function ApplicationDetailPage() {
           {/* Profile Image / Logo */}
           <div className="w-24 h-24 sm:w-28 sm:h-28 bg-slate-50 rounded-2xl overflow-hidden shrink-0 border border-slate-100 flex items-center justify-center shadow-sm">
             {profileImage ? (
-              <img src={profileImage} alt={entityName} className="w-full h-full object-cover" />
+              <img src={getImageUrl(profileImage)} alt={entityName} className="w-full h-full object-cover" />
             ) : (
               <Building className="w-10 h-10 text-slate-300" />
             )}

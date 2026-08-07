@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ShieldCheck, TrendingUp, Users, ClipboardCheck, Award, ArrowRight, Building2 } from "lucide-react";
 import { partnerApi } from "@/lib/api";
+import { getImageUrl } from "@/lib/utils";
 
 export default async function CertifyPage() {
   // Fetch partners for showcase
@@ -195,9 +196,10 @@ export default async function CertifyPage() {
                     {client.logo ? (
                       <div className="relative w-full h-full">
                         <Image
-                          src={client.logo}
+                          src={getImageUrl(client.logo)}
                           alt={client.name}
                           fill
+                          unoptimized
                           className="object-cover rounded-full"
                         />
                       </div>

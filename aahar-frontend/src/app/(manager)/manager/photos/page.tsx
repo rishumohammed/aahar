@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, getImageUrl } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 
 // ── Types ──────────────────────────────────────────────────
@@ -217,21 +217,21 @@ export default function PhotoGalleryPage() {
 
  {/* Gallery Grid */}
  <section className="space-y-8">
- <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
- {(photos[activeCategory] || []).map((url, index) => {
-  const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace('/api', '');
-  const imageUrl = url.startsWith('/') ? `${API_BASE}${url}` : url;
-  return (
- <div key={url} className="relative aspect-square group">
- <div className="w-full h-full rounded-md overflow-hidden border border-slate-200 shadow-sm group-hover:shadow-md transition-all">
- <Image 
- src={imageUrl} 
- alt={`${activeCategory} ${index}`}
- fill
- sizes="(max-width: 768px) 50vw, 25vw"
- className="object-cover"
- />
- </div>
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+  {(photos[activeCategory] || []).map((url, index) => {
+   const imageUrl = getImageUrl(url);
+   return (
+  <div key={url} className="relative aspect-square group">
+  <div className="w-full h-full rounded-md overflow-hidden border border-slate-200 shadow-sm group-hover:shadow-md transition-all">
+  <Image 
+  src={imageUrl} 
+  alt={`${activeCategory} ${index}`}
+  fill
+  unoptimized
+  sizes="(max-width: 768px) 50vw, 25vw"
+  className="object-cover"
+  />
+  </div>
  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all rounded-md">
  <button 
  onClick={() => handleDelete(url)}
