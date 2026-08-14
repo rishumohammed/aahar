@@ -12,7 +12,7 @@ const PROTECTED_PREFIXES = [
 
 const ROLE_ROUTES: Record<string, string[]> = {
   owner:         ["/owner"],
-  hotel_manager: ["/manager"],
+  manager:       ["/manager"],
   auditor:       ["/auditor"],
   admin:         ["/admin"],
   super_admin:   ["/admin"],
