@@ -43,6 +43,29 @@ services:
       timeout: 5s
       retries: 5
 
+  db-backup:
+    image: databack/mysql-backup
+    container_name: aahar_db_backup
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Database Connection
+      DB_SERVER: db
+      DB_USER: root
+      DB_PASS: ${DB_ROOT_PASSWORD:-password}
+      DB_NAMES: aahar_db
+      
+      # Scheduling and Retention
+      CRON_TIME: "0 2 * * *"      # Runs every day at 2:00 AM
+      MAX_BACKUPS: 7              # Automatically deletes backups older than 7 days
+      INIT_BACKUP: "true"         # Takes an initial backup right when the container starts
+      COMPRESS: "true"            # Compresses backup into .sql.gz
+    volumes:
+      # Stores the backups in a 'backups' folder in your project directory
+      - ./backups:/db
+
   backend:
     build: ./aahar-backend
     container_name: aahar_backend
