@@ -42,6 +42,20 @@ export const createLead = async (req: any, res: any) => {
       message: `New ${enquiryType === "get_certified" ? "certification" : "listing"} enquiry from ${applicantName} (${entityName})`,
     });
 
+    // Notify admins in DB
+    const admins = await prisma.user.findMany({ where: { role: { in: ["admin", "super_admin"] } } });
+    if (admins.length > 0) {
+      await prisma.notification.createMany({
+        data: admins.map((admin: any) => ({
+          userId: admin.id,
+          type: "NEW_LEAD",
+          title: "New Enquiry Received",
+          message: `A new ${enquiryType === "get_certified" ? "certification" : "listing"} enquiry was submitted for ${entityName}.`,
+          actionUrl: "/admin/enquiries"
+        }))
+      });
+    }
+
     return created(res, lead, "Enquiry submitted successfully");
   } catch (e) {
     return serverError(res, e);
@@ -295,6 +309,17 @@ export const convertLead = async (req: any, res: any) => {
       const updatedLead = await tx.businessLead.update({
         where: { id: lead.id },
         data: { status: "converted" }
+      });
+
+      // 5. Notify Owner
+      await tx.notification.create({
+        data: {
+          userId: user.id,
+          type: "BUSINESS_PROVISIONED",
+          title: "Account Provisioned",
+          message: `Your account for ${lead.entityName} has been successfully provisioned. Welcome to AAHAR!`,
+          actionUrl: `/${user.role}/dashboard`
+        }
       });
 
       return { user, restaurant, hotel, application, updatedLead };

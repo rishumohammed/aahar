@@ -33,7 +33,7 @@ export const listHotels = async (req: any, res: any) => {
     const {
       city, propertyType, starMin, budgetMax, certified,
       amenities, page = 1, limit = 20, q, sort = "featured",
-      ownerId, managerId
+      ownerId, managerId, all
     } = req.query;
 
     const where: any = { isActive: true };
@@ -42,6 +42,7 @@ export const listHotels = async (req: any, res: any) => {
     if (city)         where.city         = { contains: city };
     if (propertyType) where.propertyType = propertyType;
     if (certified === "true") where.isVerified = true;
+    else if (!all && !ownerId && !managerId) where.isVerified = true;
     if (starMin)      where.starRating   = { gte: Number(starMin) };
     if (q) where.OR = [
       { name:        { contains: q } },
@@ -160,6 +161,22 @@ export const updateHotel = async (req: any, res: any) => {
       where: { id: req.params.id },
       select: HOTEL_SELECT as any
     });
+
+    // Notify admins if owner/manager updated
+    if (["owner", "manager"].includes(req.user.role)) {
+      const admins = await prisma.user.findMany({ where: { role: { in: ["admin", "super_admin"] } } });
+      if (admins.length > 0) {
+        await prisma.notification.createMany({
+          data: admins.map((admin: any) => ({
+            userId: admin.id,
+            type: "BUSINESS_UPDATED",
+            title: "Establishment Updated",
+            message: `${final?.name} has updated their details and is awaiting verification.`,
+            actionUrl: `/admin/establishments/preview/hotel/${final?.id}`
+          }))
+        });
+      }
+    }
 
     return ok(res, final, "Hotel updated successfully");
   } catch (e) { return serverError(res, e); }

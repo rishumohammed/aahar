@@ -368,7 +368,10 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
   };
 
   const handleResetPassword = async () => {
-    if (!initialData?.ownerId) return;
+    if (!initialData?.ownerId) {
+      toast.error("This establishment does not have an owner assigned.");
+      return;
+    }
     setWorking(true);
     try {
       const res = await adminApi.resetPassword(initialData.ownerId);
@@ -431,7 +434,7 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
 
         {/* Quick Action Buttons */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-          {isAdmin && isEditing && initialData?.ownerId && (
+          {isAdmin && initialData?.ownerId && (
             <Button 
               type="button"
               variant="outline" 

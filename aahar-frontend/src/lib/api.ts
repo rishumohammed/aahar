@@ -195,6 +195,8 @@ export const adminApi = {
     api.patch(`/certifications/${certId}/status`, { status: "revoked", reason }),
   reinstateCert: (certId: string) =>
     api.patch(`/certifications/${certId}/status`, { status: "active" }),
+  verifyEstablishment: (type: "restaurant" | "hotel", id: string) =>
+    api.patch(`/admin/establishments/${type}/${id}/verify`),
   stats:        () => api.get("/admin/dashboard"),
   listStandards:() => api.get("/admin/standards"),
   createStandard: (data: any) => api.post("/admin/standards", data),

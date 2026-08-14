@@ -8,7 +8,10 @@ import {
   Coffee,
   Waves,
   ChevronRight,
-  FileText
+  FileText,
+  Bed,
+  DoorOpen,
+  Sparkles
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
@@ -63,6 +66,27 @@ const MASTER_CATEGORIES = [
     desc: "Manage required legal and operational verification documents.",
     icon: FileText,
     color: "bg-indigo-100 text-indigo-600"
+  },
+  { 
+    id: "ROOM_TYPE", 
+    label: "Room Categories", 
+    desc: "Manage room categories like Deluxe, Suite, Standard, etc.",
+    icon: DoorOpen,
+    color: "bg-pink-100 text-pink-600"
+  },
+  { 
+    id: "BED_TYPE", 
+    label: "Bed Configurations", 
+    desc: "Manage bed types like King, Queen, Twin, Single.",
+    icon: Bed,
+    color: "bg-rose-100 text-rose-600"
+  },
+  { 
+    id: "AMENITY_ROOM", 
+    label: "Room Amenities", 
+    desc: "Manage room-specific facilities like Mini Bar, Balcony, Safe.",
+    icon: Sparkles,
+    color: "bg-sky-100 text-sky-600"
   },
 ];
 

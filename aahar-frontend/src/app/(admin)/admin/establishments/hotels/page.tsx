@@ -25,7 +25,7 @@ export default function HotelsManagementPage() {
 
   const fetchData = async () => {
     try {
-      const res = await hotelApi.list();
+      const res = await hotelApi.list({ all: true });
       setItems(res.data.data.items || []);
     } catch (err) {
       console.error(err);
@@ -138,8 +138,8 @@ export default function HotelsManagementPage() {
                     </div>
                   </td>
                   <td className="px-8 py-6">
-                    <span className={`badge py-1 px-3 ${item.isVerified ? "badge-cert" : "badge-pending"}`}>
-                      {item.isVerified ? "Certified" : "Unverified"}
+                    <span className={`badge py-1 px-3 ${item.isVerified ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                      {item.isVerified ? "Listed" : "Pending Verification"}
                     </span>
                   </td>
                   <td className="px-8 py-6 text-right">

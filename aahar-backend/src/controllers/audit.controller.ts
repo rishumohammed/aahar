@@ -143,6 +143,33 @@ export const submitAudit = async (req: any, res: any) => {
       data:  { status: newStatus } as any
     });
 
+    // Notify Admins
+    const admins = await prisma.user.findMany({ where: { role: { in: ["admin", "super_admin"] } } });
+    if (admins.length > 0) {
+      await prisma.notification.createMany({
+        data: admins.map((admin: any) => ({
+          userId: admin.id,
+          type: "AUDIT_SUBMITTED",
+          title: "Audit Submitted",
+          message: `An auditor has submitted an audit report with a score of ${totalScore}/100.`,
+          actionUrl: `/admin/audits/${audit.id}`
+        }))
+      });
+    }
+
+    // Notify Owner
+    if (audit.application?.applicantId) {
+      await prisma.notification.create({
+        data: {
+          userId: audit.application.applicantId,
+          type: "AUDIT_COMPLETED",
+          title: "Audit Completed",
+          message: `The auditor has submitted the report for your application.`,
+          actionUrl: `/${audit.application.businessType === "fnb" ? "owner" : "manager"}/dashboard`
+        }
+      });
+    }
+
     return ok(res, audit, `Audit submitted — score: ${totalScore}/5`);
   } catch (e) { return serverError(res, e); }
 };

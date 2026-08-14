@@ -16,11 +16,10 @@ import { blogApi, promotionApi } from "@/lib/api";
 export const revalidate = 60; // Revalidate every 60 seconds
 
 export default async function HomePage() {
-  // Fetch featured restaurants and hotels in parallel
   const [restaurantsRes, hotelsRes, newRes, blogsRes, promotionsRes] = await Promise.allSettled([
-    searchApi.search({ mode: "eat", certified: "true", limit: 6, sort: "featured" })
+    searchApi.search({ mode: "eat", limit: 6, sort: "featured" })
       .then(r => r.data.data.restaurants),
-    searchApi.search({ mode: "stay", certified: "true", limit: 4, sort: "featured" })
+    searchApi.search({ mode: "stay", limit: 4, sort: "featured" })
       .then(r => r.data.data.hotels),
     searchApi.search({ mode: "both", limit: 4, sort: "newest" })
       .then(r => [...(r.data.data.restaurants || []), ...(r.data.data.hotels || [])]
@@ -117,8 +116,8 @@ export default async function HomePage() {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-l-4 border-aahar-teal pl-4">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-extrabold text-aahar-dark tracking-tight">Certified Restaurants</h2>
-                  <p className="text-xs sm:text-sm font-medium text-aahar-body/80">Top-rated certified dining experiences</p>
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-aahar-dark tracking-tight">Restaurants & Dining</h2>
+                  <p className="text-xs sm:text-sm font-medium text-aahar-body/80">Top-rated dining experiences</p>
                 </div>
                 <Link href="/search?mode=eat" className="shrink-0">
                   <Button variant="link" className="text-aahar-teal font-black text-xs uppercase tracking-wider p-0 group">
@@ -143,8 +142,8 @@ export default async function HomePage() {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-l-4 border-aahar-rose pl-4">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-extrabold text-aahar-dark tracking-tight">Certified Hotels & Resorts</h2>
-                  <p className="text-xs sm:text-sm font-medium text-aahar-body/80">Verified stays across the region</p>
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-aahar-dark tracking-tight">Hotels & Resorts</h2>
+                  <p className="text-xs sm:text-sm font-medium text-aahar-body/80">Stays across the region</p>
                 </div>
                 <Link href="/search?mode=stay" className="shrink-0">
                   <Button variant="link" className="text-aahar-teal font-black text-xs uppercase tracking-wider p-0 group">

@@ -220,6 +220,30 @@ export const assignAudit = async (req: any, res: any) => {
       data: { status: "audit_scheduled" }
     });
 
+    // Notify Auditor
+    await prisma.notification.create({
+      data: {
+        userId: auditorId,
+        type: "AUDIT_ASSIGNED",
+        title: "New Audit Assigned",
+        message: `You have been assigned a new audit scheduled for ${new Date(scheduledAt).toLocaleDateString()}.`,
+        actionUrl: `/auditor/dashboard`
+      }
+    });
+
+    // Notify Owner
+    if (app.applicantId) {
+      await prisma.notification.create({
+        data: {
+          userId: app.applicantId,
+          type: "AUDIT_SCHEDULED",
+          title: "Audit Scheduled",
+          message: `An auditor has been assigned and your audit is scheduled for ${new Date(scheduledAt).toLocaleDateString()}.`,
+          actionUrl: `/${app.businessType === "fnb" ? "owner" : "manager"}/dashboard`
+        }
+      });
+    }
+
     return ok(res, audit, "Audit assigned and application updated");
   } catch (e) { return serverError(res, e); }
 };
@@ -251,3 +275,51 @@ export const reopenAudit = async (req: any, res: any) => {
     return serverError(res, e);
   }
 };
+
+// PATCH /api/admin/establishments/:type/:id/verify
+export const verifyEstablishment = async (req: any, res: any) => {
+  try {
+    const { type, id } = req.params;
+    
+    if (type === "restaurant") {
+      const item = await prisma.restaurant.update({
+        where: { id },
+        data: { isVerified: true }
+      });
+      if (item.ownerId) {
+        await prisma.notification.create({
+          data: {
+            userId: item.ownerId,
+            type: "BUSINESS_VERIFIED",
+            title: "Establishment Verified",
+            message: `Your restaurant ${item.name} has been verified and is now live on AAHAR!`,
+            actionUrl: `/owner/dashboard`
+          }
+        });
+      }
+      return ok(res, item, "Restaurant verified and listed successfully");
+    } else if (type === "hotel") {
+      const item = await prisma.hotel.update({
+        where: { id },
+        data: { isVerified: true }
+      });
+      if (item.managerId) {
+        await prisma.notification.create({
+          data: {
+            userId: item.managerId,
+            type: "BUSINESS_VERIFIED",
+            title: "Establishment Verified",
+            message: `Your hotel ${item.name} has been verified and is now live on AAHAR!`,
+            actionUrl: `/manager/dashboard`
+          }
+        });
+      }
+      return ok(res, item, "Hotel verified and listed successfully");
+    }
+    
+    return badRequest(res, "Invalid establishment type");
+  } catch (e) {
+    return serverError(res, e);
+  }
+};
+

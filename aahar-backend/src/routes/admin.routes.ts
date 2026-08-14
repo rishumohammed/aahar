@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { listUsers, getUser, updateUser, deleteUser, resetUserPassword, listAuditors, assignAudit, listAudits, reopenAudit } from "../controllers/admin.controller.js";
+import { listUsers, getUser, updateUser, deleteUser, resetUserPassword, listAuditors, assignAudit, listAudits, reopenAudit, verifyEstablishment } from "../controllers/admin.controller.js";
 import { issueCertification } from "../controllers/certification.controller.js";
 import { listStandards, createStandard, updateStandard, deleteStandard, addCriterion, deleteCriterion } from "../controllers/standard.controller.js";
 import { verifyToken } from "../middleware/auth.middleware.js";
@@ -19,6 +19,7 @@ router.get("/auditors", listAuditors);
 router.get("/audits", listAudits);
 router.post("/audits", assignAudit);
 router.patch("/audits/:id/reopen", reopenAudit);
+router.patch("/establishments/:type/:id/verify", verifyEstablishment);
 router.post("/certify", issueCertification);
 
 // Standards

@@ -156,7 +156,10 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
   };
 
   const handleResetPassword = async () => {
-    if (!initialData?.ownerId) return;
+    if (!initialData?.ownerId) {
+      toast.error("This establishment does not have an owner assigned.");
+      return;
+    }
     setWorking(true);
     try {
       const res = await adminApi.resetPassword(initialData.ownerId);
@@ -204,7 +207,7 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
               <div className="space-y-6">
                 <h4 className={cn("text-[10px] font-black uppercase tracking-widest", primaryText)}>Basic Information</h4>
                 <div className="space-y-6">
-                  {isAdmin && !isEditing && (
+                  {isAdmin && (
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-1">Assign Owner</label>
                       <select 

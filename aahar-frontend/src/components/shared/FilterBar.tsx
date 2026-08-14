@@ -37,7 +37,7 @@ export default function FilterBar({
   hideMoreFilters = false,
   hideReset = false,
   hideLabels = false,
-  initialCertified = true,
+  initialCertified = false,
   initialQuery = "",
   initialCity = ""
 }: FilterBarProps) {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { restaurantApi, hotelApi } from "@/lib/api";
+import { restaurantApi, hotelApi, adminApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, 
@@ -253,6 +253,23 @@ export default function EstablishmentPreviewPage() {
 
             {/* Action Buttons */}
             <div className="pt-2 flex flex-col gap-3">
+              {!item.isVerified && (
+                <Button 
+                  onClick={async () => {
+                    try {
+                      await adminApi.verifyEstablishment(type as any, id);
+                      toast.success("Establishment verified and listed successfully!");
+                      setItem({ ...item, isVerified: true });
+                    } catch (err) {
+                      toast.error("Failed to verify establishment");
+                    }
+                  }} 
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                  Verify & List Publicly
+                </Button>
+              )}
               <Button onClick={() => router.push(`/admin/establishments/${type}s/${id}`)} className="w-full bg-admin-primary hover:bg-admin-hover text-white">
                 Edit Establishment
               </Button>

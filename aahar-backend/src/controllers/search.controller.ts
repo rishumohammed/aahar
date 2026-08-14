@@ -10,9 +10,9 @@ export const search = async (req: any, res: any) => {
     const results: any = { restaurants:[], hotels:[], total:0 };
 
     if (mode === "eat" || mode === "both") {
-      const where: any = { isActive:true };
-      if (city) where.city = { contains:city };
-      if (isCertified) where.isVerified = true;
+      const where: any = { isActive: true, isVerified: true };
+      if (city) where.city = { contains: city };
+      if (isCertified) where.certification = { isNot: null, status: "active" };
       if (q) where.OR = [
         { name:{ contains:q } },
         { area:{ contains:q } },
@@ -30,9 +30,9 @@ export const search = async (req: any, res: any) => {
     }
 
     if (mode === "stay" || mode === "both") {
-      const where: any = { isActive:true };
-      if (city) where.city = { contains:city };
-      if (isCertified) where.isVerified = true;
+      const where: any = { isActive: true, isVerified: true };
+      if (city) where.city = { contains: city };
+      if (isCertified) where.certification = { isNot: null, status: "active" };
       if (q) where.OR = [
         { name:{ contains:q } },
         { area:{ contains:q } },
