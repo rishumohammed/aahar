@@ -42,7 +42,7 @@ export const listHotels = async (req: any, res: any) => {
     if (city)         where.city         = { contains: city };
     if (propertyType) where.propertyType = propertyType;
     if (certified === "true") where.isVerified = true;
-    else if (!all && !ownerId && !managerId) where.isVerified = true;
+    else if (all !== "true" && !ownerId && !managerId) where.isVerified = true;
     if (starMin)      where.starRating   = { gte: Number(starMin) };
     if (q) where.OR = [
       { name:        { contains: q } },

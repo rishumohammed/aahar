@@ -45,7 +45,7 @@ export const listRestaurants = async (req: any, res: any) => {
     if (category) where.category = category;
     if (dietary)  where.dietary  = dietary;
     if (certified === "true") where.isVerified = true;
-    else if (!all && !ownerId && !managerId) where.isVerified = true;
+    else if (all !== "true" && !ownerId && !managerId) where.isVerified = true;
     if (q) where.OR = [
       { name:        { contains: q } },
       { description: { contains: q } },
