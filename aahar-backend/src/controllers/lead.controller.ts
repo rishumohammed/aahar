@@ -229,7 +229,7 @@ export const convertLead = async (req: any, res: any) => {
             name: lead.applicantName,
             phone: lead.phone,
             passwordHash,
-            role: lead.entityType === "hotel" ? "manager" : "owner",
+            role: "owner",
           }
         });
       }
@@ -260,7 +260,7 @@ export const convertLead = async (req: any, res: any) => {
         }
       } else {
         hotel = await tx.hotel.findFirst({
-          where: { managerId: user.id, phone: lead.phone }
+          where: { ownerId: user.id, phone: lead.phone }
         });
 
         if (!hotel) {
@@ -274,7 +274,7 @@ export const convertLead = async (req: any, res: any) => {
               area: lead.location,
               phone: lead.phone,
               email: lead.email,
-              managerId: user.id,
+              ownerId: user.id,
             }
           });
         }
