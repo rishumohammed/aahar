@@ -198,8 +198,8 @@ model Hotel {
   managerId           String?
   manager User? @relation("HotelManager", fields: [managerId], references: [id], onDelete: SetNull)
   description         String?
-  propertyType        String @default("boutique_hotel")
-  starRating          Int          @default(3)
+  propertyType        String?
+  starRating          Int?
   address             String
   city                String
   area                String?
