@@ -153,4 +153,38 @@ router.post("/document/:applicationId", verifyToken, handleDocUpload, async (req
   }
 });
 
+// Configure handbook storage
+const handbookStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(process.cwd(), "uploads", "handbooks");
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `handbook-${uniqueSuffix}${path.extname(file.originalname)}`);
+  },
+});
+
+const uploadHandbook = multer({
+  storage: handbookStorage,
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB max
+});
+
+// POST /api/upload/handbook
+router.post("/handbook", verifyToken, (req: any, res: any, next: any) => {
+  uploadHandbook.single("file")(req, res, (err: any) => {
+    if (err) return badRequest(res, err.message || "Failed to upload handbook.");
+    next();
+  });
+}, (req: any, res: any) => {
+  try {
+    if (!req.file) return badRequest(res, "No file uploaded.");
+    const url = `/uploads/handbooks/${req.file.filename}`;
+    return ok(res, { url }, "Handbook uploaded successfully");
+  } catch (e) {
+    return serverError(res, e);
+  }
+});
+
 export default router;

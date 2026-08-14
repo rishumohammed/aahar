@@ -29,26 +29,25 @@ import { useBrandingStore } from "@/store/brandingStore";
 import { notificationApi, adminApi } from "@/lib/api";
 
 const NAV_ITEMS = [
-  { label: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "Enquiries", href: "/admin/enquiries", icon: Bell },
+  { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+  { label: "Inquiries", href: "/admin/enquiries", icon: Bell },
   { label: "Applications", href: "/admin/applications", icon: FileText },
   { label: "Audits", href: "/admin/audits", icon: CheckSquare },
   { 
-    label: "Establishments", 
+    label: "Listings", 
     href: "/admin/establishments", 
     icon: Building2,
     children: [
-      { label: "All Establishments", href: "/admin/establishments/all" },
+      { label: "All Listings", href: "/admin/establishments/all" },
       { label: "Restaurants", href: "/admin/establishments/restaurants" },
       { label: "Hotels & Resorts", href: "/admin/establishments/hotels" },
     ]
   },
-
-  { label: "Content", href: "/admin/content", icon: Globe },
+  { label: "CMS & Content", href: "/admin/content", icon: Globe },
   { label: "Promotions", href: "/admin/promotions", icon: Star },
-  { label: "Standards", href: "/admin/standards", icon: ShieldAlert },
+  { label: "Standards & Compliance", href: "/admin/standards", icon: ShieldAlert },
   { label: "Master Data", href: "/admin/master", icon: Database },
-  { label: "Users", href: "/admin/users", icon: Users },
+  { label: "Users & Roles", href: "/admin/users", icon: Users },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
@@ -160,8 +159,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               const isActive = pathname === item.href || (item.children?.some(child => pathname.startsWith(child.href)));
               let dynamicBadge = undefined;
               if (stats) {
-                if (item.label === "Enquiries" && stats.totalEnquiries > 0) dynamicBadge = stats.totalEnquiries.toString();
-                if (item.label === "Applications" && stats.pendingApps > 0) dynamicBadge = stats.pendingApps.toString();
+                if (item.href === "/admin/enquiries" && stats.totalEnquiries > 0) dynamicBadge = stats.totalEnquiries.toString();
+                if (item.href === "/admin/applications" && stats.pendingApps > 0) dynamicBadge = stats.pendingApps.toString();
               }
               return (
                 <li key={item.label} className="pr-4">

@@ -26,6 +26,12 @@ type FooterConfig = {
     phone: string;
     location: string;
   };
+  socialLinks?: {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+    linkedin?: string;
+  };
 };
 
 const DEFAULT_CONFIG: FooterConfig = {
@@ -46,6 +52,12 @@ const DEFAULT_CONFIG: FooterConfig = {
     email: "contact@aahar.org",
     phone: "+91 800 AAHAR TRUST",
     location: "India & GCC",
+  },
+  socialLinks: {
+    facebook: "",
+    twitter: "",
+    instagram: "",
+    linkedin: "",
   }
 };
 
@@ -66,7 +78,8 @@ export default function Footer() {
               email: data.contact?.email || DEFAULT_CONFIG.contact.email,
               phone: data.contact?.phone || DEFAULT_CONFIG.contact.phone,
               location: data.contact?.location || DEFAULT_CONFIG.contact.location,
-            }
+            },
+            socialLinks: data.socialLinks || DEFAULT_CONFIG.socialLinks,
           });
         }
       } catch (err) {
@@ -158,25 +171,31 @@ export default function Footer() {
             {/* Left: Socials */}
             <div className="flex justify-center md:justify-start gap-4">
               {[
-                { Icon: Facebook, name: "Facebook" },
-                { Icon: Twitter, name: "Twitter" },
-                { Icon: Instagram, name: "Instagram" },
-                { Icon: Linkedin, name: "LinkedIn" }
-              ].map(({ Icon, name }, i) => (
-                <motion.button 
-                  whileHover={{ y: -3, color: "#0A7B7B" }}
-                  key={i} 
-                  aria-label={name}
-                  className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/30 transition-all border border-white/10"
-                >
-                  <Icon className="w-4 h-4" />
-                </motion.button>
-              ))}
+                { Icon: Facebook, name: "Facebook", url: config.socialLinks?.facebook },
+                { Icon: Twitter, name: "Twitter", url: config.socialLinks?.twitter },
+                { Icon: Instagram, name: "Instagram", url: config.socialLinks?.instagram },
+                { Icon: Linkedin, name: "LinkedIn", url: config.socialLinks?.linkedin }
+              ].map(({ Icon, name, url }, i) => {
+                if (!url) return null;
+                return (
+                  <motion.a 
+                    whileHover={{ y: -3, color: "#0A7B7B" }}
+                    key={i} 
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={name}
+                    className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/30 transition-all border border-white/10 hover:border-[#0A7B7B]"
+                  >
+                    <Icon className="w-4 h-4" />
+                  </motion.a>
+                );
+              })}
             </div>
 
             {/* Center: Copyright */}
             <div className="text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
-              © {new Date().getFullYear()} AAHAR FOUNDATION. WORLDWIDE.
+              © {new Date().getFullYear()} AAHAR PRIVATE LIMITED COMPANY. WORLDWIDE.
             </div>
 
             {/* Right: Legal */}

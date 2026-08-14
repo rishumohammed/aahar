@@ -77,6 +77,8 @@ const criterionSchema = z.object({
 export default function StandardsPage() {
   const [fnbStandards, setFnbStandards] = useState<Standard[]>([]);
   const [accStandards, setAccStandards] = useState<Standard[]>([]);
+  const [fnbHandbook, setFnbHandbook] = useState<any>(null);
+  const [accHandbook, setAccHandbook] = useState<any>(null);
 
   // Load from API
   const loadStandards = async () => {
@@ -92,12 +94,31 @@ export default function StandardsPage() {
     }
   };
 
-  useEffect(() => { loadStandards(); }, []);
+  const loadHandbooks = async () => {
+    try {
+      const { settingsApi } = await import("@/lib/api");
+      const [fnbRes, accRes] = await Promise.all([
+        settingsApi.get('fnb_handbook').catch(() => ({ data: { data: null } })),
+        settingsApi.get('accommodation_handbook').catch(() => ({ data: { data: null } }))
+      ]);
+      if (fnbRes.data) setFnbHandbook(fnbRes.data);
+      if (accRes.data) setAccHandbook(accRes.data);
+    } catch(e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => { 
+    loadStandards(); 
+    loadHandbooks();
+  }, []);
 
   // Modals state
   const [isStandardModalOpen, setIsStandardModalOpen] = useState(false);
   const [isFnbHandbookModalOpen, setIsFnbHandbookModalOpen] = useState(false);
   const [isAccHandbookModalOpen, setIsAccHandbookModalOpen] = useState(false);
+  const [fnbFile, setFnbFile] = useState<File | null>(null);
+  const [accFile, setAccFile] = useState<File | null>(null);
   
   // CRUD states
   const [editingStandard, setEditingStandard] = useState<Standard | null>(null);
@@ -172,14 +193,38 @@ export default function StandardsPage() {
     }
   };
 
-  const onHandbookSubmit = (data: z.infer<typeof handbookUpdateSchema>, division: StandardDivision) => {
-    toast.success(`${division === 'fnb' ? 'F&B' : 'Accommodation'} Handbook updated to ${data.version}`);
-    if (division === "fnb") {
-      setIsFnbHandbookModalOpen(false);
-      fnbHandbookForm.reset();
-    } else {
-      setIsAccHandbookModalOpen(false);
-      accHandbookForm.reset();
+  const onHandbookSubmit = async (data: z.infer<typeof handbookUpdateSchema>, division: StandardDivision) => {
+    const file = division === 'fnb' ? fnbFile : accFile;
+    if (!file) {
+      toast.error("Please select a handbook file to upload.");
+      return;
+    }
+
+    try {
+      const { uploadApi, settingsApi } = await import("@/lib/api");
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await uploadApi.handbook(formData);
+      const url = res.data.data.url;
+
+      await settingsApi.update(`${division}_handbook`, { version: data.version, releaseNotes: data.releaseNotes, url });
+
+      toast.success(`${division === 'fnb' ? 'F&B' : 'Accommodation'} Handbook updated to ${data.version}`);
+      
+      if (division === "fnb") {
+        setIsFnbHandbookModalOpen(false);
+        fnbHandbookForm.reset();
+        setFnbFile(null);
+      } else {
+        setIsAccHandbookModalOpen(false);
+        accHandbookForm.reset();
+        setAccFile(null);
+      }
+      loadHandbooks();
+    } catch (e) {
+      toast.error("Failed to update handbook");
+      console.error(e);
     }
   };
 
@@ -522,6 +567,23 @@ export default function StandardsPage() {
             {fnbStandards.map(s => renderStandard(s, FileText))}
           </div>
 
+          {fnbHandbook && (
+            <div className="mb-4 p-4 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Active Handbook</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <p className="text-sm font-bold text-slate-800">{fnbHandbook.version}</p>
+                  {fnbHandbook.releaseNotes && (
+                     <span className="text-xs text-slate-500 truncate max-w-[120px]" title={fnbHandbook.releaseNotes}>- {fnbHandbook.releaseNotes}</span>
+                  )}
+                </div>
+              </div>
+              <Button type="button" onClick={() => window.open(fnbHandbook.url, "_blank")} variant="outline" size="sm" className="h-8 text-xs font-semibold bg-white">
+                View PDF
+              </Button>
+            </div>
+          )}
+
           {/* Update F&B Handbook Dialog */}
           <Dialog open={isFnbHandbookModalOpen} onOpenChange={setIsFnbHandbookModalOpen}>
             <Button onClick={() => setIsFnbHandbookModalOpen(true)} type="button" variant="outline" className="w-full rounded-md font-medium text-sm border-slate-200 mt-auto">
@@ -573,13 +635,29 @@ export default function StandardsPage() {
                       </FormItem>
                     )}
                   />
-                  <div className="flex items-center gap-3 p-4 bg-blue-50 text-blue-800 rounded-lg text-sm">
-                    <Upload className="h-5 w-5 shrink-0" />
-                    <p>File upload integration will be active when backend storage is connected.</p>
+                  <div className="flex items-center gap-4 p-4 border border-slate-200 rounded-lg bg-slate-50/50">
+                    <div className="h-10 w-10 rounded-full bg-admin-primary/10 flex items-center justify-center shrink-0">
+                      <Upload className="h-5 w-5 text-admin-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-800 truncate">Upload Handbook File</p>
+                      <p className="text-xs text-slate-500 mt-0.5 truncate">{fnbFile ? fnbFile.name : "Select a PDF file (Max 20MB)"}</p>
+                    </div>
+                    <div className="relative shrink-0">
+                      <input 
+                        type="file" 
+                        accept=".pdf" 
+                        onChange={(e) => setFnbFile(e.target.files?.[0] || null)} 
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                      />
+                      <Button type="button" variant="outline" className="border-slate-300 text-xs font-semibold rounded-md pointer-events-none">
+                        {fnbFile ? "Change File" : "Browse"}
+                      </Button>
+                    </div>
                   </div>
                   <DialogFooter className="bg-transparent border-none p-0 -mx-0 -mb-0 pt-4 sm:justify-end mt-2">
                     <Button type="button" variant="outline" onClick={() => setIsFnbHandbookModalOpen(false)}>Cancel</Button>
-                    <Button type="submit" className="bg-admin-primary hover:bg-admin-hover text-white">Deploy Update</Button>
+                    <Button type="submit" className="bg-admin-primary hover:bg-admin-hover text-white">Update</Button>
                   </DialogFooter>
                 </form>
               </Form>
@@ -602,6 +680,23 @@ export default function StandardsPage() {
           <div className="space-y-3 flex-1 mb-6">
             {accStandards.map(s => renderStandard(s, Lock))}
           </div>
+
+          {accHandbook && (
+            <div className="mb-4 p-4 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Active Handbook</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <p className="text-sm font-bold text-slate-800">{accHandbook.version}</p>
+                  {accHandbook.releaseNotes && (
+                     <span className="text-xs text-slate-500 truncate max-w-[120px]" title={accHandbook.releaseNotes}>- {accHandbook.releaseNotes}</span>
+                  )}
+                </div>
+              </div>
+              <Button type="button" onClick={() => window.open(accHandbook.url, "_blank")} variant="outline" size="sm" className="h-8 text-xs font-semibold bg-white">
+                View PDF
+              </Button>
+            </div>
+          )}
 
           {/* Update Stay Handbook Dialog */}
           <Dialog open={isAccHandbookModalOpen} onOpenChange={setIsAccHandbookModalOpen}>
@@ -654,13 +749,29 @@ export default function StandardsPage() {
                       </FormItem>
                     )}
                   />
-                  <div className="flex items-center gap-3 p-4 bg-blue-50 text-blue-800 rounded-lg text-sm">
-                    <Upload className="h-5 w-5 shrink-0" />
-                    <p>File upload integration will be active when backend storage is connected.</p>
+                  <div className="flex items-center gap-4 p-4 border border-slate-200 rounded-lg bg-slate-50/50">
+                    <div className="h-10 w-10 rounded-full bg-admin-primary/10 flex items-center justify-center shrink-0">
+                      <Upload className="h-5 w-5 text-admin-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-800 truncate">Upload Handbook File</p>
+                      <p className="text-xs text-slate-500 mt-0.5 truncate">{accFile ? accFile.name : "Select a PDF file (Max 20MB)"}</p>
+                    </div>
+                    <div className="relative shrink-0">
+                      <input 
+                        type="file" 
+                        accept=".pdf" 
+                        onChange={(e) => setAccFile(e.target.files?.[0] || null)} 
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                      />
+                      <Button type="button" variant="outline" className="border-slate-300 text-xs font-semibold rounded-md pointer-events-none">
+                        {accFile ? "Change File" : "Browse"}
+                      </Button>
+                    </div>
                   </div>
                   <DialogFooter className="bg-transparent border-none p-0 -mx-0 -mb-0 pt-4 sm:justify-end mt-2">
                     <Button type="button" variant="outline" onClick={() => setIsAccHandbookModalOpen(false)}>Cancel</Button>
-                    <Button type="submit" className="bg-admin-primary hover:bg-admin-hover text-white">Deploy Update</Button>
+                    <Button type="submit" className="bg-admin-primary hover:bg-admin-hover text-white">Update</Button>
                   </DialogFooter>
                 </form>
               </Form>
@@ -669,16 +780,7 @@ export default function StandardsPage() {
         </Card>
       </div>
 
-      <div className="p-6 bg-amber-50 border border-amber-200 rounded-lg shadow-sm flex items-start sm:items-center gap-4 flex-col sm:flex-row">
-        <div className="p-3 bg-amber-100 text-amber-600 rounded-lg shrink-0">
-          <AlertTriangle className="h-5 w-5" />
-        </div>
-        <div className="flex-1">
-          <h4 className="text-sm font-semibold text-amber-900">Critical Policy Update Required</h4>
-          <p className="text-sm text-amber-700 mt-1">The new regional safety guidelines for 2027 need to be integrated into the F&B Kitchen Standard.</p>
-        </div>
-        <Button type="button" className="bg-amber-600 hover:bg-amber-700 text-white rounded-md px-6 font-medium text-sm whitespace-nowrap w-full sm:w-auto shadow-sm">Take Action</Button>
-      </div>
+
     </div>
   );
 }

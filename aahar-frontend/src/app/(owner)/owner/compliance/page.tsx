@@ -45,6 +45,7 @@ export default function ComplianceDashboard() {
  const [auditId, setAuditId] = useState<string | null>(null);
  const [loading, setLoading] = useState(true);
  const [downloadingReport, setDownloadingReport] = useState(false);
+ const [handbookUrl, setHandbookUrl] = useState<string | null>(null);
 
  useEffect(() => {
  const fetchData = async () => {
@@ -62,6 +63,17 @@ export default function ComplianceDashboard() {
  setRestaurantName(statsRes.data?.data?.restaurantName || "Your Restaurant");
  setApplicationId(statsRes.data?.data?.applicationId || null);
  setAuditId(statsRes.data?.data?.auditId || null);
+
+ try {
+  const { settingsApi } = await import("@/lib/api");
+  // Assuming owner handles F&B mostly, or can fetch based on their division. For now fetch F&B.
+  const handbookRes = await settingsApi.get("fnb_handbook");
+  if (handbookRes.data?.url) {
+    setHandbookUrl(handbookRes.data.url);
+  }
+ } catch (e) {
+  console.log("No handbook available");
+ }
  } catch (e) {
  console.error("Failed to load compliance data", e);
  } finally {
@@ -441,10 +453,16 @@ export default function ComplianceDashboard() {
  ))}
  </div>
 
- <Button type="button" variant="outline"className="w-full rounded-md border-slate-200 font-bold text-xs gap-2 py-6">
- View Guidebook
+ {handbookUrl ? (
+ <Button type="button" onClick={() => window.open(handbookUrl, "_blank")} variant="outline"className="w-full rounded-md border-slate-200 font-bold text-xs gap-2 py-6">
+ View F&B Handbook
  <ArrowUpRight className="h-4 w-4"/>
  </Button>
+ ) : (
+ <Button type="button" disabled variant="outline"className="w-full rounded-md border-slate-200 font-bold text-xs gap-2 py-6 text-slate-400">
+ Handbook Not Available
+ </Button>
+ )}
  </Card>
 
  {/* Contact Auditor */}

@@ -32,6 +32,12 @@ const footerConfigSchema = z.object({
     phone: z.string().min(1, "Phone is required"),
     location: z.string().min(1, "Location is required"),
   }),
+  socialLinks: z.object({
+    facebook: z.string().optional(),
+    twitter: z.string().optional(),
+    instagram: z.string().optional(),
+    linkedin: z.string().optional(),
+  }).optional(),
 });
 
 type FooterConfig = z.infer<typeof footerConfigSchema>;
@@ -51,6 +57,12 @@ export default function FooterSettingsPage() {
         phone: "",
         location: "",
       },
+      socialLinks: {
+        facebook: "",
+        twitter: "",
+        instagram: "",
+        linkedin: "",
+      }
     },
   });
 
@@ -80,6 +92,12 @@ export default function FooterSettingsPage() {
               email: "",
               phone: "",
               location: "",
+            },
+            socialLinks: {
+              facebook: "",
+              twitter: "",
+              instagram: "",
+              linkedin: "",
             }
           });
         }
@@ -96,6 +114,12 @@ export default function FooterSettingsPage() {
               email: "",
               phone: "",
               location: "",
+            },
+            socialLinks: {
+              facebook: "",
+              twitter: "",
+              instagram: "",
+              linkedin: "",
             }
           });
         }
@@ -245,6 +269,29 @@ export default function FooterSettingsPage() {
               {form.formState.errors.contact?.location && (
                 <p className="text-xs text-red-500">{form.formState.errors.contact.location.message}</p>
               )}
+            </div>
+          </div>
+        </Card>
+
+        {/* Social Links */}
+        <Card className="p-6 rounded-lg border-0 shadow-md bg-white space-y-4">
+          <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">Social Media Links</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-700">Facebook URL</label>
+              <Input {...form.register("socialLinks.facebook")} placeholder="https://facebook.com/..." className="bg-white border-slate-300 font-medium rounded-md" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-700">Twitter URL</label>
+              <Input {...form.register("socialLinks.twitter")} placeholder="https://twitter.com/..." className="bg-white border-slate-300 font-medium rounded-md" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-700">Instagram URL</label>
+              <Input {...form.register("socialLinks.instagram")} placeholder="https://instagram.com/..." className="bg-white border-slate-300 font-medium rounded-md" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-700">LinkedIn URL</label>
+              <Input {...form.register("socialLinks.linkedin")} placeholder="https://linkedin.com/..." className="bg-white border-slate-300 font-medium rounded-md" />
             </div>
           </div>
         </Card>

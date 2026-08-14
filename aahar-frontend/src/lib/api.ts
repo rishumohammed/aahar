@@ -162,7 +162,11 @@ export const uploadApi = {
     return api.post("/upload/photo", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-  }
+  },
+  handbook: (formData: FormData) =>
+    api.post("/upload/handbook", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
 };
 
 // ── Verification ──────────────────────────────────────────
