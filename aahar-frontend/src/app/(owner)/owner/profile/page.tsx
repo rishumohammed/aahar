@@ -302,13 +302,24 @@ export default function OwnerProfilePage() {
             <div>
               <h2 className="text-4xl font-extrabold text-white tracking-tight mb-2 drop-shadow-md">{establishment.name}</h2>
               <div className="flex flex-wrap items-center gap-4 text-white/90 text-sm font-medium">
-                {establishment.type === "restaurant" ? (
-                  <span className="flex items-center gap-1.5"><UtensilsCrossed className="h-4 w-4 text-aahar-amber" /> {establishment.cuisineType?.join(", ") || "Various Cuisines"}</span>
-                ) : (
-                  <span className="flex items-center gap-1.5 capitalize"><Building2 className="h-4 w-4 text-aahar-teal" /> {establishment.propertyType?.replace(/_/g, " ") || "Hotel / Resort"}</span>
+                {establishment.type === "restaurant" && establishment.cuisineType?.length > 0 && (
+                  <span className="flex items-center gap-1.5"><UtensilsCrossed className="h-4 w-4 text-aahar-amber" /> {establishment.cuisineType.join(", ")}</span>
                 )}
-                <span>•</span>
-                <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-rose-400" /> {establishment.area || "Area"}, {establishment.city || "City"}</span>
+                {establishment.type === "hotel" && establishment.propertyType && (
+                  <span className="flex items-center gap-1.5 capitalize"><Building2 className="h-4 w-4 text-aahar-teal" /> {establishment.propertyType.replace(/_/g, " ")}</span>
+                )}
+                
+                {(establishment.cuisineType?.length > 0 || establishment.propertyType) && (establishment.area || establishment.city) && (
+                  <span>•</span>
+                )}
+
+                {(establishment.area || establishment.city) && (
+                  <span className="flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4 text-rose-400" /> 
+                    {[establishment.area, establishment.city].filter(Boolean).join(", ")}
+                  </span>
+                )}
+
                 {establishment.dietary && (
                   <>
                     <span>•</span>
