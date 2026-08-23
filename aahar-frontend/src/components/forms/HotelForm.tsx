@@ -553,7 +553,7 @@ export default function HotelForm({ initialData, isEditing, isOwnerPortal, onSuc
                                           { key: "balcony", label: "Private Balcony" }
                                         ];
                                         const curValid = (Array.isArray(room.amenities) ? room.amenities : [])
-                                          .map(a => {
+                                          .map((a: any) => {
                                             const found = available.find(x => x.key === a || x.label === a || x.key.toLowerCase() === a.toLowerCase() || x.label.toLowerCase() === a.toLowerCase());
                                             return found ? found.key : null;
                                           })
