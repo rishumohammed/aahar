@@ -48,15 +48,17 @@ export const submitApplication = async (req: any, res: any) => {
     const appStatus = status === "draft" ? "draft" : "submitted";
     const submittedAt = appStatus === "submitted" ? new Date() : null;
 
+    const createData: any = {
+      businessType,
+      applicantId:  req.user.id,
+      status:       appStatus,
+      submittedAt:  submittedAt,
+    };
+    if (restaurantId) createData.restaurantId = restaurantId;
+    if (hotelId) createData.hotelId = hotelId;
+
     const application = await prisma.application.create({
-      data: {
-        businessType,
-        restaurantId: restaurantId || null,
-        hotelId:      hotelId      || null,
-        applicantId:  req.user.id,
-        status:       appStatus,
-        submittedAt:  submittedAt,
-      },
+      data: createData,
       include: { restaurant:true, hotel:true, documents:true } as any
     });
 

@@ -47,6 +47,7 @@ export default function DocumentUploadPage() {
   const [docStatus, setDocStatus] = useState<Record<string, string>>({});
   const [applicationId, setApplicationId] = useState<string | null>(null);
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
+  const [hotelId, setHotelId] = useState<string | null>(null);
   const [applicationStatus, setApplicationStatus] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -66,18 +67,25 @@ export default function DocumentUploadPage() {
   const loadApplicationData = useCallback(async () => {
     try {
       const statsRes = await ownerApi.stats();
-      const restId = statsRes.data?.data?.restaurantId;
-      setRestaurantId(restId);
+      const rId = statsRes.data?.data?.restaurantId || null;
+      const hId = statsRes.data?.data?.hotelId || null;
 
-      if (!restId) {
-        showToast("No associated restaurant found for this owner.", "error");
+      setRestaurantId(rId);
+      setHotelId(hId);
+
+      const targetId = rId || hId;
+      const isHotel = !rId && !!hId;
+
+      if (!targetId) {
+        showToast("No associated establishment found for this owner.", "error");
         return;
       }
 
       const listRes = await applicationApi.list({ limit: 1 });
       let app = listRes.data?.data?.items?.[0];
 
-      const masterRes = await masterApi.list("DOCUMENT_RESTAURANT");
+      const masterType = isHotel ? "DOCUMENT_HOTEL" : "DOCUMENT_RESTAURANT";
+      const masterRes = await masterApi.list(masterType);
       const docs = masterRes.data?.data?.filter((d: any) => d.isActive).map((d: any) => ({
         id: d.key,
         label: d.label,
@@ -87,8 +95,8 @@ export default function DocumentUploadPage() {
 
       if (!app) {
         const createRes = await applicationApi.submit({
-          businessType: "fnb",
-          restaurantId: restId,
+          businessType: isHotel ? "accommodation" : "fnb",
+          ...(rId ? { restaurantId: rId } : { hotelId: hId }),
           status: "draft"
         });
         app = createRes.data?.data;
@@ -113,7 +121,7 @@ export default function DocumentUploadPage() {
       }
     } catch (err: any) {
       console.error(err);
-      showToast(err.response?.data?.message || "Failed to load application data", "error");
+      showToast("Failed to load application data.", "error");
     }
   }, [showToast]);
 
@@ -121,13 +129,14 @@ export default function DocumentUploadPage() {
     loadApplicationData();
   }, [loadApplicationData]);
 
-  const handleProceed = async () => {
-    if (!applicationId || !restaurantId) return;
+  // ── Submit Application ─────────────────────────────────────
+  const handleSubmitApplication = async () => {
+    if (!applicationId || (!restaurantId && !hotelId)) return;
     setIsSubmitting(true);
     try {
       await applicationApi.submit({
-        businessType: "fnb",
-        restaurantId,
+        businessType: hotelId ? "accommodation" : "fnb",
+        ...(restaurantId ? { restaurantId } : { hotelId }),
         status: "submitted"
       });
       showToast("Application submitted successfully", "success");
@@ -415,7 +424,7 @@ export default function DocumentUploadPage() {
  </Button>
  ) : (
  <Button 
- onClick={handleProceed} 
+ onClick={handleSubmitApplication} 
  disabled={!isComplete || isSubmitting}
  className="bg-admin-primary text-white rounded-md px-10 h-14 font-bold shadow-md hover:bg-admin-primary-hover transition-all disabled:opacity-50 flex items-center gap-3"
  >

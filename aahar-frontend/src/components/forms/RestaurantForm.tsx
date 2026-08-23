@@ -51,6 +51,9 @@ import Link from "next/link";
 interface RestaurantFormProps {
   initialData?: any;
   isEditing?: boolean;
+  isOwnerPortal?: boolean;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
 const POPULAR_CUISINES = [
@@ -92,7 +95,7 @@ const DEFAULT_AMENITIES_LIST = [
 
 const DAYS_OF_WEEK = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
-export default function RestaurantForm({ initialData, isEditing }: RestaurantFormProps) {
+export default function RestaurantForm({ initialData, isEditing, isOwnerPortal, onSuccess, onCancel }: RestaurantFormProps) {
   const router = useRouter();
   const { user } = useAuthStore();
   const isAdmin = user?.role === "admin" || user?.role === "super_admin";
@@ -346,15 +349,18 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
         ...(formData.ownerId ? { ownerId: formData.ownerId } : {})
       };
 
-      if (isEditing && initialData?.id) {
-        await restaurantApi.update(initialData.id, payload);
+      if ((isEditing || isOwnerPortal) && (initialData?.id || formData.id)) {
+        const targetId = initialData?.id || formData.id;
+        await restaurantApi.update(targetId, payload);
         toast.success("Restaurant profile updated successfully!");
       } else {
         await restaurantApi.create(payload);
         toast.success("New establishment registered successfully!");
       }
       
-      if (isAdmin) {
+      if (onSuccess) {
+        onSuccess();
+      } else if (isAdmin) {
         router.push("/admin/establishments/restaurants");
       } else {
         router.refresh();
@@ -397,7 +403,19 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
 
   const availableAmenities = masterAmenities.length > 0 ? masterAmenities : DEFAULT_AMENITIES_LIST;
 
-  const currentCover = getImageUrl(formData.image || formData.photos?.cover) || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80";
+  const currentCover = getImageUrl(formData.image || formData.photos?.cover) || "";
+
+  const handleBack = () => {
+    if (onCancel) {
+      onCancel();
+    } else if (isOwnerPortal) {
+      router.push("/owner/profile");
+    } else if (isAdmin) {
+      router.push("/admin/establishments/restaurants");
+    } else {
+      router.back();
+    }
+  };
 
   return (
     <div className="space-y-8 pb-20">
@@ -407,7 +425,7 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => router.back()} 
+            onClick={handleBack} 
             className="rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 h-11 w-11 shrink-0"
           >
             <ArrowLeft className="h-5 w-5 text-slate-700" />
@@ -591,6 +609,20 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
                     className="w-full px-4 h-12 text-sm font-semibold text-slate-800 bg-slate-50/50 rounded-xl border border-slate-200 focus:bg-white focus:ring-2 focus:ring-admin-primary/20 focus:border-admin-primary outline-none transition-all"
                     value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+
+                {/* About Description */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+                    About Establishment / Description
+                  </label>
+                  <textarea 
+                    rows={4}
+                    placeholder="Describe your dining experience, specialties, ambience, culinary story..."
+                    className="w-full px-4 py-3 text-sm font-semibold text-slate-800 bg-slate-50/50 rounded-xl border border-slate-200 focus:bg-white focus:ring-2 focus:ring-admin-primary/20 focus:border-admin-primary outline-none transition-all"
+                    value={formData.description || ""}
+                    onChange={e => setFormData({ ...formData, description: e.target.value })}
                   />
                 </div>
 
@@ -1218,7 +1250,7 @@ export default function RestaurantForm({ initialData, isEditing }: RestaurantFor
               <Button 
                 type="button" 
                 variant="ghost" 
-                onClick={() => router.back()} 
+                onClick={handleBack} 
                 className="rounded-xl font-bold text-xs text-slate-500 hover:bg-slate-100"
               >
                 Discard

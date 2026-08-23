@@ -122,7 +122,7 @@ export default function Footer() {
 
             {/* Ecosystem Column */}
             <div className="space-y-8 lg:pl-8">
-              <h4 className="font-bold text-white uppercase tracking-[0.2em] text-[12px]">Ecosystem</h4>
+              <h4 className="font-bold text-white uppercase tracking-[0.2em] text-[12px]">Quick Links</h4>
               <ul className="space-y-5 text-[15px] text-white/60 font-bold">
                 {config.ecosystemLinks.map((link, idx) => (
                   <li key={idx} className="hover:text-aahar-teal cursor-pointer transition-colors">

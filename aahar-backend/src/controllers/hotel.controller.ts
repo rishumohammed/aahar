@@ -14,6 +14,7 @@ const HOTEL_SELECT = {
   owner: { select:{ id:true, name:true, email:true } },
   manager: { select:{ id:true, name:true, email:true } },
   roomTypes: { orderBy:{ order:"asc" } },
+  applications: { orderBy: { createdAt: "desc" }, take: 1, select: { status: true } },
   certification: {
     include: {
       application: {
@@ -36,13 +37,16 @@ export const listHotels = async (req: any, res: any) => {
       ownerId, managerId, all
     } = req.query;
 
-    const where: any = { isActive: true };
+    const where: any = {};
     if (ownerId)      where.ownerId      = ownerId;
     if (managerId)    where.managerId    = managerId;
     if (city)         where.city         = { contains: city };
     if (propertyType) where.propertyType = propertyType;
     if (certified === "true") where.isVerified = true;
-    else if (all !== "true" && !ownerId && !managerId) where.isVerified = true;
+    else if (all !== "true" && !ownerId && !managerId) {
+      where.isActive = true;
+      where.isVerified = true;
+    }
     if (starMin)      where.starRating   = { gte: Number(starMin) };
     if (q) where.OR = [
       { name:        { contains: q } },
@@ -121,10 +125,20 @@ export const updateHotel = async (req: any, res: any) => {
     if (existing.ownerId !== req.user.id && existing.managerId !== req.user.id && !["admin", "super_admin"].includes(req.user.role))
       return forbidden(res, "Not your property");
     
-    const { id, slug, ownerId, createdAt, roomTypes, owner, manager, certification, ...data } = req.body;
+    const { 
+      id, slug, ownerId, managerId, type, createdAt, updatedAt, 
+      roomTypes, owner, manager, certification, enquiries, applications, 
+      ...data 
+    } = req.body;
 
     if (ownerId && ["admin", "super_admin"].includes(req.user.role)) {
       (data as any).ownerId = ownerId;
+    }
+
+    if ((data as any).image) {
+      const currentPhotos = (existing.photos as any) || {};
+      (data as any).photos = { ...currentPhotos, cover: (data as any).image };
+      delete (data as any).image;
     }
 
     await prisma.$transaction(async (tx) => {
@@ -145,7 +159,7 @@ export const updateHotel = async (req: any, res: any) => {
               description: r.description,
               bedConfig: r.bedConfig,
               maxOccupancy: r.maxOccupancy,
-              priceFrom: Number(r.priceFrom) || 0,
+              priceFrom: Number(r.priceFrom) || Number(r.pricePerNight) || Number(r.price) || 0,
               priceNote: r.priceNote,
               totalRooms: Number(r.totalRooms) || 1,
               amenities: r.amenities || [],
@@ -164,17 +178,21 @@ export const updateHotel = async (req: any, res: any) => {
 
     // Notify admins if owner/manager updated
     if (["owner", "manager"].includes(req.user.role)) {
-      const admins = await prisma.user.findMany({ where: { role: { in: ["admin", "super_admin"] } } });
-      if (admins.length > 0) {
-        await prisma.notification.createMany({
-          data: admins.map((admin: any) => ({
-            userId: admin.id,
-            type: "BUSINESS_UPDATED",
-            title: "Establishment Updated",
-            message: `${final?.name} has updated their details and is awaiting verification.`,
-            actionUrl: `/admin/establishments/preview/hotel/${final?.id}`
-          }))
-        });
+      try {
+        const admins = await prisma.user.findMany({ where: { role: { in: ["admin", "super_admin"] } } });
+        if (admins.length > 0 && (prisma as any).notification) {
+          await (prisma as any).notification.createMany({
+            data: admins.map((admin: any) => ({
+              userId: admin.id,
+              type: "BUSINESS_UPDATED",
+              title: "Establishment Updated",
+              message: `${final?.name} has updated their details and is awaiting verification.`,
+              actionUrl: `/admin/establishments/preview/hotel/${final?.id}`
+            }))
+          });
+        }
+      } catch (notiErr) {
+        console.warn("Notification error ignored:", notiErr);
       }
     }
 

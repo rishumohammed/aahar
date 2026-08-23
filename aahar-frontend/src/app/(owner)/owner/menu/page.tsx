@@ -1,6 +1,8 @@
 "use client";
 
+import { toast } from "sonner";
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -14,9 +16,10 @@ import {
   Loader2,
   UtensilsCrossed,
   Search,
-  Filter
+  Filter,
+  Building2
 } from "lucide-react";
-import { restaurantApi } from "@/lib/api";
+import { restaurantApi, ownerApi } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import { MenuSection, MenuItem } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -47,6 +50,7 @@ interface Toast {
 }
 
 export default function MenuManagementPage() {
+  const router = useRouter();
   const { user } = useAuthStore();
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [menuSections, setMenuSections] = useState<MenuSection[]>([]);
@@ -54,6 +58,9 @@ export default function MenuManagementPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [isHotelOnly, setIsHotelOnly] = useState(false);
+  const [hotelName, setHotelName] = useState<string | null>(null);
   
   // Item Modal State
   const [showItemModal, setShowItemModal] = useState(false);
@@ -62,17 +69,35 @@ export default function MenuManagementPage() {
 
   // Load real menu into state
   useEffect(() => {
-    const currentUser = useAuthStore.getState().user;
-    restaurantApi.list({ limit: 1, ownerId: currentUser?.id })
-      .then(r => {
-        const restaurant = r.data.data.items[0];
+    const fetchMenu = async () => {
+      const currentUser = useAuthStore.getState().user;
+      if (!currentUser) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const restRes = await restaurantApi.list({ limit: 1, ownerId: currentUser.id, all: "true" });
+        const restaurant = restRes.data?.data?.items?.[0];
+        
         if (restaurant) {
           setRestaurantId(restaurant.id);
           setMenuSections(restaurant.menu ?? []);
+        } else {
+          // Check if user is a Hotel Owner
+          const statsRes = await ownerApi.stats();
+          if (statsRes.data?.data?.hotelId) {
+            setIsHotelOnly(true);
+            setHotelName(statsRes.data?.data?.hotelName || "Hotel");
+          }
         }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      } catch (e) {
+        console.error("Error loading menu:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMenu();
   }, []);
 
   const addToast = useCallback((message: string, type: Toast["type"] = "info", onUndo?: () => void) => {
@@ -114,23 +139,32 @@ export default function MenuManagementPage() {
   };
 
   const handleSaveMenu = async () => {
-    if (!restaurantId) return;
+    let currentRestaurantId = restaurantId;
+    if (!currentRestaurantId) {
+      try {
+        const statsRes = await ownerApi.stats();
+        currentRestaurantId = statsRes.data?.data?.restaurantId;
+        if (currentRestaurantId) setRestaurantId(currentRestaurantId);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    if (!currentRestaurantId) {
+      toast.error("No associated restaurant establishment found for this account.");
+      return;
+    }
+
     setSaving(true);
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/restaurants/${restaurantId}/menu`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${useAuthStore.getState().token}`,
-          },
-          body: JSON.stringify({ sections: menuSections }),
-        }
-      );
-      addToast("Menu saved", "success");
-    } catch {
-      addToast("Failed to save", "error");
+      const res = await restaurantApi.updateMenu(currentRestaurantId, menuSections);
+      if (res.data?.data) {
+        setMenuSections(res.data.data);
+      }
+      toast.success("Digital menu published successfully!");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to publish digital menu.");
     } finally {
       setSaving(false);
     }
@@ -140,11 +174,13 @@ export default function MenuManagementPage() {
   const flattenedItems = useMemo(() => {
     return menuSections.flatMap(section => 
       section.items.map(item => ({ ...item, sectionId: section.id, sectionName: section.name }))
-    ).filter(item => 
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      item.sectionName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [menuSections, searchQuery]);
+    ).filter(item => {
+      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            item.sectionName.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === "all" || item.sectionId === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [menuSections, searchQuery, selectedCategory]);
 
   if (loading) return (
     <div className="p-8 max-w-7xl mx-auto space-y-6">
@@ -157,6 +193,33 @@ export default function MenuManagementPage() {
     </div>
   );
 
+  if (isHotelOnly) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto text-center space-y-6 my-12">
+        <Card className="bg-white rounded-xl p-12 shadow-lg border border-slate-200 space-y-6">
+          <div className="w-16 h-16 bg-teal-50 text-admin-primary rounded-full flex items-center justify-center mx-auto">
+            <Building2 className="h-8 w-8" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800">{hotelName} — Hotel Establishment</h2>
+            <p className="text-slate-500 text-sm max-w-md mx-auto mt-2 leading-relaxed">
+              Digital Menu Management is designed for <strong>Restaurant</strong> establishments (food ordering & table bookings). 
+              For your Hotel, you manage <strong>Room Types, Amenities, and Guest Enquiries</strong>.
+            </p>
+          </div>
+          <div className="pt-4 flex justify-center gap-4">
+            <Button onClick={() => router.push("/owner/profile")} className="bg-admin-primary text-white font-semibold rounded-md px-6 py-3">
+              Go to Hotel Profile
+            </Button>
+            <Button onClick={() => router.push("/owner/dashboard")} variant="outline" className="border-slate-200 text-slate-700 font-semibold rounded-md px-6 py-3">
+              Return to Overview
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -165,8 +228,8 @@ export default function MenuManagementPage() {
           <p className="text-slate-500 font-medium text-sm mt-1">Configure your digital menu, pricing, and availability.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button onClick={() => setShowCategoryModal(true)} variant="outline" className="rounded-md px-6 py-5 font-semibold shadow-sm transition-all flex items-center gap-2 border-slate-200 text-slate-700 hover:bg-slate-50">
-            <Filter className="h-4 w-4" /> Manage Categories
+          <Button onClick={() => setShowCategoryModal(true)} variant="outline" className="rounded-md px-6 py-5 font-semibold shadow-sm transition-all flex items-center gap-2 border border-slate-200 bg-white text-slate-800 hover:bg-slate-100 hover:text-slate-900">
+            <Filter className="h-4 w-4 text-slate-600" /> Manage Categories
           </Button>
           <Button onClick={() => openItemModal()} className="bg-admin-primary text-white rounded-md px-6 py-5 font-semibold shadow-md hover:bg-admin-primary-hover transition-all flex items-center gap-2">
             <Plus className="h-4 w-4" /> Add Menu Item
@@ -177,8 +240,23 @@ export default function MenuManagementPage() {
       <Card className="bg-white rounded-lg border-0 shadow-md overflow-hidden">
         <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h2 className="text-xl font-semibold text-slate-800 tracking-tight">Menu Inventory</h2>
-          <div className="flex items-center gap-3">
-            <div className="relative group">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+            {/* Category Filter Dropdown */}
+            <select 
+              value={selectedCategory} 
+              onChange={e => setSelectedCategory(e.target.value)}
+              className="px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-admin-primary transition-all cursor-pointer shadow-sm w-full sm:w-auto"
+            >
+              <option value="all">All Categories ({menuSections.flatMap(s => s.items).length})</option>
+              {menuSections.map(sec => (
+                <option key={sec.id} value={sec.id}>
+                  {sec.name} ({sec.items.length})
+                </option>
+              ))}
+            </select>
+
+            {/* Search Input */}
+            <div className="relative group w-full sm:w-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input 
                 placeholder="Search items or categories..." 
@@ -464,7 +542,7 @@ function CategoryModal({ isOpen, onClose, sections, onSave }: {
   const [localSections, setLocalSections] = useState<MenuSection[]>(sections);
 
   const addCategory = () => {
-    setLocalSections([...localSections, { id: `sec_${Date.now()}`, name: "New Category", items: [] }]);
+    setLocalSections([...localSections, { id: `sec_${Date.now()}`, name: "", items: [] }]);
   };
 
   const updateName = (id: string, name: string) => {
@@ -477,6 +555,15 @@ function CategoryModal({ isOpen, onClose, sections, onSave }: {
       if (!confirm(`Warning: This category contains ${section.items.length} items. Deleting it will delete all its items too! Proceed?`)) return;
     }
     setLocalSections(prev => prev.filter(s => s.id !== id));
+  };
+
+  const handleSave = () => {
+    const hasEmpty = localSections.some(s => !s.name || s.name.trim() === "");
+    if (hasEmpty) {
+      toast.error("Category names cannot be empty. Please fill in all category names or remove blank rows.");
+      return;
+    }
+    onSave(localSections);
   };
 
   if (!isOpen) return null;
@@ -503,6 +590,7 @@ function CategoryModal({ isOpen, onClose, sections, onSave }: {
                   <Input 
                     value={s.name} 
                     onChange={e => updateName(s.id, e.target.value)} 
+                    placeholder="Enter Category Name..."
                     className="flex-1 text-sm font-medium border-slate-200 focus:ring-admin-primary"
                   />
                   <Badge variant="outline" className="text-slate-500 bg-slate-50 border-slate-200">{s.items.length} items</Badge>
@@ -515,12 +603,12 @@ function CategoryModal({ isOpen, onClose, sections, onSave }: {
           </div>
           
           <Button onClick={addCategory} variant="outline" className="w-full border-dashed border-2 border-slate-200 py-6 text-slate-600 hover:border-slate-300 hover:bg-admin-primary hover:text-white transition-colors shadow-sm">
-            <Plus className="h-4 w-4 mr-2" /> Add Blank Category
+            <Plus className="h-4 w-4 mr-2" /> Add Category
           </Button>
 
           <div className="flex gap-3 pt-4 border-t border-slate-100">
             <Button type="button" onClick={onClose} variant="ghost" className="flex-1 text-slate-600">Cancel</Button>
-            <Button onClick={() => onSave(localSections)} className="flex-1 bg-admin-primary text-white hover:bg-admin-primary-hover shadow-sm">Save Changes</Button>
+            <Button onClick={handleSave} className="flex-1 bg-admin-primary text-white hover:bg-admin-primary-hover shadow-sm">Save Changes</Button>
           </div>
         </div>
       </Card>

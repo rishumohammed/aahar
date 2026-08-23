@@ -31,7 +31,7 @@ export default function OrderTrackerPage({
           const activeOrderInfo = {
             id: orderData.id,
             restaurantSlug: params.slug,
-            restaurantName: orderData.restaurant?.name || "Malabar Heritage",
+            restaurantName: orderData.restaurant?.name || "Restaurant",
             tableNumber: orderData.tableNumber,
             totalAmount: orderData.totalAmount,
             createdAt: orderData.createdAt || new Date().toISOString(),
@@ -114,7 +114,7 @@ export default function OrderTrackerPage({
             </Button>
           </Link>
           <div className="text-right">
-            <h2 className="text-sm font-black text-aahar-dark uppercase tracking-tight">{order.restaurant?.name || "Malabar Heritage"}</h2>
+            <h2 className="text-sm font-black text-aahar-dark uppercase tracking-tight">{order.restaurant?.name || "Restaurant"}</h2>
             <p className="text-[10px] font-black text-aahar-teal uppercase tracking-widest">Table {order.tableNumber}</p>
           </div>
         </div>

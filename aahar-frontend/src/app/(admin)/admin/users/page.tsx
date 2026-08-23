@@ -451,7 +451,7 @@ export default function UserManagementPage() {
                       <option value="admin">Platform Admin</option>
                       <option value="auditor">Regional Auditor</option>
                       <option value="owner">Business Owner</option>
-                      <option value="hotel_manager">Hotel Manager</option>
+                      <option value="manager">Hotel Manager</option>
                       <option value="consumer">End Consumer</option>
                     </select>
                   </div>

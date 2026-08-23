@@ -10,7 +10,8 @@ import {
  ArrowUpRight,
  CheckCircle2,
  Bell,
- MessageSquare
+ MessageSquare,
+ AlertTriangle
 } from"lucide-react";
 import { format } from"date-fns";
 
@@ -28,6 +29,7 @@ export default function OwnerDashboardPage() {
  const [stats, setStats] = useState<any[]>([]);
  const [notifications, setNotifications] = useState<any[]>([]);
  const [application, setApplication] = useState<any>(null);
+ const [isVerified, setIsVerified] = useState(true);
  const [loading, setLoading] = useState(true);
 
  useEffect(() => {
@@ -36,14 +38,18 @@ export default function OwnerDashboardPage() {
 
  const fetchDashboardData = async () => {
  try {
- const [appsRes, notifsRes, statsRes] = await Promise.all([
+ const [appsRes, notifsRes, statsRes, estRes] = await Promise.all([
  applicationApi.list(),
  notificationApi.list({ limit: 5 }),
- ownerApi.stats()
+ ownerApi.stats(),
+ ownerApi.establishments()
  ]);
  
  const app = appsRes.data.data.items?.[0]; 
  const realStats = statsRes.data.data;
+ const list = estRes.data.data || [];
+ const verified = list.length > 0 && list.some((e: any) => e.isVerified);
+ setIsVerified(verified);
  setApplication(app);
  setNotifications(notifsRes.data.data.notifications);
 
@@ -80,13 +86,41 @@ export default function OwnerDashboardPage() {
  }
  };
 
- if (loading) {
- return (
- <div className="flex items-center justify-center h-64">
- <div className="h-8 w-8 animate-spin rounded-full border-4 border-admin-primary border-t-transparent"/>
- </div>
- );
- }
+  const [submittingVerification, setSubmittingVerification] = useState(false);
+
+  const handleSubmitVerification = async () => {
+    try {
+      setSubmittingVerification(true);
+      const statsRes = await ownerApi.stats();
+      const rId = statsRes.data?.data?.restaurantId;
+      const hId = statsRes.data?.data?.hotelId;
+
+      if (!rId && !hId) {
+        toast.error("No establishment found for this owner.");
+        return;
+      }
+
+      await applicationApi.submit({
+        businessType: hId ? "accommodation" : "fnb",
+        ...(rId ? { restaurantId: rId } : { hotelId: hId }),
+        status: "submitted"
+      });
+      toast.success("Submitted for verification successfully!");
+      fetchDashboardData();
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || "Failed to submit for verification");
+    } finally {
+      setSubmittingVerification(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-admin-primary border-t-transparent"/>
+      </div>
+    );
+  }
 
  return (
  <div className="space-y-8">
@@ -95,12 +129,54 @@ export default function OwnerDashboardPage() {
  <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Welcome back, {user?.name?.split(' ')[0]}</h1>
  <p className="text-slate-500 font-medium text-sm mt-1">Manage your certification and business profile.</p>
  </div>
- {!application && (
- <Button type="button" className="bg-admin-primary hover:bg-admin-primary-hover text-white rounded-md px-6 shadow-md transition-all">
- Apply for Certification
- </Button>
- )}
+        {(!application || application?.status === "draft") && !isVerified && (
+          <Button 
+            onClick={handleSubmitVerification}
+            disabled={submittingVerification}
+            className="bg-admin-primary hover:bg-admin-primary-hover text-white font-bold rounded-xl px-6 shadow-md transition-all"
+          >
+            {submittingVerification ? "Submitting..." : "Submit for Verification"}
+          </Button>
+        )}
  </div>
+
+ {!isVerified && (
+    <Card className="p-6 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-200 rounded-xl shadow-sm">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-amber-500/15 rounded-xl shrink-0 text-amber-700">
+            <AlertTriangle className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-800">
+              {application?.status && application.status !== "draft" ? "Submitted for Verification" : "Establishment Verification Pending"}
+            </h3>
+            <p className="text-sm text-slate-600 mt-1 max-w-2xl">
+              {application?.status && application.status !== "draft"
+                ? "Your establishment profile and verification details have been submitted to the Admin team for review and approval."
+                : "Please complete your establishment Profile, Photos, and Menu details, then submit your establishment for verification."}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          <Link href="/owner/application">
+            <Button variant="outline" className="border-amber-300 text-amber-800 hover:bg-amber-100 font-bold px-4 py-2.5 rounded-xl text-sm">
+              View Documents
+            </Button>
+          </Link>
+          {(!application?.status || application?.status === "draft") && (
+            <Button 
+              onClick={handleSubmitVerification}
+              disabled={submittingVerification}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-sm text-sm shrink-0"
+            >
+              {submittingVerification ? "Submitting..." : "Submit for Verification"}
+            </Button>
+          )}
+        </div>
+      </div>
+    </Card>
+  )}
 
 
  {/* Stats Row */}

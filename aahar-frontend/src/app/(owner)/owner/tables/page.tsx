@@ -22,6 +22,7 @@ type TableFormValues = z.infer<typeof tableSchema>;
 export default function OwnerTablesPage() {
  const [restaurantId, setRestaurantId] = useState<string | null>(null);
  const [restaurantName, setRestaurantName] = useState("");
+ const [restaurantSlug, setRestaurantSlug] = useState("");
  const [tables, setTables] = useState<any[]>([]);
  const [loading, setLoading] = useState(true);
  const [creating, setCreating] = useState(false);
@@ -56,6 +57,7 @@ export default function OwnerTablesPage() {
  if (restaurant) {
  setRestaurantId(restaurant.id);
  setRestaurantName(restaurant.name);
+ setRestaurantSlug(restaurant.slug || "");
  fetchTables(restaurant.id);
  } else {
  setLoading(false);
@@ -143,9 +145,9 @@ export default function OwnerTablesPage() {
  
  <div className="p-3 bg-white border-2 border-aahar-dark/10 rounded-xl">
  <img 
- src={printingTable.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=http://localhost:3000/restaurant/saffron?table=${printingTable.tableNumber}`} 
- alt={`Table ${printingTable.tableNumber} QR`} 
- className="w-40 h-40 object-contain"
+  src={printingTable.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent((typeof window !== "undefined" ? window.location.origin : "http://localhost:3000") + `/restaurant/${restaurantSlug || "menu"}?table=${printingTable.tableNumber}`)}`} 
+  alt={`Table ${printingTable.tableNumber} QR`} 
+  className="w-40 h-40 object-contain"
  />
  </div>
 

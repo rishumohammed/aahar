@@ -13,6 +13,7 @@ const SAFE_SELECT = {
   managerId: true,
   owner: { select:{ id:true, name:true, email:true } },
   manager: { select:{ id:true, name:true, email:true } },
+  applications: { orderBy: { createdAt: "desc" }, take: 1, select: { status: true } },
   certification: {
     include: {
       application: {
@@ -114,10 +115,20 @@ export const updateRestaurant = async (req: any, res: any) => {
     if (existing.ownerId !== req.user.id && !["admin", "super_admin"].includes(req.user.role))
       return forbidden(res, "Not your restaurant");
     
-    const { id, slug, ownerId, createdAt, menu, owner, manager, certification, ...data } = req.body;
+    const { 
+      id, slug, ownerId, managerId, type, createdAt, updatedAt, 
+      menu, owner, manager, certification, applications, tableBookings, 
+      ...data 
+    } = req.body;
 
     if (ownerId && ["admin", "super_admin"].includes(req.user.role)) {
       (data as any).ownerId = ownerId;
+    }
+
+    if ((data as any).image) {
+      const currentPhotos = (existing.photos as any) || {};
+      (data as any).photos = { ...currentPhotos, cover: (data as any).image };
+      delete (data as any).image;
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -162,17 +173,21 @@ export const updateRestaurant = async (req: any, res: any) => {
 
     // Notify admins if owner/manager updated
     if (["owner", "manager"].includes(req.user.role)) {
-      const admins = await prisma.user.findMany({ where: { role: { in: ["admin", "super_admin"] } } });
-      if (admins.length > 0) {
-        await prisma.notification.createMany({
-          data: admins.map((admin: any) => ({
-            userId: admin.id,
-            type: "BUSINESS_UPDATED",
-            title: "Establishment Updated",
-            message: `${final?.name} has updated their details and is awaiting verification.`,
-            actionUrl: `/admin/establishments/preview/restaurant/${final?.id}`
-          }))
-        });
+      try {
+        const admins = await prisma.user.findMany({ where: { role: { in: ["admin", "super_admin"] } } });
+        if (admins.length > 0 && (prisma as any).notification) {
+          await (prisma as any).notification.createMany({
+            data: admins.map((admin: any) => ({
+              userId: admin.id,
+              type: "BUSINESS_UPDATED",
+              title: "Establishment Updated",
+              message: `${final?.name} has updated their details and is awaiting verification.`,
+              actionUrl: `/admin/establishments/preview/restaurant/${final?.id}`
+            }))
+          });
+        }
+      } catch (notiErr) {
+        console.warn("Notification error ignored:", notiErr);
       }
     }
 
@@ -196,18 +211,28 @@ export const deleteRestaurant = async (req: any, res: any) => {
 // POST /api/restaurants/:id/menu — upsert full menu
 export const upsertMenu = async (req: any, res: any) => {
   try {
-    const { sections } = req.body; // MenuSection[]
+    const { sections = [] } = req.body; // MenuSection[]
     const restaurantId = req.params.id;
+
+    const existing = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
+    if (!existing) return notFound(res, "Restaurant not found");
+
     await prisma.$transaction(async (tx) => {
       await tx.menuSection.deleteMany({ where: { restaurantId } });
-      for (const s of sections) {
+      for (const [secIdx, s] of sections.entries()) {
         await tx.menuSection.create({
           data: {
-            restaurantId, name: s.name, order: s.order,
-            items: { create: s.items.map((item: any, i: number) => ({
-              name: item.name, description: item.description,
-              price: item.price, dietary: item.dietary,
-              isAvailable: item.isAvailable, order: i,
+            restaurantId, 
+            name: s.name, 
+            order: typeof s.order === "number" ? s.order : secIdx,
+            items: { create: (s.items || []).map((item: any, i: number) => ({
+              name: item.name, 
+              description: item.description || null,
+              price: typeof item.price === "number" ? item.price : parseFloat(item.price) || 0,
+              dietary: item.dietary || "veg",
+              image: item.image || null,
+              isAvailable: item.isAvailable ?? true,
+              order: typeof item.order === "number" ? item.order : i,
             }))},
           }
         });
@@ -218,5 +243,8 @@ export const upsertMenu = async (req: any, res: any) => {
       select: { menu: { include:{ items:{ orderBy:{ order:"asc" } } }, orderBy:{ order:"asc" } } } as any
     });
     return ok(res, updated?.menu, "Menu updated");
-  } catch (e) { return serverError(res, e); }
+  } catch (e) { 
+    console.error("upsertMenu Error:", e);
+    return serverError(res, e); 
+  }
 };

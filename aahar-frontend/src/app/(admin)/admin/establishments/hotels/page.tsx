@@ -138,9 +138,19 @@ export default function HotelsManagementPage() {
                     </div>
                   </td>
                   <td className="px-8 py-6">
-                    <span className={`badge py-1 px-3 ${item.isVerified ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
-                      {item.isVerified ? "Listed" : "Pending Verification"}
-                    </span>
+                    {item.isVerified ? (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        Verified
+                      </span>
+                    ) : item.applications?.[0]?.status && item.applications[0].status !== "draft" ? (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-sm animate-pulse">
+                        Submitted for Verification
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                        Unverified
+                      </span>
+                    )}
                   </td>
                   <td className="px-8 py-6 text-right">
                     <div className="flex items-center justify-end gap-2">

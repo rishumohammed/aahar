@@ -216,7 +216,7 @@ export default function FooterSettingsPage() {
           {/* Ecosystem Links */}
           <Card className="p-6 rounded-lg border-0 shadow-md bg-white space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="text-sm font-semibold text-slate-800">Ecosystem Links</h3>
+              <h3 className="text-sm font-semibold text-slate-800">Quick Links</h3>
               <Button type="button" variant="outline" size="sm" onClick={() => ecosystemArray.append({ label: "", type: "url", url: "" })} className="h-8">
                 <Plus className="w-4 h-4 mr-1" /> Add
               </Button>

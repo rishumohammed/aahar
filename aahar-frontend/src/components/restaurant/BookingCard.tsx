@@ -22,7 +22,9 @@ export default function BookingCard({ restaurant }: { restaurant: any }) {
   const todayStr = format(new Date(), "yyyy-MM-dd");
 
   const timeSlots = useMemo(() => {
-    const openingHours = restaurant.openingHours?.monday || "11:00 AM - 11:00 PM";
+    const openingHours = typeof restaurant.openingHours === 'string'
+      ? restaurant.openingHours
+      : (restaurant.openingHours?.monday || "Not configured");
     const [startStr, endStr] = openingHours.split(" - ");
     
     const parseTime = (timeStr: string) => {

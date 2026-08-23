@@ -185,15 +185,22 @@ function RestaurantProfilePageContent({
   return (
     <div className="flex flex-col min-h-screen bg-aahar-wash pb-24 relative">
       {/* Hero Section */}
-      <section className="relative h-[450px] w-full overflow-hidden">
-        <Image
-          src={getImageUrl(restaurant.photos?.cover || restaurant.image) || "https://picsum.photos/seed/restaurant/1200/800"}
-          alt={restaurant.name}
-          fill
-          unoptimized
-          className="object-cover"
-          priority
-        />
+      <section className="relative h-[450px] w-full overflow-hidden bg-slate-800 flex items-center justify-center">
+        {getImageUrl(restaurant.photos?.cover || restaurant.image) ? (
+          <Image
+            src={getImageUrl(restaurant.photos?.cover || restaurant.image)!}
+            alt={restaurant.name}
+            fill
+            unoptimized
+            className="object-cover"
+            priority
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center text-slate-500">
+            <UtensilsCrossed className="h-16 w-16 mb-2" />
+            <span className="text-xs font-bold uppercase tracking-widest text-slate-400">No Cover Image Uploaded</span>
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-aahar-dark/90 via-aahar-dark/40 to-transparent" />
         
         <div className="container mx-auto max-w-7xl px-4 absolute bottom-0 left-0 right-0 pb-12">
@@ -319,7 +326,11 @@ function RestaurantProfilePageContent({
                   <Card className="p-6 bg-white border-aahar-border text-center space-y-2">
                     <Clock className="h-6 w-6 text-aahar-teal mx-auto" />
                     <div className="text-[10px] font-black uppercase text-aahar-body/40">Opening Hours</div>
-                    <div className="text-xs font-bold text-aahar-dark">{restaurant.openingHours?.monday || "Closed"}</div>
+                    <div className="text-xs font-bold text-aahar-dark">
+                      {typeof restaurant.openingHours === 'string'
+                        ? restaurant.openingHours
+                        : (restaurant.openingHours?.monday || "Not configured")}
+                    </div>
                   </Card>
                   <Card className="p-6 bg-white border-aahar-border text-center space-y-2">
                     <Phone className="h-6 w-6 text-aahar-teal mx-auto" />
@@ -665,7 +676,11 @@ function RestaurantProfilePageContent({
                   </div>
                   <div>
                     <div className="text-[10px] font-black uppercase tracking-widest text-aahar-body/40">Opening Hours</div>
-                    <div className="text-sm font-bold text-aahar-dark mt-0.5">Today: {restaurant.openingHours?.monday || "Schedule Unknown"}</div>
+                    <div className="text-sm font-bold text-aahar-dark mt-0.5">
+                      Today: {typeof restaurant.openingHours === 'string'
+                        ? restaurant.openingHours
+                        : (restaurant.openingHours?.monday || "Not configured")}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">

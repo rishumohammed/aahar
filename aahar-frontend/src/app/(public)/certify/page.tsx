@@ -2,13 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ShieldCheck, TrendingUp, Users, ClipboardCheck, Award, ArrowRight, Building2 } from "lucide-react";
-import { partnerApi } from "@/lib/api";
+import { searchApi } from "@/lib/api";
 import { getImageUrl } from "@/lib/utils";
 
 export default async function CertifyPage() {
   // Fetch partners for showcase
-  const partnersRes = await partnerApi.list({ isFeatured: true, limit: 8 })
-    .then(r => r.data?.data?.partners || [])
+  const partnersRes = await searchApi.search({ isFeatured: true, limit: 8 })
+    .then(r => r.data?.data?.items || [])
     .catch(() => []);
 
   const certifiedClients = partnersRes;

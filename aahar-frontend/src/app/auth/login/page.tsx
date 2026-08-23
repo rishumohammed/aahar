@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useAuthStore } from "@/store/authStore";
-import { ShieldCheck, Lock, Mail, Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { ShieldCheck, Lock, Mail, Loader2, ArrowRight, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -61,6 +61,9 @@ export default function LoginPage() {
       </div>
 
       <Card className="w-full max-w-md bg-white/80 backdrop-blur-xl border-aahar-border shadow-xl rounded-xl p-6 md:p-10 relative z-10 my-auto">
+        <Link href="/" className="inline-flex items-center text-xs font-bold text-aahar-body/60 hover:text-aahar-teal transition-colors mb-6 uppercase tracking-wider">
+          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Home
+        </Link>
         <div className="text-center mb-8">
           {branding?.logoLight ? (
             <div className="flex justify-center mb-4">

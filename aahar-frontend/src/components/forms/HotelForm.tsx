@@ -39,9 +39,12 @@ const MEAL_PLANS = [
 interface HotelFormProps {
   initialData?: any;
   isEditing?: boolean;
+  isOwnerPortal?: boolean;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
-export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
+export default function HotelForm({ initialData, isEditing, isOwnerPortal, onSuccess, onCancel }: HotelFormProps) {
   const router = useRouter();
   const { user } = useAuthStore();
   const isAdmin = user?.role === "admin" || user?.role === "super_admin";
@@ -54,13 +57,14 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
   const [masterRoomAmenities, setMasterRoomAmenities] = useState<any[]>([]);
   const [masterBedTypes, setMasterBedTypes] = useState<any[]>([]);
   const [masterRoomTypes, setMasterRoomTypes] = useState<any[]>([]);
+  const [masterMealPlans, setMasterMealPlans] = useState<any[]>([]);
   const [formData, setFormData] = useState<any>({
     name: "", propertyType: "resort", starRating: 4, city: "", area: "", address: "", 
     description: "", phone: "", image: "", ownerId: "", googleLocationLink: "",
     checkInTime: "14:00", checkOutTime: "11:00",
     cancellationPolicy: "Full refund if cancelled 24 hours prior to check-in.",
     approvalPreference: "instant",
-    mealPlans: ["ep", "cp"],
+    mealPlans: [],
     amenities: { pool: false, spa: false, gym: false, wifi: true, parking: true, restaurant: false },
     roomTypes: []
   });
@@ -86,6 +90,7 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
     masterApi.list("AMENITY_ROOM").then(res => setMasterRoomAmenities(res.data.data || []));
     masterApi.list("BED_TYPE").then(res => setMasterBedTypes(res.data.data || []));
     masterApi.list("ROOM_TYPE").then(res => setMasterRoomTypes(res.data.data || []));
+    masterApi.list("MEAL_PLAN").then(res => setMasterMealPlans(res.data.data || []));
   }, [isAdmin]);
 
   useEffect(() => {
@@ -98,7 +103,7 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
         checkOutTime: initialData.checkOutTime || "11:00",
         cancellationPolicy: initialData.cancellationPolicy || "Full refund if cancelled 24 hours prior to check-in.",
         approvalPreference: initialData.approvalPreference || "instant",
-        mealPlans: Array.isArray(initialData.mealPlans) ? initialData.mealPlans : ["ep", "cp"],
+        mealPlans: Array.isArray(initialData.mealPlans) ? initialData.mealPlans : [],
         amenities: typeof initialData.amenities === 'object' && initialData.amenities !== null ? initialData.amenities : {},
         roomTypes: initialData.roomTypes || []
       });
@@ -110,14 +115,21 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
       ...formData,
       roomTypes: [
         ...(formData.roomTypes || []),
-        { name: "", bedConfig: "", maxOccupancy: 2, priceFrom: 0, totalRooms: 1, description: "", amenities: [] }
+        { name: "", bedConfig: "", maxOccupancy: 2, priceFrom: 0, pricePerNight: 0, price: 0, totalRooms: 1, description: "", amenities: [] }
       ]
     });
   };
 
   const updateRoomType = (index: number, field: string, value: any) => {
     const updated = [...(formData.roomTypes || [])];
-    updated[index] = { ...updated[index], [field]: value };
+    const item = { ...updated[index], [field]: value };
+    if (field === "priceFrom" || field === "pricePerNight" || field === "price") {
+      const numVal = Number(value) || 0;
+      item.priceFrom = numVal;
+      item.pricePerNight = numVal;
+      item.price = numVal;
+    }
+    updated[index] = item;
     setFormData({ ...formData, roomTypes: updated });
   };
 
@@ -135,21 +147,35 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
       delete payload.slug;
       delete payload.owner;
       delete payload.manager;
+      delete payload.managerId;
+      delete payload.type;
       delete payload.certification;
+      delete payload.enquiries;
+      delete payload.applications;
       delete payload.createdAt;
       delete payload.updatedAt;
       delete payload.image; // Frontend-only helper
 
-      if (isEditing && initialData?.id) {
-        await hotelApi.update(initialData.id, payload);
+      if ((isEditing || isOwnerPortal) && (initialData?.id || formData.id)) {
+        const targetId = initialData?.id || formData.id;
+        await hotelApi.update(targetId, payload);
+        toast.success("Hotel profile updated successfully!");
       } else {
         await hotelApi.create(payload);
+        toast.success("New property registered successfully!");
       }
-      router.push("/admin/establishments/hotels");
-      router.refresh();
-    } catch (err) {
+
+      if (onSuccess) {
+        onSuccess();
+      } else if (isAdmin) {
+        router.push("/admin/establishments/hotels");
+        router.refresh();
+      } else {
+        router.refresh();
+      }
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to save hotel");
+      toast.error(err.response?.data?.message || "Failed to save hotel profile");
     } finally {
       setWorking(false);
     }
@@ -173,12 +199,24 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
     }
   };
 
+  const handleBack = () => {
+    if (onCancel) {
+      onCancel();
+    } else if (isOwnerPortal) {
+      router.push("/owner/profile");
+    } else if (isAdmin) {
+      router.push("/admin/establishments/hotels");
+    } else {
+      router.back();
+    }
+  };
+
   return (
     <div className="space-y-10">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full bg-white shadow-sm border border-slate-200">
+          <Button variant="ghost" size="icon" onClick={handleBack} className="rounded-full bg-white shadow-sm border border-slate-200">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -231,6 +269,19 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
                     onChange={e => setFormData({...formData, name: e.target.value})} 
                   />
 
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-1">
+                      About Property / Description
+                    </label>
+                    <textarea 
+                      rows={4}
+                      placeholder="Write a brief overview of your property, key highlights, hospitality services, ambience..."
+                      className="w-full px-4 py-3 text-sm text-slate-800 bg-transparent rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-aahar-teal focus:border-aahar-teal transition-all"
+                      value={formData.description || ""}
+                      onChange={e => setFormData({ ...formData, description: e.target.value })}
+                    />
+                  </div>
+
                   <div className="grid grid-cols-2 gap-5">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-1">Type</label>
@@ -277,7 +328,10 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
                 <div className="space-y-3 pt-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">Available Meal Plans</label>
                   <div className="grid grid-cols-2 gap-3 bg-slate-50/50 p-6 rounded-xl border border-slate-200">
-                    {MEAL_PLANS.map(plan => (
+                    {(masterMealPlans.length > 0
+                      ? masterMealPlans.map(m => ({ code: m.key.toLowerCase(), label: m.label }))
+                      : MEAL_PLANS
+                    ).map(plan => (
                       <label key={plan.code} className="flex items-center gap-3 cursor-pointer group">
                         <input 
                           type="checkbox"
@@ -354,12 +408,19 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
               <div className="space-y-6">
                 <h4 className={cn("text-[10px] font-black uppercase tracking-widest", primaryText)}>Amenities</h4>
                 <div className="grid grid-cols-2 gap-3 bg-slate-50/50 p-6 rounded-xl border border-slate-200">
-                  {masterAmenities.map(opt => (
+                  {(masterAmenities.length > 0 ? masterAmenities : [
+                    { key: "pool", label: "Swimming Pool" },
+                    { key: "spa", label: "Spa & Wellness" },
+                    { key: "gym", label: "Fitness Center / Gym" },
+                    { key: "wifi", label: "High-Speed Wi-Fi" },
+                    { key: "parking", label: "Free Parking" },
+                    { key: "restaurant", label: "In-house Restaurant" }
+                  ]).map(opt => (
                     <label key={opt.key} className="flex items-center gap-3 cursor-pointer group">
                       <input 
                         type="checkbox"
                         className={cn("w-5 h-5 rounded border-2 border-slate-300 transition-all", checkboxChecked)}
-                        checked={formData.amenities?.[opt.key]}
+                        checked={!!formData.amenities?.[opt.key]}
                         onChange={e => setFormData({
                           ...formData,
                           amenities: { ...formData.amenities, [opt.key]: e.target.checked }
@@ -449,44 +510,76 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
                               onChange={e => updateRoomType(index, "priceFrom", Number(e.target.value))}
                             />
                           </div>
-                        </div>
-
-                        <div className="space-y-4 pr-10">
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Room Description</label>
-                            <textarea 
-                              placeholder="e.g. The spacious quadruple room offers air conditioning, a minibar..."
-                              className="w-full px-3 py-2 text-sm text-slate-800 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-slate-400 min-h-[80px]"
-                              value={room.description}
-                              onChange={e => updateRoomType(index, "description", e.target.value)}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-                              <span>Room Amenities & Features</span>
-                              <span className="text-[9px] font-medium text-slate-400 normal-case tracking-normal">Select from Master Data</span>
-                            </label>
-                            
-                            <div className="grid grid-cols-2 gap-2 bg-slate-50 border border-slate-200 p-4 rounded-lg max-h-[150px] overflow-y-auto">
-                              {masterRoomAmenities.map(opt => (
-                                <label key={opt.key} className="flex items-center gap-2 cursor-pointer group">
-                                  <input 
-                                    type="checkbox"
-                                    className={cn("w-4 h-4 rounded border-slate-300 transition-all", checkboxChecked)}
-                                    checked={Array.isArray(room.amenities) && room.amenities.includes(opt.label)}
-                                    onChange={e => {
-                                      const cur = Array.isArray(room.amenities) ? room.amenities : [];
-                                      updateRoomType(index, "amenities", e.target.checked ? [...cur, opt.label] : cur.filter((a: string) => a !== opt.label));
-                                    }}
-                                  />
-                                  <span className="text-xs font-medium text-slate-600 group-hover:text-slate-900 transition-colors">{opt.label}</span>
-                                </label>
-                              ))}
-                              {masterRoomAmenities.length === 0 && (
-                                <p className="text-xs text-slate-400 italic col-span-2">No room amenities configured in Master Data.</p>
-                              )}
+                        </div>                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pr-10">
+                          <div className="space-y-4">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Room Description</label>
+                              <textarea 
+                                placeholder="e.g. The spacious quadruple room offers air conditioning, a minibar..."
+                                className="w-full px-3 py-2 text-sm text-slate-800 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-slate-400 min-h-[80px]"
+                                value={room.description}
+                                onChange={e => updateRoomType(index, "description", e.target.value)}
+                              />
                             </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                                <span>Room Amenities & Features</span>
+                                <span className="text-[9px] font-medium text-slate-400 normal-case tracking-normal">Select from Master Data</span>
+                              </label>
+                              
+                              <div className="grid grid-cols-2 gap-2 bg-slate-50 border border-slate-200 p-4 rounded-lg max-h-[150px] overflow-y-auto">
+                                {(masterRoomAmenities.length > 0 ? masterRoomAmenities : [
+                                  { key: "kettle", label: "Electric Kettle" },
+                                  { key: "fridge", label: "Mini Fridge" },
+                                  { key: "bath_tub", label: "Bathtub" },
+                                  { key: "ac", label: "Air Conditioning" },
+                                  { key: "wifi", label: "Free High-Speed Wi-Fi" },
+                                  { key: "tv", label: "Smart TV" },
+                                  { key: "balcony", label: "Private Balcony" }
+                                ]).map(opt => (
+                                  <label key={opt.key} className="flex items-center gap-2 cursor-pointer group">
+                                    <input 
+                                      type="checkbox"
+                                      className={cn("w-4 h-4 rounded border-slate-300 transition-all", checkboxChecked)}
+                                      checked={Array.isArray(room.amenities) && (room.amenities.includes(opt.key) || room.amenities.includes(opt.label) || room.amenities.includes(opt.key.toLowerCase()))}
+                                      onChange={e => {
+                                        const available = masterRoomAmenities.length > 0 ? masterRoomAmenities : [
+                                          { key: "kettle", label: "Electric Kettle" },
+                                          { key: "fridge", label: "Mini Fridge" },
+                                          { key: "bath_tub", label: "Bathtub" },
+                                          { key: "ac", label: "Air Conditioning" },
+                                          { key: "wifi", label: "Free High-Speed Wi-Fi" },
+                                          { key: "tv", label: "Smart TV" },
+                                          { key: "balcony", label: "Private Balcony" }
+                                        ];
+                                        const curValid = (Array.isArray(room.amenities) ? room.amenities : [])
+                                          .map(a => {
+                                            const found = available.find(x => x.key === a || x.label === a || x.key.toLowerCase() === a.toLowerCase() || x.label.toLowerCase() === a.toLowerCase());
+                                            return found ? found.key : null;
+                                          })
+                                          .filter(Boolean) as string[];
 
+                                        const isChecked = e.target.checked;
+                                        const newAmenities = isChecked 
+                                          ? [...new Set([...curValid, opt.key])]
+                                          : curValid.filter(a => a !== opt.key);
+                                        updateRoomType(index, "amenities", newAmenities);
+                                      }}
+                                    />
+                                    <span className="text-xs font-medium text-slate-600 group-hover:text-slate-900 transition-colors">{opt.label}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Room Category Image</label>
+                            <p className="text-xs text-slate-500 font-medium max-w-sm">Upload a representative photo for this room type category.</p>
+                            <ImageUpload 
+                              value={Array.isArray(room.photos) ? room.photos[0] || "" : (typeof room.photos === "string" ? room.photos : "")} 
+                              onChange={url => updateRoomType(index, "photos", [url])} 
+                            />
                           </div>
                         </div>
                       </div>
@@ -551,7 +644,7 @@ export default function HotelForm({ initialData, isEditing }: HotelFormProps) {
 
           {/* Form Action Footer */}
           <div className="mt-12 pt-8 flex items-center justify-end gap-4 border-t border-slate-100">
-            <Button type="button" onClick={() => router.back()} variant="ghost" className="px-6 py-6 rounded-xl font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 transition-colors">
+            <Button type="button" onClick={handleBack} variant="ghost" className="px-6 py-6 rounded-xl font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 transition-colors">
               Discard Changes
             </Button>
             <Button type="submit" disabled={working} className={cn("px-8 py-6 rounded-xl font-black uppercase tracking-widest text-white shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5", primaryBg, shadowPrimary)}>

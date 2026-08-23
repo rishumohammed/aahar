@@ -11,208 +11,270 @@ import {
  AlertCircle,
  Image as ImageIcon
 } from"lucide-react";
-import { restaurantApi } from"@/lib/api";
+import { restaurantApi, hotelApi, masterApi, ownerApi } from "@/lib/api";
 import { 
- uploadRestaurantPhotos, 
- deleteRestaurantPhoto,
- MAX_PHOTO_SIZE_MB 
-} from"@/lib/upload";
-import { Button } from"@/components/ui/button";
-import { Card } from"@/components/ui/card";
-import { Badge } from"@/components/ui/badge";
+  uploadRestaurantPhotos, 
+  deleteRestaurantPhoto,
+  MAX_PHOTO_SIZE_MB 
+} from "@/lib/upload";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { cn, getImageUrl } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 
 // ── Types ──────────────────────────────────────────────────
 interface Toast {
- id: string;
- message: string;
- type:"success"|"error";
+  id: string;
+  message: string;
+  type: "success" | "error";
 }
 
-const CATEGORIES = [
- { id:"kitchen", label:"Kitchen"},
- { id:"interior", label:"Interior"},
- { id:"exterior", label:"Exterior"},
- { id:"dining", label:"Dining Area"},
- { id:"counter", label:"Counter"},
- { id:"restroom", label:"Restroom"},
- { id:"food", label:"Food"},
-];
-
 export default function PhotoGalleryPage() {
- const [photos, setPhotos] = useState<Record<string, string[]>>({});
- const [activeCategory, setActiveCategory] = useState("kitchen");
- const [uploading, setUploading] = useState(false);
- const [progress, setProgress] = useState(0);
- const [restaurantId, setRestaurantId] = useState<string | null>(null);
- const [storageProvider, setStorageProvider] = useState("local");
- const [toasts, setToasts] = useState<Toast[]>([]);
+  const [photos, setPhotos] = useState<Record<string, string[]>>({});
+  const [categories, setCategories] = useState<{ id: string; label: string }[]>([]);
+  const [activeCategory, setActiveCategory] = useState<string>("kitchen");
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [establishmentId, setEstablishmentId] = useState<string | null>(null);
+  const [isHotelType, setIsHotelType] = useState(false);
+  const [storageProvider, setStorageProvider] = useState("local");
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
- // ── Load Restaurant & Provider ────────────────────────────
- useEffect(() => {
- // 1. Get restaurant ID
- const user = useAuthStore.getState().user;
- restaurantApi.list({ ownerId: user?.id, limit: 1 })
- .then(r => {
- const res = r.data.data.items[0];
- if (res) {
- setRestaurantId(res.id);
- setPhotos(res.photos || {});
- }
- })
- .catch(console.error);
+  // ── Load Establishment, Master Data & Provider ──────────────
+  useEffect(() => {
+    const user = useAuthStore.getState().user;
+    if (!user) return;
 
- // 2. Get storage provider
- fetch(`${process.env.NEXT_PUBLIC_API_URL ||"http://localhost:5000/api"}/upload/provider`)
- .then(r => r.json())
- .then(d => setStorageProvider(d.data.provider))
- .catch(() => setStorageProvider("local"));
- }, []);
+    ownerApi.establishments()
+      .then(async res => {
+        const list = res.data?.data || [];
+        const hotel = list.find((e: any) => e.type === "hotel");
+        const restaurant = list.find((e: any) => e.type === "restaurant");
 
- // ── Toast Logic ──────────────────────────────────────────
- const showToast = useCallback((message: string, type: Toast["type"] ="success") => {
- const id = Math.random().toString(36).substring(7);
- setToasts(prev => [...prev, { id, message, type }]);
- setTimeout(() => {
- setToasts(prev => prev.filter(t => t.id !== id));
- }, 3500);
- }, []);
+        let masterType = "PHOTO_CATEGORY_RESTAURANT";
+        let isHotel = false;
+        let estId = "";
 
- // ── Dropzone Handlers ─────────────────────────────────────
- const onDrop = useCallback(async (acceptedFiles: File[]) => {
- const valid = acceptedFiles.filter(f => {
- if (!f.type.startsWith("image/")) {
- showToast(`"${f.name}" is not an image file`,"error");
- return false;
- }
- if (f.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) {
- showToast(`"${f.name}" (${(f.size / (1024 * 1024)).toFixed(1)}MB) exceeds the maximum allowed size of ${MAX_PHOTO_SIZE_MB}MB.`,"error");
- return false;
- }
- return true;
- });
+        if (hotel) {
+          isHotel = true;
+          estId = hotel.id;
+          masterType = "PHOTO_CATEGORY_HOTEL";
+        } else if (restaurant) {
+          estId = restaurant.id;
+          masterType = "PHOTO_CATEGORY_RESTAURANT";
+        }
 
- if (!valid.length || !restaurantId) return;
+        setEstablishmentId(estId);
+        setIsHotelType(isHotel);
 
- setUploading(true);
- setProgress(0);
+        // Fetch photos for establishment
+        if (isHotel && estId) {
+          const hRes = await hotelApi.get(estId);
+          setPhotos(hRes.data?.data?.photos || {});
+        } else if (estId) {
+          const rRes = await restaurantApi.get(estId);
+          setPhotos(rRes.data?.data?.photos || {});
+        }
 
- try {
- const urls = await uploadRestaurantPhotos(
- restaurantId,
- activeCategory,
- valid,
- (pct) => setProgress(pct),
- );
- // Add real URLs to state
- const photosToSave = {
-   ...photos,
-   [activeCategory]: [...(photos[activeCategory] || []), ...urls],
- };
- setPhotos(photosToSave);
- await restaurantApi.update(restaurantId, { photos: photosToSave }).catch(console.error);
- showToast(`${urls.length} photo(s) uploaded successfully`,"success");
- } catch (err: any) {
- showToast(err.message ?? `Upload failed. Maximum allowed size is ${MAX_PHOTO_SIZE_MB}MB.`,"error");
- } finally {
- setUploading(false);
- setProgress(0);
- }
- }, [restaurantId, activeCategory, photos, showToast]);
+        // Fetch master categories dynamically from Admin Master Data
+        const masterRes = await masterApi.list(masterType);
+        const masterItems = masterRes.data?.data || [];
+        if (masterItems.length > 0) {
+          const cats = masterItems.map((m: any) => ({
+            id: m.key,
+            label: m.label
+          }));
+          setCategories(cats);
+          setActiveCategory(cats[0].id);
+        } else {
+          // Fallbacks
+          if (isHotel) {
+            const fallbackHotel = [
+              { id: "rooms", label: "Rooms & Suites" },
+              { id: "exterior", label: "Property Exterior" },
+              { id: "lobby", label: "Lobby & Reception" },
+              { id: "amenities", label: "Amenities & Facilities" },
+              { id: "dining", label: "Dining Area" },
+              { id: "pool", label: "Pool & Spa" }
+            ];
+            setCategories(fallbackHotel);
+            setActiveCategory("rooms");
+          } else {
+            const fallbackRest = [
+              { id: "kitchen", label: "Kitchen" },
+              { id: "interior", label: "Interior" },
+              { id: "exterior", label: "Exterior" },
+              { id: "dining", label: "Dining Area" },
+              { id: "counter", label: "Counter" },
+              { id: "restroom", label: "Restroom" },
+              { id: "food", label: "Food" }
+            ];
+            setCategories(fallbackRest);
+            setActiveCategory("kitchen");
+          }
+        }
+      })
+      .catch(console.error);
 
- const handleDelete = async (url: string) => {
- if (!restaurantId) return;
- try {
- await deleteRestaurantPhoto(restaurantId, activeCategory, url).catch(() => {});
- const photosToSave = {
-   ...photos,
-   [activeCategory]: (photos[activeCategory] || []).filter(u => u !== url),
- };
- setPhotos(photosToSave);
- await restaurantApi.update(restaurantId, { photos: photosToSave }).catch(console.error);
- showToast("Photo deleted","success");
- } catch {
- showToast("Failed to delete photo","error");
- }
- };
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/upload/provider`)
+      .then(r => r.json())
+      .then(d => setStorageProvider(d.data.provider))
+      .catch(() => setStorageProvider("local"));
+  }, []);
 
- const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
- onDrop,
- accept: {"image/*": [] },
- maxFiles: 10,
- disabled: uploading,
- noClick: true,
- noKeyboard: true
- });
+  // ── Toast Logic ──────────────────────────────────────────
+  const showToast = useCallback((message: string, type: Toast["type"] = "success") => {
+    const id = Math.random().toString(36).substring(7);
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3500);
+  }, []);
 
- return (
- <div {...getRootProps()} className="p-8 max-w-6xl mx-auto space-y-10 pb-32 focus:outline-none relative">
- <input {...getInputProps()} />
- 
- {isDragActive && (
- <div className="absolute inset-0 z-50 bg-admin-primary/90 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center border-4 border-dashed border-white m-4 pointer-events-none">
- <UploadCloud className="h-20 w-20 text-white animate-bounce mb-4" />
- <h2 className="text-3xl font-bold text-white tracking-tight uppercase">Drop photos here</h2>
- <p className="text-white/80 text-sm font-medium mt-1">Supports JPG, PNG, WEBP up to {MAX_PHOTO_SIZE_MB}MB each</p>
- </div>
- )}
- {/* Header */}
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
- <div>
- <h1 className="text-3xl font-bold text-slate-800 tracking-tighter">Photo Gallery</h1>
- <p className="text-slate-500 font-medium mt-1">Manage high-quality visuals for your business profile. Maximum file size allowed is {MAX_PHOTO_SIZE_MB}MB per photo.</p>
- </div>
- <Button onClick={open} disabled={uploading} className="bg-admin-primary hover:bg-admin-primary-hover text-white shadow-md font-semibold h-12 px-6 rounded-lg text-base">
- <UploadCloud className="h-5 w-5 mr-2" /> 
- {uploading ? `Uploading ${progress}%...` : "Add Images"}
- </Button>
- </div>
+  // ── Dropzone Handlers ─────────────────────────────────────
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const valid = acceptedFiles.filter(f => {
+      if (!f.type.startsWith("image/")) {
+        showToast(`"${f.name}" is not an image file`, "error");
+        return false;
+      }
+      if (f.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) {
+        showToast(`"${f.name}" (${(f.size / (1024 * 1024)).toFixed(1)}MB) exceeds the maximum allowed size of ${MAX_PHOTO_SIZE_MB}MB.`, "error");
+        return false;
+      }
+      return true;
+    });
 
- {/* Storage Provider Badge */}
- <div className="flex items-center gap-2 mb-4">
- <span className="text-2xs text-mid">Storage:</span>
- <span className={`badge text-2xs ${
- storageProvider ==="s3"
- ?"bg-admin-primary/10 text-admin-primary border border-admin-primary/20 px-2 py-0.5 rounded-full"
- :"bg-wash text-mid border border-border px-2 py-0.5 rounded-full"
- }`}>
- {storageProvider ==="s3"?"☁ AWS S3":"💾 Local disk"}
- </span>
- {storageProvider ==="local"&& (
- <span className="text-2xs text-mid">
- (switch to S3 in .env before deploying)
- </span>
- )}
- </div>
+    if (!valid.length || !establishmentId) return;
 
- {/* Category Tabs */}
- <div className="border-b border-slate-200 flex gap-8 overflow-x-auto no-scrollbar scroll-smooth">
- {CATEGORIES.map((cat) => {
- const isActive = activeCategory === cat.id;
- const count = (photos[cat.id] || []).length;
- return (
- <button
- key={cat.id}
- onClick={() => setActiveCategory(cat.id)}
- className={cn(
-"pb-4 px-1 flex items-center gap-2 whitespace-nowrap transition-all border-b-2",
- isActive 
- ?"border-admin-primary text-admin-primary font-bold"
- :"border-transparent text-slate-500/40 font-bold hover:text-slate-500"
- )}
- >
- <span className="text-sm uppercase tracking-wider">{cat.label}</span>
- <Badge className={cn(
-"rounded-lg text-[10px] px-1.5 py-0",
- isActive ?"bg-admin-primary text-white":"bg-slate-50 text-slate-500/40"
- )}>
- {count}
- </Badge>
- </button>
- );
- })}
- </div>
+    setUploading(true);
+    setProgress(0);
+
+    try {
+      const urls = await uploadRestaurantPhotos(
+        establishmentId,
+        activeCategory,
+        valid,
+        (pct) => setProgress(pct),
+      );
+      // Add real URLs to state
+      const photosToSave = {
+        ...photos,
+        [activeCategory]: [...(photos[activeCategory] || []), ...urls],
+      };
+      setPhotos(photosToSave);
+
+      if (isHotelType) {
+        await hotelApi.update(establishmentId, { photos: photosToSave }).catch(console.error);
+      } else {
+        await restaurantApi.update(establishmentId, { photos: photosToSave }).catch(console.error);
+      }
+      showToast(`${urls.length} photo(s) uploaded successfully`, "success");
+    } catch (err: any) {
+      showToast(err.message ?? `Upload failed. Maximum allowed size is ${MAX_PHOTO_SIZE_MB}MB.`, "error");
+    } finally {
+      setUploading(false);
+      setProgress(0);
+    }
+  }, [establishmentId, isHotelType, activeCategory, photos, showToast]);
+
+  const handleDelete = async (url: string) => {
+    if (!establishmentId) return;
+    try {
+      await deleteRestaurantPhoto(establishmentId, activeCategory, url).catch(() => {});
+      const photosToSave = {
+        ...photos,
+        [activeCategory]: (photos[activeCategory] || []).filter(u => u !== url),
+      };
+      setPhotos(photosToSave);
+      if (isHotelType) {
+        await hotelApi.update(establishmentId, { photos: photosToSave }).catch(console.error);
+      } else {
+        await restaurantApi.update(establishmentId, { photos: photosToSave }).catch(console.error);
+      }
+      showToast("Photo deleted", "success");
+    } catch {
+      showToast("Failed to delete photo", "error");
+    }
+  };
+
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+    onDrop,
+    accept: { "image/*": [] },
+    maxFiles: 10,
+    disabled: uploading,
+    noClick: true,
+    noKeyboard: true
+  });
+
+  return (
+  <div {...getRootProps()} className="p-8 max-w-6xl mx-auto space-y-10 pb-32 focus:outline-none relative">
+  <input {...getInputProps()} />
+  
+  {isDragActive && (
+  <div className="absolute inset-0 z-50 bg-admin-primary/90 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center border-4 border-dashed border-white m-4 pointer-events-none">
+  <UploadCloud className="h-20 w-20 text-white animate-bounce mb-4" />
+  <h2 className="text-3xl font-bold text-white tracking-tight uppercase">Drop photos here</h2>
+  <p className="text-white/80 text-sm font-medium mt-1">Supports JPG, PNG, WEBP up to {MAX_PHOTO_SIZE_MB}MB each</p>
+  </div>
+  )}
+  {/* Header */}
+  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+  <div>
+  <h1 className="text-3xl font-bold text-slate-800 tracking-tighter">Photo Gallery</h1>
+  <p className="text-slate-500 font-medium mt-1">Manage high-quality visuals for your business profile. Maximum file size allowed is {MAX_PHOTO_SIZE_MB}MB per photo.</p>
+  </div>
+  <Button onClick={open} disabled={uploading} className="bg-admin-primary hover:bg-admin-primary-hover text-white shadow-md font-semibold h-12 px-6 rounded-lg text-base">
+  <UploadCloud className="h-5 w-5 mr-2" /> 
+  {uploading ? `Uploading ${progress}%...` : "Add Images"}
+  </Button>
+  </div>
+
+  {/* Storage Provider Badge */}
+  <div className="flex items-center gap-2 mb-4">
+  <span className="text-2xs text-mid">Storage:</span>
+  <span className={`badge text-2xs ${
+  storageProvider ==="s3"
+  ?"bg-admin-primary/10 text-admin-primary border border-admin-primary/20 px-2 py-0.5 rounded-full"
+  :"bg-wash text-mid border border-border px-2 py-0.5 rounded-full"
+  }`}>
+  {storageProvider ==="s3"?"☁ AWS S3":"💾 Local disk"}
+  </span>
+  {storageProvider ==="local"&& (
+  <span className="text-2xs text-mid">
+  (switch to S3 in .env before deploying)
+  </span>
+  )}
+  </div>
+
+  {/* Category Tabs */}
+  <div className="border-b border-slate-200 flex gap-8 overflow-x-auto no-scrollbar scroll-smooth">
+  {categories.map((cat) => {
+  const isActive = activeCategory === cat.id;
+  const count = (photos[cat.id] || []).length;
+  return (
+  <button
+  key={cat.id}
+  onClick={() => setActiveCategory(cat.id)}
+  className={cn(
+ "pb-4 px-1 flex items-center gap-2 whitespace-nowrap transition-all border-b-2",
+  isActive 
+  ?"border-admin-primary text-admin-primary font-bold"
+  :"border-transparent text-slate-500/40 font-bold hover:text-slate-500"
+  )}
+  >
+  <span className="text-sm uppercase tracking-wider">{cat.label}</span>
+  <Badge className={cn(
+ "rounded-lg text-[10px] px-1.5 py-0",
+  isActive ?"bg-admin-primary text-white":"bg-slate-50 text-slate-500/40"
+  )}>
+  {count}
+  </Badge>
+  </button>
+  );
+  })}
+  </div>
 
  {/* Gallery Grid */}
  <section className="space-y-8">

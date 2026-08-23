@@ -44,8 +44,8 @@ export const getUser = async (req: any, res: any) => {
       select: {
         id: true, name: true, email: true, role: true, 
         isActive: true, createdAt: true, phone: true,
-        restaurants: { select: { id: true, name: true, city: true, isActive: true, email: true, area: true, isVerified: true } },
-        hotels: { select: { id: true, name: true, city: true, isActive: true, email: true, area: true, isVerified: true } }
+        restaurants: { select: { id: true, name: true, city: true, isActive: true, email: true, area: true, isVerified: true, applications: { orderBy: { createdAt: "desc" }, take: 1, select: { status: true } } } },
+        hotels: { select: { id: true, name: true, city: true, isActive: true, email: true, area: true, isVerified: true, applications: { orderBy: { createdAt: "desc" }, take: 1, select: { status: true } } } }
       }
     });
     if (!user) return notFound(res, "User not found");

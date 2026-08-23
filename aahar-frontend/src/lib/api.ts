@@ -63,6 +63,8 @@ export const restaurantApi = {
     api.post("/restaurants", data),
   update: (id: string, data: any) =>
     api.patch(`/restaurants/${id}`, data),
+  updateMenu: (id: string, sections: any[]) =>
+    api.post(`/restaurants/${id}/menu`, { sections }),
   delete: (id: string) =>
     api.delete(`/restaurants/${id}`),
 };

@@ -16,7 +16,7 @@ export const getAdminStats = async (req: any, res: any) => {
       prisma.user.count(),
       prisma.certification.count({ where: { status: "active" } }),
       prisma.application.count({ where: { status: "submitted" } }),
-      prisma.businessLead.count(),
+      prisma.businessLead.count({ where: { status: { notIn: ["converted", "resolved", "rejected", "closed"] } } }),
       prisma.payment.aggregate({
         where: { status: "captured" },
         _sum: { amount: true }
@@ -57,7 +57,7 @@ export const getOwnerStats = async (req: any, res: any) => {
     
     const [restaurant, hotel] = await Promise.all([
       prisma.restaurant.findFirst({ where: { ownerId }, select: { id: true, name: true } }),
-      prisma.hotel.findFirst({ where: { managerId: ownerId }, select: { id: true, name: true } })
+      prisma.hotel.findFirst({ where: { OR: [{ ownerId }, { managerId: ownerId }] }, select: { id: true, name: true } })
     ]);
 
     const enquiries = await prisma.enquiry.count({

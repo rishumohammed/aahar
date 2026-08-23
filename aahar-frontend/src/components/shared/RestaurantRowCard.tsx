@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Star, MapPin, ShieldCheck, ArrowRight } from "lucide-react";
+import { Star, MapPin, ShieldCheck, ArrowRight, UtensilsCrossed } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getImageUrl } from "@/lib/utils";
 
@@ -28,7 +28,7 @@ export function RestaurantRowCard({ restaurant }: RestaurantRowCardProps) {
   return (
     <Link 
       href={`/restaurant/${restaurant.slug}`}
-      className="group block relative overflow-hidden rounded-2xl bg-white border border-aahar-border transition-all hover:border-aahar-teal hover:shadow-2xl hover:shadow-aahar-teal/5"
+      className="group flex flex-col md:flex-row bg-white border border-aahar-border rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-aahar-dark/5 hover:-translate-y-1 w-full"
     >
       <div className="flex flex-col md:flex-row p-4 md:p-6 gap-6 md:gap-10">
         {/* Left Image Section */}
@@ -39,10 +39,6 @@ export function RestaurantRowCard({ restaurant }: RestaurantRowCardProps) {
             fill
             unoptimized
             className="object-cover transition-transform duration-700 group-hover:scale-110"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = fallbackImage;
-            }}
           />
           {restaurant.certified && (
             <div className="absolute top-4 left-4">

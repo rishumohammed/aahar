@@ -113,12 +113,12 @@ export const deleteManager = async (req: any, res: any) => {
 export const listEstablishments = async (req: any, res: any) => {
   try {
     const ownerId = req.user.id;
-    const restaurants = await prisma.restaurant.findMany({ where: { ownerId }, select: { id: true, name: true, managerId: true } });
-    const hotels = await prisma.hotel.findMany({ where: { ownerId }, select: { id: true, name: true, managerId: true } });
+    const restaurants = await prisma.restaurant.findMany({ where: { ownerId }, select: { id: true, name: true, managerId: true, isVerified: true } });
+    const hotels = await prisma.hotel.findMany({ where: { ownerId }, select: { id: true, name: true, managerId: true, isVerified: true } });
     
     const establishments = [
-      ...restaurants.map(r => ({ id: r.id, name: r.name, type: "restaurant", hasManager: !!r.managerId })),
-      ...hotels.map(h => ({ id: h.id, name: h.name, type: "hotel", hasManager: !!h.managerId }))
+      ...restaurants.map(r => ({ id: r.id, name: r.name, type: "restaurant", hasManager: !!r.managerId, isVerified: r.isVerified })),
+      ...hotels.map(h => ({ id: h.id, name: h.name, type: "hotel", hasManager: !!h.managerId, isVerified: h.isVerified }))
     ];
 
     return ok(res, establishments);

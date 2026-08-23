@@ -11,7 +11,7 @@ import {
  AlertCircle,
  Image as ImageIcon
 } from"lucide-react";
-import { hotelApi } from"@/lib/api";
+import { hotelApi, masterApi } from "@/lib/api";
 import { 
   uploadHotelPhotos, 
   deleteHotelPhoto,
@@ -30,19 +30,9 @@ interface Toast {
   type: "success" | "error";
 }
 
-const CATEGORIES = [
-  { id: "lobby", label: "Lobby" },
-  { id: "rooms", label: "Rooms" },
-  { id: "exterior", label: "Exterior" },
-  { id: "pool", label: "Pool" },
-  { id: "restaurant", label: "Restaurant" },
-  { id: "spa", label: "Spa" },
-  { id: "beach", label: "Beach" },
-  { id: "events", label: "Events" },
-];
-
 export default function PhotoGalleryPage() {
   const [photos, setPhotos] = useState<Record<string, string[]>>({});
+  const [categories, setCategories] = useState<{ id: string; label: string }[]>([]);
   const [activeCategory, setActiveCategory] = useState("rooms");
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -50,9 +40,8 @@ export default function PhotoGalleryPage() {
   const [storageProvider, setStorageProvider] = useState("local");
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  // ── Load Hotel & Provider ────────────────────────────
+  // ── Load Hotel & Master Data & Provider ──────────────────────
   useEffect(() => {
-    // 1. Get restaurant ID
     const user = useAuthStore.getState().user;
     hotelApi.list({ managerId: user?.id, limit: 1 })
       .then(r => {
@@ -64,7 +53,42 @@ export default function PhotoGalleryPage() {
       })
       .catch(console.error);
 
-    // 2. Get storage provider
+    masterApi.list("PHOTO_CATEGORY_HOTEL")
+      .then(r => {
+        const masterItems = r.data?.data || [];
+        if (masterItems.length > 0) {
+          const cats = masterItems.map((m: any) => ({
+            id: m.key,
+            label: m.label
+          }));
+          setCategories(cats);
+          setActiveCategory(cats[0].id);
+        } else {
+          const fallbackHotel = [
+            { id: "rooms", label: "Rooms & Suites" },
+            { id: "exterior", label: "Property Exterior" },
+            { id: "lobby", label: "Lobby & Reception" },
+            { id: "amenities", label: "Amenities & Facilities" },
+            { id: "dining", label: "Dining Area" },
+            { id: "pool", label: "Pool & Spa" }
+          ];
+          setCategories(fallbackHotel);
+          setActiveCategory("rooms");
+        }
+      })
+      .catch(() => {
+        const fallbackHotel = [
+          { id: "rooms", label: "Rooms & Suites" },
+          { id: "exterior", label: "Property Exterior" },
+          { id: "lobby", label: "Lobby & Reception" },
+          { id: "amenities", label: "Amenities & Facilities" },
+          { id: "dining", label: "Dining Area" },
+          { id: "pool", label: "Pool & Spa" }
+        ];
+        setCategories(fallbackHotel);
+        setActiveCategory("rooms");
+      });
+
     fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/upload/provider`)
       .then(r => r.json())
       .then(d => setStorageProvider(d.data.provider))
@@ -189,7 +213,7 @@ export default function PhotoGalleryPage() {
 
  {/* Category Tabs */}
  <div className="border-b border-slate-200 flex gap-8 overflow-x-auto no-scrollbar scroll-smooth">
- {CATEGORIES.map((cat) => {
+ {categories.map((cat) => {
  const isActive = activeCategory === cat.id;
  const count = (photos[cat.id] || []).length;
  return (

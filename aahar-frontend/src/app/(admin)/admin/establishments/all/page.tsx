@@ -29,8 +29,8 @@ export default function AllEstablishmentsPage() {
     try {
       // Fetch both restaurants and hotels concurrently
       const [restRes, hotelRes] = await Promise.all([
-        restaurantApi.list(),
-        hotelApi.list()
+        restaurantApi.list({ all: true }),
+        hotelApi.list({ all: true })
       ]);
 
       const restaurants = (restRes.data.data.items || restRes.data.data || []).map((r: any) => ({ ...r, type: "restaurant" }));
@@ -166,12 +166,19 @@ export default function AllEstablishmentsPage() {
                     </div>
                   </td>
                   <td className="px-8 py-5">
-                    <span className={cn(
-                      "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm",
-                      item.isVerified ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-700"
-                    )}>
-                      {item.isVerified ? "Verified" : "Unverified"}
-                    </span>
+                    {item.isVerified ? (
+                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        Verified
+                      </span>
+                    ) : item.applications?.[0]?.status && item.applications[0].status !== "draft" ? (
+                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-amber-100 text-amber-900 border border-amber-300 animate-pulse">
+                        Submitted for Verification
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-slate-100 text-slate-700">
+                        Unverified
+                      </span>
+                    )}
                   </td>
                   <td className="px-8 py-5 text-right">
                     <div className="flex items-center justify-end gap-2">

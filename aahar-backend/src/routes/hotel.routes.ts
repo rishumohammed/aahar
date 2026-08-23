@@ -7,10 +7,10 @@ const router = Router();
 
 router.get("/",                      listHotels);
 router.get("/:slug",                 getHotel);
-router.post("/",                     verifyToken, requireRole("manager","admin","super_admin"), createHotel);
-router.patch("/:id",                 verifyToken, requireRole("manager","admin","super_admin"), updateHotel);
-router.delete("/:id",                verifyToken, requireRole("manager","admin","super_admin"), deleteHotel);
-router.post("/:id/rooms",            verifyToken, requireRole("manager","admin","super_admin"), upsertRoom);
-router.delete("/:id/rooms/:roomId",  verifyToken, requireRole("manager","admin","super_admin"), deleteRoom);
+router.post("/",                     verifyToken, requireRole("owner","manager","admin","super_admin"), createHotel);
+router.patch("/:id",                 verifyToken, requireRole("owner","manager","admin","super_admin"), updateHotel);
+router.delete("/:id",                verifyToken, requireRole("owner","manager","admin","super_admin"), deleteHotel);
+router.post("/:id/rooms",            verifyToken, requireRole("owner","manager","admin","super_admin"), upsertRoom);
+router.delete("/:id/rooms/:roomId",  verifyToken, requireRole("owner","manager","admin","super_admin"), deleteRoom);
 
 export default router;

@@ -23,8 +23,11 @@ const CATEGORY_LABELS: Record<string, string> = {
   "DIETARY": "Dietary Types",
   "AMENITY_RESTAURANT": "Restaurant Amenities",
   "AMENITY_HOTEL": "Hotel Amenities",
+  "MEAL_PLAN": "Meal Plans",
   "DOCUMENT_RESTAURANT": "Restaurant Documents",
   "DOCUMENT_HOTEL": "Hotel Documents",
+  "PHOTO_CATEGORY_HOTEL": "Hotel Photo Gallery Categories",
+  "PHOTO_CATEGORY_RESTAURANT": "Restaurant Photo Gallery Categories",
 };
 
 export default function MasterDataInnerPage({ params }: { params: { type: string } }) {
@@ -86,8 +89,20 @@ export default function MasterDataInnerPage({ params }: { params: { type: string
     }
   };
 
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
+
+  const handleLabelChange = (newLabel: string) => {
+    const autoSlug = newLabel.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    setFormData(prev => ({
+      ...prev,
+      label: newLabel,
+      key: (!isEditing && !isSlugManuallyEdited) ? autoSlug : prev.key
+    }));
+  };
+
   const openAddModal = () => {
     setIsEditing(false);
+    setIsSlugManuallyEdited(false);
     setFormData({ id: "", key: "", label: "", icon: "" });
     setShowModal(true);
   };
@@ -98,13 +113,19 @@ export default function MasterDataInnerPage({ params }: { params: { type: string
     setShowModal(true);
   };
 
+  const getSectionPath = (t: string) => {
+    if (t.includes("RESTAURANT")) return "/admin/master/section/restaurant";
+    if (t.includes("HOTEL") || t.includes("ROOM") || t.includes("BED") || t.includes("MEAL")) return "/admin/master/section/hotel";
+    return "/admin/master/section/general";
+  };
+
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-8">
       
       {/* Top Navigation & Banner */}
       <div className="space-y-6">
-        <Link href="/admin/master" className="inline-flex items-center text-sm font-semibold text-slate-500 hover:text-admin-primary transition-colors">
-          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Master Data
+        <Link href={getSectionPath(decodedType)} className="inline-flex items-center text-sm font-semibold text-slate-500 hover:text-admin-primary transition-colors">
+          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Section Overview
         </Link>
         
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -129,8 +150,8 @@ export default function MasterDataInnerPage({ params }: { params: { type: string
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200">
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 w-1/3">Label (Display Name)</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 w-1/3">System Key</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 w-1/3">Display Name</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 w-1/3">Slug</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 text-right">Actions</th>
                 </tr>
@@ -210,31 +231,35 @@ export default function MasterDataInnerPage({ params }: { params: { type: string
             </div>
             
             <form onSubmit={handleSave} className="p-6 space-y-6">
-              {!isEditing && (
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">System Key</label>
-                  <Input 
-                    required 
-                    value={formData.key} 
-                    onChange={e => setFormData({ ...formData, key: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') })}
-                    placeholder="e.g. fine_dining"
-                    className="h-12 bg-slate-50 border-slate-200 focus-visible:ring-admin-primary"
-                  />
-                  <p className="text-[10px] font-medium text-slate-400 leading-tight">This is the underlying database value. It must be unique, lowercase, and use underscores instead of spaces.</p>
-                </div>
-              )}
-              
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Display Label</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Display Name</label>
                 <Input 
                   required 
                   value={formData.label} 
-                  onChange={e => setFormData({ ...formData, label: e.target.value })}
+                  onChange={e => handleLabelChange(e.target.value)}
                   placeholder="e.g. Fine Dining"
                   className="h-12 border-slate-200 focus-visible:ring-admin-primary"
+                  autoFocus
                 />
                 <p className="text-[10px] font-medium text-slate-400 leading-tight">This is the readable name that will appear in dropdowns across the Aahar portals.</p>
               </div>
+
+              {!isEditing && (
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Slug</label>
+                  <Input 
+                    required 
+                    value={formData.key} 
+                    onChange={e => {
+                      setIsSlugManuallyEdited(true);
+                      setFormData({ ...formData, key: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') });
+                    }}
+                    placeholder="e.g. fine_dining"
+                    className="h-12 bg-slate-50 border-slate-200 focus-visible:ring-admin-primary font-mono text-xs"
+                  />
+                  <p className="text-[10px] font-medium text-slate-400 leading-tight">Unique database slug. Automatically generated from Display Name (uses lowercase & underscores).</p>
+                </div>
+              )}
 
               {decodedType.startsWith("DOCUMENT") ? (
                 <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-lg">

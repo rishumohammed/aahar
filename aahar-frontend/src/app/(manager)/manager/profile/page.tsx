@@ -91,7 +91,7 @@ export default function ManagerProfilePage() {
   }
 
   // VIEW MODE
-  const coverImage = hotel.image || hotel.photos?.cover || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80";
+  const coverImage = hotel.image || hotel.photos?.cover || "";
   const amenitiesList = Object.keys(hotel.amenities || {}).filter(k => hotel.amenities[k]);
 
   return (
