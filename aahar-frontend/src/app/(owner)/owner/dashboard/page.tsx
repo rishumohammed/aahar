@@ -129,15 +129,6 @@ export default function OwnerDashboardPage() {
  <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Welcome back, {user?.name?.split(' ')[0]}</h1>
  <p className="text-slate-500 font-medium text-sm mt-1">Manage your certification and business profile.</p>
  </div>
-        {(!application || application?.status === "draft") && !isVerified && (
-          <Button 
-            onClick={handleSubmitVerification}
-            disabled={submittingVerification}
-            className="bg-admin-primary hover:bg-admin-primary-hover text-white font-bold rounded-xl px-6 shadow-md transition-all"
-          >
-            {submittingVerification ? "Submitting..." : "Submit for Verification"}
-          </Button>
-        )}
  </div>
 
  {!isVerified && (
