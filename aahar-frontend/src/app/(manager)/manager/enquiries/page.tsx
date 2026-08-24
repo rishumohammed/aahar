@@ -75,12 +75,14 @@ export default function ManagerEnquiriesPage() {
       viewed: "bg-blue-50 text-blue-600 border-blue-100",
       quoted: "bg-amber-50 text-amber-600 border-amber-100",
       confirmed: "bg-emerald-50 text-emerald-600 border-emerald-100",
+      checked_in: "bg-teal-50 text-teal-600 border-teal-100",
+      checked_out: "bg-slate-50 text-slate-400 border-slate-100",
       declined: "bg-slate-50 text-slate-400 border-slate-100",
       expired: "bg-slate-100 text-slate-400 border-slate-200"
     };
     return (
-      <Badge variant="outline" className={cn("px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider border", styles[status])}>
-        {status}
+      <Badge variant="outline" className={cn("px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider border", styles[status] || styles.confirmed)}>
+        {status === "checked_in" ? "checked in" : status === "checked_out" ? "checked out" : status}
       </Badge>
     );
   };
