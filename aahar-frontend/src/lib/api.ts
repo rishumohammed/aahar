@@ -205,6 +205,7 @@ export const adminApi = {
   verifyEstablishment: (type: "restaurant" | "hotel", id: string) =>
     api.patch(`/admin/establishments/${type}/${id}/verify`),
   stats:        () => api.get("/admin/dashboard"),
+  systemOrders: () => api.get("/admin/system-orders"),
   listStandards:() => api.get("/admin/standards"),
   createStandard: (data: any) => api.post("/admin/standards", data),
   updateStandard: (id: string, data: any) => api.patch(`/admin/standards/${id}`, data),

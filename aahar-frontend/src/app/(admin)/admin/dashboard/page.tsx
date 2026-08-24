@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { adminApi, applicationApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 export default function AdminDashboard() {
   const [dashboardData, setDashboardData] = useState<any>(null);
@@ -89,6 +90,48 @@ export default function AdminDashboard() {
             </Card>
           </motion.div>
         ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-6 bg-white border-0 shadow-md">
+          <h2 className="text-lg font-semibold text-slate-800 mb-6">Application Auditing Status</h2>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={dashboardData?.auditStatusData || []} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <Tooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Bar dataKey="value" fill="#4f46e5" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        <Card className="p-6 bg-white border-0 shadow-md">
+          <h2 className="text-lg font-semibold text-slate-800 mb-6">Listing Verification Status</h2>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={dashboardData?.listingStatusData || []}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {(dashboardData?.listingStatusData || []).map((entry: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={index === 0 ? '#10b981' : '#f59e0b'} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Legend verticalAlign="bottom" height={36} iconType="circle" />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
       </div>
 
       {/* Material Data Table Card */}

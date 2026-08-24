@@ -333,3 +333,53 @@ export const verifyEstablishment = async (req: any, res: any) => {
   }
 };
 
+// GET /api/admin/system-orders
+export const getSystemOrders = async (req: any, res: any) => {
+  try {
+    const limit = Number(req.query.limit) || 100;
+
+    const [restaurantOrders, hotelBookings] = await Promise.all([
+      prisma.order.findMany({
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+          restaurant: { select: { name: true } },
+          customer: { select: { name: true, email: true, phone: true } },
+        }
+      }),
+      prisma.enquiry.findMany({
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+          hotel: { select: { name: true } },
+          guest: { select: { name: true, email: true, phone: true } },
+        }
+      })
+    ]);
+
+    const orderAggregates = await prisma.order.aggregate({
+      _sum: { totalAmount: true },
+      where: { status: "completed" }
+    });
+    const totalOrderCount = await prisma.order.count();
+
+    const bookingAggregates = await prisma.enquiry.aggregate({
+      _sum: { quoteAmount: true },
+      where: { status: { in: ["confirmed", "checked_in", "checked_out"] } }
+    });
+    const totalBookingCount = await prisma.enquiry.count();
+
+    return ok(res, {
+      kpis: {
+        totalOrders: totalOrderCount,
+        orderRevenue: orderAggregates._sum.totalAmount || 0,
+        totalBookings: totalBookingCount,
+        bookingRevenue: bookingAggregates._sum.quoteAmount || 0,
+      },
+      restaurantOrders,
+      hotelBookings,
+    });
+  } catch (e) {
+    return serverError(res, e);
+  }
+};

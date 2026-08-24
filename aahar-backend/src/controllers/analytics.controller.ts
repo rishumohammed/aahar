@@ -10,15 +10,35 @@ export const getAdminStats = async (req: any, res: any) => {
       pendingApps,
       totalEnquiries,
       totalRestaurants,
-      totalHotels
+      totalHotels,
+      applicationStatusGroups,
+      verifiedRestaurants,
+      unverifiedRestaurants,
+      verifiedHotels,
+      unverifiedHotels,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.certification.count({ where: { status: "active" } }),
       prisma.application.count({ where: { status: "submitted" } }),
       prisma.businessLead.count({ where: { status: { notIn: ["converted", "resolved", "rejected", "closed"] } } }),
       prisma.restaurant.count(),
-      prisma.hotel.count()
+      prisma.hotel.count(),
+      prisma.application.groupBy({ by: ['status'], _count: { _all: true } }),
+      prisma.restaurant.count({ where: { isVerified: true } }),
+      prisma.restaurant.count({ where: { isVerified: false } }),
+      prisma.hotel.count({ where: { isVerified: true } }),
+      prisma.hotel.count({ where: { isVerified: false } }),
     ]);
+
+    const auditStatusData = applicationStatusGroups.map((group) => ({
+      name: group.status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()),
+      value: group._count._all
+    }));
+
+    const listingStatusData = [
+      { name: 'Verified', value: verifiedRestaurants + verifiedHotels },
+      { name: 'Unverified', value: unverifiedRestaurants + unverifiedHotels }
+    ];
 
     // Monthly trends (simplified)
     const last30Days = new Date();
@@ -37,7 +57,9 @@ export const getAdminStats = async (req: any, res: any) => {
         pendingApps,
         totalEnquiries,
         totalRestaurants,
-        totalHotels
+        totalHotels,
+        auditStatusData,
+        listingStatusData
       },
       recentActivity
     });

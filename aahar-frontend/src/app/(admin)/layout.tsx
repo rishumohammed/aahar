@@ -18,7 +18,8 @@ import {
   Globe,
   Building2,
   Database,
-  Star
+  Star,
+  ShoppingCart
 } from "lucide-react";
 import { ChevronDown, UserCircle } from "lucide-react";
 import { cn, getImageUrl } from "@/lib/utils";
@@ -44,6 +45,7 @@ const NAV_ITEMS = [
     ]
   },
   { label: "CMS & Content", href: "/admin/content", icon: Globe },
+  { label: "Orders & Bookings", href: "/admin/orders", icon: ShoppingCart },
   { label: "Promotions", href: "/admin/promotions", icon: Star },
   { label: "Standards & Compliance", href: "/admin/standards", icon: ShieldAlert },
   { label: "Master Data", href: "/admin/master", icon: Database },
