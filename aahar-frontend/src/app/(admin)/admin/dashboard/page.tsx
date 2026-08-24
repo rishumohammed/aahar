@@ -46,7 +46,7 @@ export default function AdminDashboard() {
     { label: "Applications Pending", value: dashboardData?.pendingApps || "0", sub: "Awaiting review", icon: FileText, color: "text-admin-text", bg: "bg-admin-light" },
     { label: "Total Enquiries", value: dashboardData?.totalEnquiries || "0", sub: "System volume", icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
     { label: "Certified Members", value: dashboardData?.totalCertified || "0", sub: "Verified entities", icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
-    { label: "Total Revenue", value: `₹${(dashboardData?.totalRevenue || 0).toLocaleString()}`, sub: "Payment volume", icon: TrendingUp, color: "text-admin-text", bg: "bg-admin-light" },
+    { label: "Registered Entities", value: (dashboardData?.totalRestaurants || 0) + (dashboardData?.totalHotels || 0), sub: "Hotels & Restaurants", icon: Building, color: "text-indigo-600", bg: "bg-indigo-50" },
   ];
 
   if (loading) {

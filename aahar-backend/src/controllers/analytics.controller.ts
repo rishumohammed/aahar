@@ -9,7 +9,6 @@ export const getAdminStats = async (req: any, res: any) => {
       totalCertified,
       pendingApps,
       totalEnquiries,
-      monthlyRevenue,
       totalRestaurants,
       totalHotels
     ] = await Promise.all([
@@ -17,10 +16,6 @@ export const getAdminStats = async (req: any, res: any) => {
       prisma.certification.count({ where: { status: "active" } }),
       prisma.application.count({ where: { status: "submitted" } }),
       prisma.businessLead.count({ where: { status: { notIn: ["converted", "resolved", "rejected", "closed"] } } }),
-      prisma.payment.aggregate({
-        where: { status: "captured" },
-        _sum: { amount: true }
-      }),
       prisma.restaurant.count(),
       prisma.hotel.count()
     ]);
@@ -42,8 +37,7 @@ export const getAdminStats = async (req: any, res: any) => {
         pendingApps,
         totalEnquiries,
         totalRestaurants,
-        totalHotels,
-        totalRevenue: monthlyRevenue._sum.amount || 0
+        totalHotels
       },
       recentActivity
     });
