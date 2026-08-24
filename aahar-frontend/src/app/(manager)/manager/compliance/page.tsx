@@ -333,8 +333,8 @@ export default function HotelComplianceDashboard() {
     <Button 
       onClick={async () => {
         try {
-          const { api } = await import("@/lib/api");
-          const response = await api.get(`/certifications/${certification.id}/pdf`, { responseType: "blob", timeout: 30000 });
+          const { default: api } = await import("@/lib/api");
+          const response = await api.get(`/certifications/${certification.id}/pdf?t=${Date.now()}`, { responseType: "blob", timeout: 30000 });
           const blob = new Blob([response.data], { type: "application/pdf" });
           const url  = URL.createObjectURL(blob);
           const a    = document.createElement("a");
