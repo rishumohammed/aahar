@@ -353,6 +353,7 @@ export const getSystemOrders = async (req: any, res: any) => {
         include: {
           hotel: { select: { name: true } },
           guest: { select: { name: true, email: true, phone: true } },
+          roomType: { select: { priceFrom: true } }
         }
       })
     ]);
@@ -363,10 +364,20 @@ export const getSystemOrders = async (req: any, res: any) => {
     });
     const totalOrderCount = await prisma.order.count();
 
-    const bookingAggregates = await prisma.enquiry.aggregate({
-      _sum: { quoteAmount: true },
-      where: { status: { in: ["confirmed", "checked_in", "checked_out"] } }
+    const confirmedBookings = await prisma.enquiry.findMany({
+      where: { status: { in: ["confirmed", "checked_in", "checked_out"] } },
+      select: { quoteAmount: true, checkIn: true, checkOut: true, roomType: { select: { priceFrom: true } } }
     });
+
+    let totalBookingRevenue = 0;
+    for (const b of confirmedBookings) {
+      if (b.quoteAmount) {
+        totalBookingRevenue += b.quoteAmount;
+      } else if (b.roomType?.priceFrom) {
+        const nights = Math.max(1, Math.ceil((new Date(b.checkOut).getTime() - new Date(b.checkIn).getTime()) / (1000 * 60 * 60 * 24)));
+        totalBookingRevenue += b.roomType.priceFrom * nights;
+      }
+    }
     const totalBookingCount = await prisma.enquiry.count();
 
     return ok(res, {
@@ -374,7 +385,7 @@ export const getSystemOrders = async (req: any, res: any) => {
         totalOrders: totalOrderCount,
         orderRevenue: orderAggregates._sum.totalAmount || 0,
         totalBookings: totalBookingCount,
-        bookingRevenue: bookingAggregates._sum.quoteAmount || 0,
+        bookingRevenue: totalBookingRevenue,
       },
       restaurantOrders,
       hotelBookings,

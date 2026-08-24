@@ -189,7 +189,7 @@ export default function AdminOrdersPage() {
                         ? `₹${booking.quoteAmount}` 
                         : (booking.status === "sent" || booking.status === "viewed") 
                           ? "Pending Quote" 
-                          : "N/A"}
+                          : (booking.roomType?.priceFrom ? `₹${booking.roomType.priceFrom * Math.max(1, Math.ceil((new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60 * 24)))}` : "N/A")}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{new Date(booking.checkIn).toLocaleDateString()}</td>
                   </tr>
