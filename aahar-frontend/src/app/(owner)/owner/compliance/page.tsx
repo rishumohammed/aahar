@@ -12,7 +12,8 @@ import {
  ChevronRight,
  RefreshCcw,
  Info,
- FileText
+ FileText,
+ ShieldCheck
 } from"lucide-react";
 import { format, differenceInDays, parseISO, addDays, isPast } from"date-fns";
 import { restaurantApi, ownerApi } from"@/lib/api";
@@ -21,6 +22,8 @@ import { Card } from"@/components/ui/card";
 import { Badge } from"@/components/ui/badge";
 import { cn } from"@/lib/utils";
 import { ComplianceChatDialog } from "@/components/shared/ComplianceChatDialog";
+import { useBrandingStore } from "@/store/brandingStore";
+import { getImageUrl } from "@/lib/utils";
 
 // ── Constants ───────────────────────────────────────────────
 const RING_RADIUS = 54;
@@ -46,6 +49,13 @@ export default function ComplianceDashboard() {
  const [loading, setLoading] = useState(true);
  const [downloadingReport, setDownloadingReport] = useState(false);
  const [handbookUrl, setHandbookUrl] = useState<string | null>(null);
+ const { branding, fetchBranding } = useBrandingStore();
+ const [mounted, setMounted] = useState(false);
+
+ useEffect(() => {
+   setMounted(true);
+   fetchBranding();
+ }, []);
 
  useEffect(() => {
  const fetchData = async () => {
@@ -328,6 +338,36 @@ export default function ComplianceDashboard() {
  {/* Right Column: Widgets */}
  <aside className="space-y-8">
  
+  {/* Certificate Widget */}
+  {certification?.status === "active" && (
+    <div className="p-8 rounded-xl border-2 border-[#D98E73] bg-white relative overflow-hidden group shadow-xl">
+      <div className="space-y-6 relative z-10">
+        <div className="w-16 h-16 rounded-xl bg-[#D98E73]/10 flex items-center justify-center text-[#D98E73]">
+          {mounted && branding.certificateLogo ? (
+            <img src={getImageUrl(branding.certificateLogo)} alt="Certificate" className="w-12 h-12 object-contain" />
+          ) : (
+            <ShieldCheck className="h-8 w-8" />
+          )}
+        </div>
+        <div className="space-y-1">
+          <h4 className="font-bold text-slate-900 text-xl tracking-tight">
+            CERTIFIED {certification.track === "restaurant" ? "DINING" : "STAY"}
+          </h4>
+          <p className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em]">Regional Compliance Passed</p>
+        </div>
+        <div className="bg-slate-50 rounded-xl p-6 border border-slate-200 space-y-4">
+          <div className="space-y-1">
+            <div className="text-[10px] uppercase font-black text-slate-500 tracking-widest">Certificate ID</div>
+            <div className="text-sm font-mono font-bold text-slate-900">{certification.certNumber || "N/A"}</div>
+            <div className="text-[10px] uppercase font-black text-slate-500 tracking-widest mt-4">
+              EXPIRES: {format(parseISO(certification.expiresAt),"M/d/yyyy")}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+
  {/* Renewal Countdown */}
   {certification?.status === "active" ? (
   <Card className={cn("p-8 rounded-xl border-slate-200 shadow-xl text-center space-y-6 hover:shadow-2xl transition-shadow duration-300", countdownBg)}>

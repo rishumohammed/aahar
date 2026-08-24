@@ -7,6 +7,7 @@ export interface BrandingConfig {
   logoLight?: string;
   logoDark?: string;
   favicon?: string;
+  certificateLogo?: string;
 }
 
 interface BrandingState {
@@ -23,6 +24,7 @@ export const useBrandingStore = create<BrandingState>()(
         logoLight: "",
         logoDark: "",
         favicon: "",
+        certificateLogo: "",
       },
       isLoading: false,
 

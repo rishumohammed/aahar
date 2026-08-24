@@ -26,6 +26,7 @@ import { hotelApi, masterApi } from "@/lib/api";
 import { EnquiryForm } from "@/components/shared/EnquiryForm";
 import AaharBadge from "@/components/shared/AaharBadge";
 import LinkedRestaurant from "@/components/profile/LinkedRestaurant";
+import { useBrandingStore } from "@/store/brandingStore";
 import { cn, getImageUrl } from "@/lib/utils";
 import { notFound } from "next/navigation";
 
@@ -43,6 +44,13 @@ export default function HotelProfilePage({
   const [masterPhotoCategories, setMasterPhotoCategories] = useState<any[]>([]);
   const [masterMealPlans, setMasterMealPlans] = useState<any[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
+  const { branding, fetchBranding } = useBrandingStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    fetchBranding();
+  }, []);
 
   useEffect(() => {
     Promise.all([
@@ -588,7 +596,11 @@ export default function HotelProfilePage({
               <div className="p-8 rounded-xl border-2 border-aahar-rose bg-white relative overflow-hidden group shadow-xl">
                 <div className="space-y-6 relative z-10">
                   <div className="w-16 h-16 rounded-xl bg-aahar-rose/10 flex items-center justify-center text-aahar-rose">
-                    <ShieldCheck className="h-8 w-8" />
+                    {mounted && branding.certificateLogo ? (
+                      <img src={getImageUrl(branding.certificateLogo)} alt="Certificate" className="w-12 h-12 object-contain" />
+                    ) : (
+                      <ShieldCheck className="h-8 w-8" />
+                    )}
                   </div>
                   <div className="space-y-1">
                     <h4 className="font-bold text-aahar-dark text-xl tracking-tight">CERTIFIED STAY</h4>

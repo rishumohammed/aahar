@@ -16,7 +16,8 @@ export default function BrandingSettingsPage() {
   const [config, setConfig] = useState({
     logoLight: "",
     logoDark: "",
-    favicon: ""
+    favicon: "",
+    certificateLogo: ""
   });
 
   useEffect(() => {
@@ -27,7 +28,8 @@ export default function BrandingSettingsPage() {
           setConfig({
             logoLight: parsed.logoLight || "",
             logoDark: parsed.logoDark || "",
-            favicon: parsed.favicon || ""
+            favicon: parsed.favicon || "",
+            certificateLogo: parsed.certificateLogo || ""
           });
         }
       })
@@ -142,6 +144,31 @@ export default function BrandingSettingsPage() {
                       src={getImageUrl(config.favicon)} 
                       alt="Favicon Preview" 
                       className="w-8 h-8 object-contain"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2 mb-4">Certificate Logo</h3>
+            <p className="text-xs text-slate-500 mb-4">Displayed on the certification card in owner/manager portals.</p>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+              <div className="w-full sm:w-32">
+                <ImageUpload 
+                  value={config.certificateLogo} 
+                  onChange={(url) => setConfig({ ...config, certificateLogo: url })} 
+                  label="Certificate Logo"
+                />
+              </div>
+              {config.certificateLogo && (
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col items-center justify-center w-32 h-32 shrink-0">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mb-2">Preview</span>
+                  <div className="bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
+                    <img 
+                      src={getImageUrl(config.certificateLogo)} 
+                      alt="Certificate Logo Preview" 
+                      className="w-12 h-12 object-contain"
                     />
                   </div>
                 </div>
