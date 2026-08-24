@@ -38,7 +38,11 @@ export default function EstablishmentPreviewPage() {
   const [masterCategories, setMasterCategories] = useState<any[]>([]);
   const [masterMealPlans, setMasterMealPlans] = useState<any[]>([]);
   const [masterRoomAmenities, setMasterRoomAmenities] = useState<any[]>([]);
+  const [masterRestaurantCategories, setMasterRestaurantCategories] = useState<any[]>([]);
+  const [masterDietary, setMasterDietary] = useState<any[]>([]);
+  const [masterPriceRanges, setMasterPriceRanges] = useState<any[]>([]);
   const [selectedPhotoCategory, setSelectedPhotoCategory] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<"overview" | "menu">("overview");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -73,6 +77,16 @@ export default function EstablishmentPreviewPage() {
 
       masterApi.list("AMENITY_ROOM")
         .then(res => setMasterRoomAmenities(res.data?.data || []))
+        .catch(console.error);
+    } else if (type === "restaurant") {
+      masterApi.list("CATEGORY_RESTAURANT")
+        .then(res => setMasterRestaurantCategories(res.data?.data || []))
+        .catch(console.error);
+      masterApi.list("DIETARY")
+        .then(res => setMasterDietary(res.data?.data || []))
+        .catch(console.error);
+      masterApi.list("PRICE_RANGE_RESTAURANT")
+        .then(res => setMasterPriceRanges(res.data?.data || []))
         .catch(console.error);
     }
 
@@ -110,7 +124,8 @@ export default function EstablishmentPreviewPage() {
     interior: "Interior",
     counter: "Counter & Bar",
     restroom: "Restroom",
-    food: "Food & Dishes"
+    food: "Food & Dishes",
+    gallery: "General Gallery"
   };
 
   masterCategories.forEach(m => {
@@ -136,6 +151,20 @@ export default function EstablishmentPreviewPage() {
     }
   });
 
+  // Map restaurant master data
+  const restaurantCategoryMap: Record<string, string> = {};
+  masterRestaurantCategories.forEach(m => { if (m.key && m.label) restaurantCategoryMap[m.key] = m.label; });
+
+  const dietaryMap: Record<string, string> = {};
+  masterDietary.forEach(m => { if (m.key && m.label) dietaryMap[m.key] = m.label; });
+
+  const priceRangeMap: Record<string, string> = {};
+  masterPriceRanges.forEach(m => { 
+    if (m.key && m.label) {
+      priceRangeMap[m.key] = m.icon ? `${m.label} - ${m.icon}` : m.label;
+    } 
+  });
+
   // Extract cover image
   const getCoverImage = () => {
     let cover = item.image || item.photos?.cover || "";
@@ -158,7 +187,7 @@ export default function EstablishmentPreviewPage() {
 
     if (typeof photosObj === "object" && photosObj !== null) {
       Object.keys(photosObj).forEach(catKey => {
-        if (catKey === "cover") return;
+        if (catKey === "cover" || catKey === "logo") return;
         const list = photosObj[catKey];
         if (Array.isArray(list) && list.length > 0) {
           const label = categoryLabelMap[catKey] || catKey.replace(/_/g, ' ').toUpperCase();
@@ -257,6 +286,25 @@ export default function EstablishmentPreviewPage() {
           
           {/* Main Info Column */}
           <div className="lg:col-span-2 space-y-8">
+            {/* Tabs */}
+            {type === "restaurant" && (
+              <div className="flex border-b border-slate-200 gap-6">
+                <button 
+                  onClick={() => setActiveTab("overview")} 
+                  className={cn("pb-3 font-semibold text-sm border-b-2 transition-colors", activeTab === "overview" ? "border-admin-primary text-admin-primary" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300")}
+                >
+                  Overview
+                </button>
+                <button 
+                  onClick={() => setActiveTab("menu")} 
+                  className={cn("pb-3 font-semibold text-sm border-b-2 transition-colors", activeTab === "menu" ? "border-admin-primary text-admin-primary" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300")}
+                >
+                  Menu
+                </button>
+              </div>
+            )}
+
+            <div className={cn("space-y-8", activeTab !== "overview" && "hidden")}>
             {/* Description */}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
@@ -285,19 +333,19 @@ export default function EstablishmentPreviewPage() {
                   {!!item.dietary && (
                     <div>
                       <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Dietary</p>
-                      <p className="text-sm font-medium text-slate-800 capitalize">{item.dietary.replace(/_/g, ' ')}</p>
+                      <p className="text-sm font-medium text-slate-800 capitalize">{dietaryMap[item.dietary] || item.dietary.replace(/_/g, ' ')}</p>
                     </div>
                   )}
                   {!!item.priceRange && (
                     <div>
                       <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Price Range</p>
-                      <p className="text-sm font-medium text-slate-800">{item.priceRange}</p>
+                      <p className="text-sm font-medium text-slate-800">{priceRangeMap[item.priceRange] || item.priceRange}</p>
                     </div>
                   )}
                   {!!item.category && (
                     <div>
                       <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Category</p>
-                      <p className="text-sm font-medium text-slate-800 capitalize">{item.category.replace(/_/g, ' ')}</p>
+                      <p className="text-sm font-medium text-slate-800 capitalize">{restaurantCategoryMap[item.category] || item.category.replace(/_/g, ' ')}</p>
                     </div>
                   )}
                   {!!item.fssaiNo && (
@@ -486,6 +534,64 @@ export default function EstablishmentPreviewPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+            </div> {/* End of Overview Tab */}
+
+            {/* Restaurant Menu Section */}
+            {type === "restaurant" && activeTab === "menu" && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-admin-primary" />
+                  <h3 className="text-lg font-semibold text-slate-800">Restaurant Menu ({item.menu?.reduce((acc: number, section: any) => acc + (section.items?.length || 0), 0) || 0} items)</h3>
+                </div>
+                
+                {(!item.menu || item.menu.length === 0) ? (
+                  <div className="p-8 text-center border border-slate-200 rounded-xl bg-slate-50">
+                    <p className="text-slate-500 font-medium">No menu has been added yet.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {item.menu.map((section: any) => (
+                    <div key={section.id} className="space-y-3">
+                      <h4 className="text-sm font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg inline-block">
+                        {section.name} <span className="text-slate-400 font-medium ml-1">({section.items?.length || 0})</span>
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {section.items?.map((menuItem: any) => (
+                          <div key={menuItem.id} className={cn("p-3 border rounded-xl flex gap-3 transition-opacity", !menuItem.isAvailable ? "border-slate-200 opacity-60 bg-slate-50" : "border-slate-200 bg-white shadow-2xs")}>
+                            <div className="flex-1 space-y-1">
+                               <div className="flex items-start justify-between gap-2">
+                                  <span className="font-semibold text-slate-800 text-sm">{menuItem.name}</span>
+                                  <span className="font-bold text-admin-primary whitespace-nowrap">₹{menuItem.price}</span>
+                               </div>
+                               {menuItem.description && <p className="text-xs text-slate-500 line-clamp-2">{menuItem.description}</p>}
+                               <div className="flex flex-wrap gap-2 pt-1">
+                                 {menuItem.dietary && (
+                                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                     {dietaryMap[menuItem.dietary] || menuItem.dietary.replace(/_/g, ' ')}
+                                   </span>
+                                 )}
+                                 {!menuItem.isAvailable && (
+                                   <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">Out of stock</span>
+                                 )}
+                               </div>
+                            </div>
+                            {menuItem.image && (
+                               <div className="h-16 w-16 shrink-0 rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+                                  <img src={getImageUrl(menuItem.image)} alt={menuItem.name} className="w-full h-full object-cover" />
+                               </div>
+                            )}
+                          </div>
+                        ))}
+                        {(!section.items || section.items.length === 0) && (
+                          <p className="text-xs text-slate-400 italic">No items in this category</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

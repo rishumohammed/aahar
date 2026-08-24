@@ -86,7 +86,7 @@ export default function ManagerProfilePage() {
             Cancel Editing
           </Button>
         </div>
-        <HotelForm initialData={hotel} isEditing={true} />
+        <HotelForm initialData={hotel} isEditing={true} onSuccess={() => { fetchHotel(); setIsEditing(true); }} onCancel={() => setIsEditing(false)} />
       </div>
     );
   }

@@ -17,7 +17,7 @@ const MASTER_CATEGORIES = [
     title: "Restaurant Master Data",
     desc: "Configure establishment categories, dining amenities, and required legal documents for restaurants.",
     icon: UtensilsCrossed,
-    count: 3,
+    count: 7,
     color: "from-orange-500/10 via-amber-500/5 to-transparent border-orange-200/80",
     iconBg: "bg-orange-500 text-white shadow-lg shadow-orange-500/20",
     hoverBorder: "hover:border-orange-400/60",
@@ -33,17 +33,6 @@ const MASTER_CATEGORIES = [
     iconBg: "bg-blue-600 text-white shadow-lg shadow-blue-500/20",
     hoverBorder: "hover:border-blue-400/60",
     badgeColor: "bg-blue-100 text-blue-700 border-blue-200"
-  },
-  {
-    key: "general",
-    title: "General Master Data",
-    desc: "Manage platform-wide shared metadata, dietary tags, and global enumerations.",
-    icon: Globe,
-    count: 1,
-    color: "from-emerald-500/10 via-teal-500/5 to-transparent border-emerald-200/80",
-    iconBg: "bg-emerald-600 text-white shadow-lg shadow-emerald-500/20",
-    hoverBorder: "hover:border-emerald-400/60",
-    badgeColor: "bg-emerald-100 text-emerald-700 border-emerald-200"
   }
 ];
 

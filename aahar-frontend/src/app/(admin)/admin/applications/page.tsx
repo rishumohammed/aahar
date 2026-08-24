@@ -6,9 +6,10 @@ import { applicationApi } from "@/lib/api";
 import { Search, Loader2, ChevronRight, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const STATUS_TABS = [
-  { key: "", label: "All" },
+  { key: "", label: "All Statuses" },
   { key: "submitted", label: "Submitted" },
   { key: "under_review", label: "Under review" },
   { key: "audit_scheduled", label: "Audit scheduled" },
@@ -62,45 +63,46 @@ export default function AdminApplicationsPage() {
   });
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-8 pb-12">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="max-w-[1400px] mx-auto space-y-6 pb-12">
+      {/* Page Header */}
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Application Pipeline</h1>
-          <p className="text-slate-600 font-medium text-sm mt-1">{total} total applications in the system.</p>
+          <h2 className="text-2xl font-bold text-slate-800 tracking-tighter">Application Pipeline</h2>
+          <p className="text-slate-500 text-sm mt-1">{total} total applications in the system.</p>
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
-        {/* Status tabs */}
-        <div className="flex bg-slate-50 p-1 rounded-xl w-full lg:w-auto overflow-x-auto shadow-inner border border-slate-100 no-scrollbar">
-          {STATUS_TABS.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => {
-                setTab(t.key);
-                setPage(1);
-              }}
-              className={cn(
-                "px-5 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap",
-                tab === t.key
-                  ? "bg-white text-admin-primary shadow-sm border border-slate-200"
-                  : "text-slate-500 hover:text-slate-700"
-              )}
-            >
-              {t.label}
-            </button>
-          ))}
+      {/* Filter Bar */}
+      <div className="bg-white p-4 rounded-xl border border-slate-200 mb-6 flex flex-col md:flex-row items-center gap-4 shadow-sm">
+        <div className="flex flex-col gap-1.5 flex-1 w-full">
+          <label className="text-xs font-semibold text-slate-500 uppercase">Search Business</label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Search by business name..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-9"
+            />
+          </div>
         </div>
 
-        {/* Search */}
-        <div className="relative w-full lg:max-w-sm shrink-0">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-          <input
-            className="w-full pl-12 pr-4 h-11 bg-slate-50 border-slate-200 rounded-xl text-sm font-medium placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-admin-primary transition-all outline-none"
-            placeholder="Search by business name..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="flex flex-col gap-1.5 flex-1 w-full">
+          <label className="text-xs font-semibold text-slate-500 uppercase">Pipeline Status</label>
+          <select
+            value={tab}
+            onChange={(e) => {
+              setTab(e.target.value);
+              setPage(1);
+            }}
+            className="h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-950"
+          >
+            {STATUS_TABS.map((t) => (
+              <option key={t.key} value={t.key}>
+                {t.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

@@ -127,6 +127,8 @@ export default function RestaurantForm({ initialData, isEditing, isOwnerPortal, 
   const [masterCategories, setMasterCategories] = useState<any[]>([]);
   const [masterDietary, setMasterDietary] = useState<any[]>([]);
   const [masterAmenities, setMasterAmenities] = useState<any[]>([]);
+  const [masterCuisines, setMasterCuisines] = useState<any[]>([]);
+  const [masterPriceRanges, setMasterPriceRanges] = useState<any[]>([]);
 
   // Custom Cuisine Input
   const [customCuisineInput, setCustomCuisineInput] = useState("");
@@ -183,6 +185,8 @@ export default function RestaurantForm({ initialData, isEditing, isOwnerPortal, 
     masterApi.list("CATEGORY_RESTAURANT").then(res => setMasterCategories(res.data.data || []));
     masterApi.list("DIETARY").then(res => setMasterDietary(res.data.data || []));
     masterApi.list("AMENITY_RESTAURANT").then(res => setMasterAmenities(res.data.data || []));
+    masterApi.list("CUISINE").then(res => setMasterCuisines(res.data.data || []));
+    masterApi.list("PRICE_RANGE_RESTAURANT").then(res => setMasterPriceRanges(res.data.data || []));
   }, [isAdmin]);
 
   useEffect(() => {
@@ -296,29 +300,7 @@ export default function RestaurantForm({ initialData, isEditing, isOwnerPortal, 
     });
   };
 
-  // Gallery Helpers
-  const handleAddGalleryImage = (url: string) => {
-    if (!url) return;
-    const current = Array.isArray(formData.photos?.gallery) ? formData.photos.gallery : [];
-    setFormData({
-      ...formData,
-      photos: {
-        ...formData.photos,
-        gallery: [...current, url]
-      }
-    });
-  };
 
-  const handleRemoveGalleryImage = (index: number) => {
-    const current = Array.isArray(formData.photos?.gallery) ? formData.photos.gallery : [];
-    setFormData({
-      ...formData,
-      photos: {
-        ...formData.photos,
-        gallery: current.filter((_: string, i: number) => i !== index)
-      }
-    });
-  };
 
   // Submit Handler
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -419,6 +401,16 @@ export default function RestaurantForm({ initialData, isEditing, isOwnerPortal, 
     { key: "sweet_shop", label: "Sweets & Confectionery" },
   ];
 
+  const availableDietary = masterDietary.length > 0 ? masterDietary : DIETARY_OPTIONS;
+  const availableCuisines = masterCuisines.length > 0 ? masterCuisines.map((c: any) => c.label) : POPULAR_CUISINES;
+  
+  const availablePriceTiers = masterPriceRanges.length > 0 ? masterPriceRanges.map((p: any) => ({
+    key: p.key,
+    label: p.key,
+    title: p.label,
+    desc: p.icon || ""
+  })) : PRICE_TIERS;
+
   const availableAmenities = masterAmenities.length > 0 ? masterAmenities : DEFAULT_AMENITIES_LIST;
   const currentCover = getImageUrl(formData.image || formData.photos?.cover) || "";
 
@@ -440,22 +432,22 @@ export default function RestaurantForm({ initialData, isEditing, isOwnerPortal, 
     switch (activeTab) {
       case "identity":
         return (
-          <RestaurantBasicInfoForm
-            formData={formData}
-            setFormData={setFormData}
-            isAdmin={isAdmin}
-            owners={owners}
-            masterCategories={availableCategories}
-            DIETARY_OPTIONS={DIETARY_OPTIONS}
-            PRICE_TIERS={PRICE_TIERS}
-          />
+            <RestaurantBasicInfoForm
+              formData={formData}
+              setFormData={setFormData}
+              isAdmin={isAdmin}
+              owners={owners}
+              masterCategories={availableCategories}
+              DIETARY_OPTIONS={availableDietary}
+              PRICE_TIERS={availablePriceTiers}
+            />
         );
       case "cuisines":
         return (
           <RestaurantCuisinesForm
             formData={formData}
             setFormData={setFormData}
-            POPULAR_CUISINES={POPULAR_CUISINES}
+            POPULAR_CUISINES={availableCuisines}
             customCuisineInput={customCuisineInput}
             setCustomCuisineInput={setCustomCuisineInput}
             handleToggleCuisine={handleToggleCuisine}
@@ -485,8 +477,6 @@ export default function RestaurantForm({ initialData, isEditing, isOwnerPortal, 
           <RestaurantMediaForm
             formData={formData}
             setFormData={setFormData}
-            handleAddGalleryImage={handleAddGalleryImage}
-            handleRemoveGalleryImage={handleRemoveGalleryImage}
           />
         );
       case "amenities":

@@ -34,6 +34,7 @@ export default function OwnerProfilePage() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [masterRoomAmenities, setMasterRoomAmenities] = useState<any[]>([]);
+  const [masterDietary, setMasterDietary] = useState<any[]>([]);
 
   const fetchEstablishment = async () => {
     if (!user?.id) return;
@@ -65,7 +66,13 @@ export default function OwnerProfilePage() {
     masterApi.list("AMENITY_ROOM")
       .then(res => setMasterRoomAmenities(res.data?.data || []))
       .catch(console.error);
+    masterApi.list("DIETARY")
+      .then(res => setMasterDietary(res.data?.data || []))
+      .catch(console.error);
   }, [user]);
+
+  const dietaryMap: Record<string, string> = {};
+  masterDietary.forEach(m => { if (m.key && m.label) dietaryMap[m.key] = m.label; });
 
   const toggleStatus = async () => {
     if (!establishment) return;
@@ -147,9 +154,9 @@ export default function OwnerProfilePage() {
           <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel Editing</Button>
         </div>
         {establishment.type === "restaurant" ? (
-          <RestaurantForm initialData={establishment} isEditing={true} isOwnerPortal={true} onSuccess={() => { fetchEstablishment(); }} onCancel={() => setIsEditing(false)} />
+          <RestaurantForm initialData={establishment} isEditing={true} isOwnerPortal={true} onSuccess={() => { fetchEstablishment(); setIsEditing(true); }} onCancel={() => setIsEditing(false)} />
         ) : (
-          <HotelForm initialData={establishment} isEditing={true} isOwnerPortal={true} onSuccess={() => { fetchEstablishment(); }} onCancel={() => setIsEditing(false)} />
+          <HotelForm initialData={establishment} isEditing={true} isOwnerPortal={true} onSuccess={() => { fetchEstablishment(); setIsEditing(true); }} onCancel={() => setIsEditing(false)} />
         )}
       </div>
     );
@@ -323,7 +330,7 @@ export default function OwnerProfilePage() {
                 {establishment.dietary && (
                   <>
                     <span>•</span>
-                    <span className="flex items-center gap-1.5 uppercase tracking-wider text-xs font-bold bg-white/20 px-2 py-0.5 rounded">{establishment.dietary}</span>
+                    <span className="flex items-center gap-1.5 uppercase tracking-wider text-xs font-bold bg-white/20 px-2 py-0.5 rounded">{dietaryMap[establishment.dietary] || establishment.dietary}</span>
                   </>
                 )}
               </div>

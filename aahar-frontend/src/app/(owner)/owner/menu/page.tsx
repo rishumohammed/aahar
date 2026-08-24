@@ -172,9 +172,26 @@ export default function MenuManagementPage() {
 
   // Flatten items for Data Table
   const flattenedItems = useMemo(() => {
-    return menuSections.flatMap(section => 
-      section.items.map(item => ({ ...item, sectionId: section.id, sectionName: section.name }))
-    ).filter(item => {
+    return menuSections.flatMap(section => {
+      if (!section.items || section.items.length === 0) {
+        return [{
+          id: `empty_${section.id}`,
+          isEmptyPlaceholder: true,
+          sectionId: section.id,
+          sectionName: section.name,
+          name: "Empty Category",
+          price: 0,
+          dietary: "veg",
+          isAvailable: false
+        } as any];
+      }
+      return section.items.map(item => ({ ...item, sectionId: section.id, sectionName: section.name }));
+    }).filter(item => {
+      if (item.isEmptyPlaceholder) {
+        if (selectedCategory !== "all" && item.sectionId !== selectedCategory) return false;
+        if (searchQuery && !item.sectionName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+        return true;
+      }
       const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             item.sectionName.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = selectedCategory === "all" || item.sectionId === selectedCategory;
@@ -281,6 +298,21 @@ export default function MenuManagementPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {flattenedItems.length > 0 ? flattenedItems.map((item) => (
+                item.isEmptyPlaceholder ? (
+                  <tr key={item.id} className="bg-slate-50/30 group">
+                    <td className="px-6 py-4" colSpan={4}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0 bg-slate-200" />
+                        <span className="text-sm italic text-slate-500">No items in <span className="font-semibold">{item.sectionName}</span> category.</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <Button onClick={() => openItemModal()} variant="outline" size="sm" className="h-8 text-xs text-admin-primary border-admin-primary/20 hover:bg-admin-primary/5">
+                        <Plus className="h-3 w-3 mr-1" /> Add Item
+                      </Button>
+                    </td>
+                  </tr>
+                ) : (
                 <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -331,6 +363,7 @@ export default function MenuManagementPage() {
                     </div>
                   </td>
                 </tr>
+                )
               )) : (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-slate-500 font-medium bg-slate-50/50">
@@ -402,10 +435,25 @@ export default function MenuManagementPage() {
           isOpen={showCategoryModal}
           onClose={() => setShowCategoryModal(false)}
           sections={menuSections}
-          onSave={(updatedSections) => {
+          onSave={async (updatedSections) => {
             setMenuSections(updatedSections);
             setShowCategoryModal(false);
-            addToast("Categories updated (Unsaved). Click Publish to save.", "success");
+            if (restaurantId) {
+              setSaving(true);
+              try {
+                const res = await restaurantApi.updateMenu(restaurantId, updatedSections);
+                if (res.data?.data) {
+                  setMenuSections(res.data.data);
+                }
+                toast.success("Categories published successfully!");
+              } catch (err: any) {
+                toast.error("Failed to publish categories.");
+              } finally {
+                setSaving(false);
+              }
+            } else {
+              addToast("Categories updated. Click Publish to save.", "success");
+            }
           }}
         />
       )}

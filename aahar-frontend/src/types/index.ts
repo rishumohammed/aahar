@@ -516,3 +516,4 @@ export interface RestaurantTable {
   updatedAt: string;
 }
 
+

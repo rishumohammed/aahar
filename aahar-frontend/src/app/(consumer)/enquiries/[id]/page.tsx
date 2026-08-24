@@ -179,7 +179,7 @@ export default function EnquiryDetailPage({ params }: { params: { id: string } }
                 <Users className="h-5 w-5 text-aahar-teal shrink-0" />
                 <div>
                   <p className="text-[10px] uppercase font-bold text-aahar-body tracking-widest">Guests</p>
-                  <p className="text-sm font-bold text-aahar-dark">{enquiry.adults} Adults, {enquiry.children} Children</p>
+                  <p className="text-sm font-bold text-aahar-dark">{enquiry.guests?.adults || 0} Adults, {enquiry.guests?.children || 0} Children</p>
                 </div>
               </div>
               <div className="pt-4 border-t border-aahar-border">

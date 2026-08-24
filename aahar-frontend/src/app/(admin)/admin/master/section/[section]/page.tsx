@@ -13,7 +13,8 @@ import {
   Sparkles,
   Globe,
   ArrowLeft,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Coins
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
@@ -64,6 +65,27 @@ const SECTION_DATA: Record<string, {
         desc: "Photo categories like Kitchen, Interior, Exterior, Dining Area, Counter, Restroom, Food.",
         icon: ImageIcon,
         color: "bg-emerald-100 text-emerald-600"
+      },
+      { 
+        id: "DIETARY", 
+        label: "Dietary Types", 
+        desc: "Dietary tags like Pure Veg, Non-Veg, Vegan, Jain, Halal, Organic.",
+        icon: Leaf,
+        color: "bg-green-100 text-green-600"
+      },
+      { 
+        id: "CUISINE", 
+        label: "Cuisines", 
+        desc: "Cuisine tags like North Indian, Chinese, Italian, Continental.",
+        icon: UtensilsCrossed,
+        color: "bg-orange-100 text-orange-600"
+      },
+      { 
+        id: "PRICE_RANGE_RESTAURANT", 
+        label: "Price Ranges", 
+        desc: "Expense tiers like Budget, Moderate, Premium (e.g. ₹, ₹₹).",
+        icon: Coins,
+        color: "bg-yellow-100 text-yellow-600"
       },
     ]
   },
@@ -127,20 +149,6 @@ const SECTION_DATA: Record<string, {
         desc: "Photo categories like Rooms, Exterior, Lobby, Amenities, Pool & Spa, Dining.",
         icon: ImageIcon,
         color: "bg-teal-100 text-teal-600"
-      },
-    ]
-  },
-  general: {
-    title: "General Master Data",
-    subtitle: "Shared platform configurations, dietary tags, and global metadata.",
-    icon: Globe,
-    items: [
-      { 
-        id: "DIETARY", 
-        label: "Dietary Types", 
-        desc: "Dietary tags like Pure Veg, Non-Veg, Vegan, Jain, Halal, Organic.",
-        icon: Leaf,
-        color: "bg-emerald-100 text-emerald-600"
       },
     ]
   }

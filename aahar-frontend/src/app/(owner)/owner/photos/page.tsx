@@ -108,10 +108,11 @@ export default function PhotoGalleryPage() {
               { id: "dining", label: "Dining Area" },
               { id: "counter", label: "Counter" },
               { id: "restroom", label: "Restroom" },
-              { id: "food", label: "Food" }
+              { id: "food", label: "Food" },
+              { id: "gallery", label: "General Gallery" }
             ];
             setCategories(fallbackRest);
-            setActiveCategory("kitchen");
+            setActiveCategory("gallery");
           }
         }
       })

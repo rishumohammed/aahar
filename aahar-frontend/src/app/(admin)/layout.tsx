@@ -30,7 +30,7 @@ import { notificationApi, adminApi } from "@/lib/api";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "Bookings", href: "/admin/enquiries", icon: Bell },
+  { label: "Enquiries", href: "/admin/enquiries", icon: Bell },
   { label: "Applications", href: "/admin/applications", icon: FileText },
   { label: "Audits", href: "/admin/audits", icon: CheckSquare },
   { 

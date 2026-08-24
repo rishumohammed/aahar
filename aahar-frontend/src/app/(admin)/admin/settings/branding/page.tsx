@@ -8,6 +8,7 @@ import { settingsApi } from "@/lib/api";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import { useBrandingStore } from "@/store/brandingStore";
+import { getImageUrl } from "@/lib/utils";
 
 export default function BrandingSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -22,7 +23,12 @@ export default function BrandingSettingsPage() {
     settingsApi.get('branding_config')
       .then(res => {
         if (res.data) {
-          setConfig(res.data);
+          const parsed = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
+          setConfig({
+            logoLight: parsed.logoLight || "",
+            logoDark: parsed.logoDark || "",
+            favicon: parsed.favicon || ""
+          });
         }
       })
       .catch(err => {
@@ -74,30 +80,72 @@ export default function BrandingSettingsPage() {
           <div>
             <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2 mb-4">Logo (Light Mode)</h3>
             <p className="text-xs text-slate-500 mb-4">Displayed on light backgrounds (like the admin panel).</p>
-            <ImageUpload 
-              value={config.logoLight} 
-              onChange={(url) => setConfig({ ...config, logoLight: url })} 
-              label="Upload Light Logo"
-            />
+            <div className="space-y-4">
+              <ImageUpload 
+                value={config.logoLight} 
+                onChange={(url) => setConfig({ ...config, logoLight: url })} 
+                label="Upload Light Logo"
+              />
+              {config.logoLight && (
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col items-center justify-center">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mb-2">Light Logo Preview</span>
+                  <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm max-w-full flex items-center justify-center min-h-[80px]">
+                    <img 
+                      src={getImageUrl(config.logoLight)} 
+                      alt="Light Logo Preview" 
+                      className="max-h-12 object-contain"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <div>
             <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2 mb-4">Logo (Dark Mode)</h3>
             <p className="text-xs text-slate-500 mb-4">Displayed on dark backgrounds (like the user-facing site footer).</p>
-            <ImageUpload 
-              value={config.logoDark} 
-              onChange={(url) => setConfig({ ...config, logoDark: url })} 
-              label="Upload Dark Logo"
-            />
+            <div className="space-y-4">
+              <ImageUpload 
+                value={config.logoDark} 
+                onChange={(url) => setConfig({ ...config, logoDark: url })} 
+                label="Upload Dark Logo"
+              />
+              {config.logoDark && (
+                <div className="p-4 bg-slate-900 rounded-xl border border-slate-800 flex flex-col items-center justify-center">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase mb-2">Dark Logo Preview</span>
+                  <div className="bg-slate-800 p-3 rounded-lg border border-slate-700 shadow-sm max-w-full flex items-center justify-center min-h-[80px]">
+                    <img 
+                      src={getImageUrl(config.logoDark)} 
+                      alt="Dark Logo Preview" 
+                      className="max-h-12 object-contain"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <div>
             <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2 mb-4">Favicon</h3>
             <p className="text-xs text-slate-500 mb-4">Displayed in the browser tab.</p>
-            <div className="w-32">
-              <ImageUpload 
-                value={config.favicon} 
-                onChange={(url) => setConfig({ ...config, favicon: url })} 
-                label="Favicon"
-              />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+              <div className="w-full sm:w-32">
+                <ImageUpload 
+                  value={config.favicon} 
+                  onChange={(url) => setConfig({ ...config, favicon: url })} 
+                  label="Favicon"
+                />
+              </div>
+              {config.favicon && (
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col items-center justify-center w-32 h-32 shrink-0">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mb-2">Favicon Preview</span>
+                  <div className="bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
+                    <img 
+                      src={getImageUrl(config.favicon)} 
+                      alt="Favicon Preview" 
+                      className="w-8 h-8 object-contain"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

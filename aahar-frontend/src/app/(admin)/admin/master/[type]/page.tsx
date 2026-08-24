@@ -253,12 +253,18 @@ export default function MasterDataInnerPage({ params }: { params: { type: string
                     value={formData.key} 
                     onChange={e => {
                       setIsSlugManuallyEdited(true);
-                      setFormData({ ...formData, key: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') });
+                      if (decodedType === "PRICE_RANGE_RESTAURANT") {
+                        setFormData({ ...formData, key: e.target.value });
+                      } else {
+                        setFormData({ ...formData, key: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') });
+                      }
                     }}
-                    placeholder="e.g. fine_dining"
-                    className="h-12 bg-slate-50 border-slate-200 focus-visible:ring-admin-primary font-mono text-xs"
+                    placeholder={decodedType === "PRICE_RANGE_RESTAURANT" ? "e.g. ₹" : "e.g. fine_dining"}
+                    className={cn("h-12 bg-slate-50 border-slate-200 focus-visible:ring-admin-primary font-mono text-xs", decodedType === "PRICE_RANGE_RESTAURANT" ? "text-lg" : "")}
                   />
-                  <p className="text-[10px] font-medium text-slate-400 leading-tight">Unique database slug. Automatically generated from Display Name (uses lowercase & underscores).</p>
+                  <p className="text-[10px] font-medium text-slate-400 leading-tight">
+                    {decodedType === "PRICE_RANGE_RESTAURANT" ? "The price symbol identifier (e.g. ₹, ₹₹). Must be unique." : "Unique database slug. Automatically generated from Display Name (uses lowercase & underscores)."}
+                  </p>
                 </div>
               )}
 
@@ -272,6 +278,17 @@ export default function MasterDataInnerPage({ params }: { params: { type: string
                     checked={formData.icon === "true"}
                     onCheckedChange={(c) => setFormData({ ...formData, icon: c ? "true" : "false" })}
                   />
+                </div>
+              ) : decodedType === "PRICE_RANGE_RESTAURANT" ? (
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Description</label>
+                  <Input 
+                    value={formData.icon || ""} 
+                    onChange={e => setFormData({ ...formData, icon: e.target.value })}
+                    placeholder="e.g. Under ₹300 for two"
+                    className="h-12 border-slate-200 focus-visible:ring-admin-primary"
+                  />
+                  <p className="text-[10px] font-medium text-slate-400 leading-tight">Displayed underneath the price range name.</p>
                 </div>
               ) : null}
 
