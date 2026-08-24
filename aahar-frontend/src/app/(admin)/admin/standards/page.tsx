@@ -406,7 +406,7 @@ export default function StandardsPage() {
                     )}
                   />
                   <Button type="submit" className="w-full bg-admin-primary hover:bg-admin-hover text-white font-medium">
-                    Add Criterion
+                    Add
                   </Button>
                 </form>
               </Form>
