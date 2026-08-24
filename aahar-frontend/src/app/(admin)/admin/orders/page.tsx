@@ -185,7 +185,11 @@ export default function AdminOrdersPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
-                      {booking.quoteAmount ? `₹${booking.quoteAmount}` : "Pending"}
+                      {booking.quoteAmount != null 
+                        ? `₹${booking.quoteAmount}` 
+                        : (booking.status === "sent" || booking.status === "viewed") 
+                          ? "Pending Quote" 
+                          : "N/A"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{new Date(booking.checkIn).toLocaleDateString()}</td>
                   </tr>
