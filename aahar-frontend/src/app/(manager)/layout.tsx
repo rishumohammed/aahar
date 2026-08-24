@@ -55,7 +55,7 @@ export default function HotelManagerLayout({ children }: { children: React.React
 
  useEffect(() => {
  if (mounted) {
- if (!isAuthenticated || !user || (user.role !=="manager"&& user.role !=="super_admin"&& user.role !=="admin")) {
+ if (!isAuthenticated || !user || (user.role !== "hotel_manager" && user.role !== "super_admin" && user.role !== "admin")) {
  router.push("/auth/login");
  return;
  }
