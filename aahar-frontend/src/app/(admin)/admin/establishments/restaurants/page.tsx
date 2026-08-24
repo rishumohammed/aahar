@@ -44,7 +44,7 @@ export default function RestaurantsManagementPage() {
       await restaurantApi.delete(id);
       fetchData();
     } catch (err) {
-      alert("Failed to delete");
+      toast.error("Failed to delete");
     }
   };
 

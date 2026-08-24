@@ -47,10 +47,10 @@ export default function HotelManagerDashboardPage() {
 
  setStats([
  { 
- label:"Enquiries", 
+ label:"Bookings", 
  value: realStats.enquiries ||"0", 
  sub:"Total received", 
- icon: MessageSquare, color:"text-admin-text", bg:"bg-admin-light"
+ icon: MessageSquare, color:"text-aahar-teal", bg:"bg-aahar-teal/10"
  },
  { 
  label:"Certification", 

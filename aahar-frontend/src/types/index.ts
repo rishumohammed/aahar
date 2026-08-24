@@ -224,7 +224,7 @@ export interface Hotel {
 
 // ── Enquiry ───────────────────────────────────────────────
 export type EnquiryStatus =
-  | "sent" | "viewed" | "quoted" | "confirmed" | "declined" | "expired";
+  | "sent" | "viewed" | "quoted" | "confirmed" | "checked_in" | "checked_out" | "declined" | "expired";
 
 export interface EnquiryGuests {
   adults: number;

@@ -176,7 +176,6 @@ export default function AdminEnquiryDetailPage({ params }: { params: { id: strin
               <SelectContent>
                 <SelectItem value="pending" className="font-semibold text-amber-600">Pending</SelectItem>
                 <SelectItem value="contacted" className="font-semibold text-blue-600">Contacted</SelectItem>
-                <SelectItem value="converted" className="font-semibold text-emerald-600" disabled>Converted</SelectItem>
                 <SelectItem value="rejected" className="font-semibold text-rose-600">Rejected</SelectItem>
               </SelectContent>
             </Select>

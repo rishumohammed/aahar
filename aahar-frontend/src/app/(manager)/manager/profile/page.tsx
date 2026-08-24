@@ -1,4 +1,5 @@
 "use client";
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { hotelApi } from "@/lib/api";
 import HotelForm from "@/components/forms/HotelForm";
@@ -52,7 +53,7 @@ export default function ManagerProfilePage() {
       setHotel({ ...hotel, isActive: newStatus });
     } catch (err) {
       console.error("Failed to update status", err);
-      alert("Failed to update operating status.");
+      toast.error("Failed to update operating status.");
     } finally {
       setUpdatingStatus(false);
     }

@@ -122,7 +122,7 @@ export default function AuditChecklistPage() {
 
   const handleSubmit = async () => {
     if (!recommendation) {
-      alert("Please select a recommendation before submitting.");
+      toast.error("Please select a recommendation before submitting.");
       return;
     }
     const unscoredCount = checklist.filter((i: any) => scores[i.id] === undefined).length;

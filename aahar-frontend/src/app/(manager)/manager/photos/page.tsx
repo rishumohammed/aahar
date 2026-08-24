@@ -194,22 +194,6 @@ export default function PhotoGalleryPage() {
         </Button>
       </div>
 
- {/* Storage Provider Badge */}
- <div className="flex items-center gap-2 mb-4">
- <span className="text-2xs text-mid">Storage:</span>
- <span className={`badge text-2xs ${
- storageProvider ==="s3"
- ?"bg-admin-primary/10 text-admin-primary border border-admin-primary/20 px-2 py-0.5 rounded-full"
- :"bg-wash text-mid border border-border px-2 py-0.5 rounded-full"
- }`}>
- {storageProvider ==="s3"?"☁ AWS S3":"💾 Local disk"}
- </span>
- {storageProvider ==="local"&& (
- <span className="text-2xs text-mid">
- (switch to S3 in .env before deploying)
- </span>
- )}
- </div>
 
  {/* Category Tabs */}
  <div className="border-b border-slate-200 flex gap-8 overflow-x-auto no-scrollbar scroll-smooth">

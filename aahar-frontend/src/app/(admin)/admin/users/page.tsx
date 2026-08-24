@@ -33,7 +33,7 @@ const ROLE_BADGE: Record<string, string> = {
   admin: "bg-admin-light text-admin-text border border-admin-border",
   auditor: "bg-amber-50 text-amber-700 border border-amber-200",
   owner: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-  hotel_manager: "bg-teal-50 text-teal-700 border border-teal-200",
+  manager: "bg-teal-50 text-teal-700 border border-teal-200",
   consumer: "bg-slate-100 text-slate-700 border border-slate-200",
 };
 
@@ -41,7 +41,7 @@ export default function UserManagementPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
-  const [activeSection, setActiveSection] = useState<"system" | "establishment">("system");
+  const [activeSection, setActiveSection] = useState<"system" | "establishment">("establishment");
   const [loading, setLoading] = useState(true);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -101,7 +101,7 @@ export default function UserManagementPage() {
   const handleSaveUser = async () => {
     if (!formData.name || !formData.email || !formData.role) return;
     if (!editingUser && !formData.password) {
-      alert("Password is required for new users");
+      toast.error("Password is required for new users");
       return;
     }
     
@@ -126,7 +126,7 @@ export default function UserManagementPage() {
       setShowUserModal(false);
       load();
     } catch (err: any) {
-      alert(err.response?.data?.message || "An error occurred");
+      toast.error(err.response?.data?.message || "An error occurred");
     } finally {
       setSaving(false);
     }
@@ -147,9 +147,9 @@ export default function UserManagementPage() {
       await adminApi.deleteUser(userToDelete.id);
       setShowDeleteModal(false);
       load();
-      alert("User deleted successfully!");
+      toast.success("User deleted successfully!");
     } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to delete user");
+      toast.error(err.response?.data?.message || "Failed to delete user");
     } finally {
       setSaving(false);
     }
@@ -273,9 +273,9 @@ export default function UserManagementPage() {
               </>
             ) : (
               <>
-                <option value="owner">Business Owner</option>
-                <option value="hotel_manager">Hotel Manager</option>
-                <option value="consumer">End Consumer</option>
+                <option value="owner">Establishment Owner</option>
+                <option value="manager">Manager</option>
+                <option value="consumer">Consumer</option>
               </>
             )}
           </select>
@@ -352,7 +352,7 @@ export default function UserManagementPage() {
                         <Eye className="h-4 w-4" />
                       </button>
 
-                      {["owner", "hotel_manager"].includes(user.role) && (
+                      {["owner", "manager"].includes(user.role) && (
                         <Link href={`/admin/users/${user.id}/establishments`}>
                           <button 
                             className="p-2 rounded-xl text-blue-600 bg-blue-50 hover:bg-blue-100 transition-all shadow-sm active:scale-95 flex items-center gap-1"

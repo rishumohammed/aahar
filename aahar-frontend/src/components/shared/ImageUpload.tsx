@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { uploadApi } from "@/lib/api";
-import { Upload, X, Loader2, Image as ImageIcon } from "lucide-react";
+import { Upload, X, Loader2, Image as ImageIcon, Eye } from "lucide-react";
 import { cn, getImageUrl } from "@/lib/utils";
 import { toast } from "sonner";
 import { MAX_PHOTO_SIZE_MB, validateFileSize } from "@/lib/upload";
@@ -16,6 +16,7 @@ interface ImageUploadProps {
 
 export function ImageUpload({ value, onChange, label, className }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,18 +55,54 @@ export function ImageUpload({ value, onChange, label, className }: ImageUploadPr
       
       <div className="relative group">
         {previewUrl ? (
-          <div className="relative aspect-video rounded-2xl overflow-hidden border-2 border-aahar-border group-hover:border-aahar-teal transition-all">
-            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-            <button 
-              onClick={(e) => {
-                e.preventDefault();
-                onChange("");
-              }}
-              className="absolute top-3 right-3 p-2 bg-black/60 text-white rounded-full hover:bg-rose-500 transition-colors opacity-0 group-hover:opacity-100"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+          <>
+            <div className="relative aspect-video rounded-2xl overflow-hidden border-2 border-aahar-border group-hover:border-aahar-teal transition-all">
+              <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+              
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsPreviewOpen(true);
+                  }}
+                  className="p-3 bg-white/20 hover:bg-white/40 text-white rounded-full transition-colors backdrop-blur-sm"
+                  title="Preview Image"
+                >
+                  <Eye className="h-5 w-5" />
+                </button>
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onChange("");
+                  }}
+                  className="p-3 bg-rose-500/80 hover:bg-rose-500 text-white rounded-full transition-colors backdrop-blur-sm"
+                  title="Remove Image"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {isPreviewOpen && (
+              <div 
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 md:p-10"
+                onClick={() => setIsPreviewOpen(false)}
+              >
+                <button 
+                  className="absolute top-4 right-4 md:top-8 md:right-8 p-3 bg-white/10 hover:bg-white/30 rounded-full text-white transition-colors z-[110]"
+                  onClick={() => setIsPreviewOpen(false)}
+                >
+                  <X className="h-6 w-6" />
+                </button>
+                <img 
+                  src={previewUrl} 
+                  alt="Full Preview" 
+                  className="max-w-full max-h-full rounded-lg shadow-2xl object-contain animate-in zoom-in-95 duration-200"
+                  onClick={(e) => e.stopPropagation()} 
+                />
+              </div>
+            )}
+          </>
         ) : (
           <div 
             onClick={() => fileInputRef.current?.click()}

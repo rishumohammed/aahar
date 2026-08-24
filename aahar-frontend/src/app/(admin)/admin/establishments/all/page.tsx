@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { restaurantApi, hotelApi } from "@/lib/api";
 import { 
@@ -63,7 +64,7 @@ export default function AllEstablishmentsPage() {
       }
       fetchData();
     } catch (err) {
-      alert("Failed to delete establishment");
+      toast.error("Failed to delete establishment");
     }
   };
 

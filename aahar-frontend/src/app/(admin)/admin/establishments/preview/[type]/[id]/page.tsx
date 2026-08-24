@@ -54,7 +54,7 @@ export default function EstablishmentPreviewPage() {
         setItem(res?.data?.data);
       } catch (err) {
         console.error("Failed to load details:", err);
-        alert("Failed to load establishment details.");
+        toast.error("Failed to load establishment details.");
       } finally {
         setLoading(false);
       }

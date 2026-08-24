@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
@@ -65,7 +66,7 @@ export default function AdminAuditExecutePage() {
 
   const handleSubmit = async () => {
     if (!recommendation) {
-      alert("Please select a recommendation before submitting.");
+      toast.error("Please select a recommendation before submitting.");
       return;
     }
     setSaving(true);

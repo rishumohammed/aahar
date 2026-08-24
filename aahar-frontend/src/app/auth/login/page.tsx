@@ -65,13 +65,9 @@ export default function LoginPage() {
           <ArrowLeft className="h-4 w-4 mr-2" /> Back to Home
         </Link>
         <div className="text-center mb-8">
-          {branding?.logoLight ? (
+          {branding?.logoLight && (
             <div className="flex justify-center mb-4">
               <img src={getImageUrl(branding.logoLight)} alt="AAHAR" className="h-12 max-w-[200px] object-contain" />
-            </div>
-          ) : (
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-xl mb-4 shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-aahar-border/50 group-hover:rotate-12 transition-transform">
-              <span className="text-aahar-teal font-black text-3xl">A</span>
             </div>
           )}
           <h1 className="text-3xl font-black text-aahar-dark tracking-tighter uppercase mb-2">Welcome Back</h1>

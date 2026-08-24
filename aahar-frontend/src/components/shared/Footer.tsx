@@ -106,14 +106,12 @@ export default function Footer() {
 
             {/* Brand Column */}
             <div className="space-y-6">
-              {branding?.logoDark || branding?.logoLight ? (
+              {(branding?.logoDark || branding?.logoLight) && (
                 <img
                   src={getImageUrl(branding.logoDark || branding.logoLight)}
                   alt="AAHAR"
                   className="h-10 max-w-[180px] object-contain"
                 />
-              ) : (
-                <span className="text-4xl font-black tracking-tight text-aahar-teal block">AAHAR</span>
               )}
               <p className="text-[15px] text-white/70 leading-relaxed font-medium">
                 {config.brandDescription}

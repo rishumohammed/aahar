@@ -23,7 +23,8 @@ import {
 import { Users, BedDouble } from "lucide-react";
 import { enquiryApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   checkIn: z.string().min(1, "Check-in date is required"),
@@ -37,9 +38,10 @@ interface EnquiryFormProps {
   hotelId: string;
   hotelSlug: string;
   roomTypes: { id: string; name: string }[];
+  defaultRoomType?: string;
 }
 
-export function EnquiryForm({ hotelId, hotelSlug, roomTypes }: EnquiryFormProps) {
+export function EnquiryForm({ hotelId, hotelSlug, roomTypes, defaultRoomType }: EnquiryFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -51,9 +53,16 @@ export function EnquiryForm({ hotelId, hotelSlug, roomTypes }: EnquiryFormProps)
       checkOut: "",
       adults: "2",
       children: "0",
-      roomType: "any",
+      roomType: defaultRoomType || "any",
     },
   });
+
+  // Keep form in sync if defaultRoomType changes externally (e.g. user clicks another Room Card)
+  useEffect(() => {
+    if (defaultRoomType) {
+      form.setValue("roomType", defaultRoomType);
+    }
+  }, [defaultRoomType, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
@@ -67,23 +76,30 @@ export function EnquiryForm({ hotelId, hotelSlug, roomTypes }: EnquiryFormProps)
         adults: parseInt(values.adults),
         children: parseInt(values.children),
       });
+      toast.success("Booking request sent successfully!");
       router.push(`/enquiries/${res.data.data.id}`);
     } catch (err: any) {
-      setError(err?.response?.data?.message ?? "Failed to send enquiry. Are you logged in?");
+      const msg = err?.response?.data?.message ?? "Failed to create booking. Are you logged in?";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   }
 
+  function onError(errors: any) {
+    toast.error("Please select Check-in and Check-out dates.");
+  }
+
   return (
-    <div className="p-6 rounded-xl border border-aahar-border bg-white space-y-6">
+    <div className="p-6 rounded-xl border border-aahar-border bg-white space-y-6" id="booking-form">
       <div className="space-y-1">
-        <h4 className="font-bold text-lg text-aahar-dark">Check Availability</h4>
-        <p className="text-xs text-aahar-body">Usually responds within 2 hours</p>
+        <h4 className="font-bold text-lg text-aahar-dark">Book a Room</h4>
+        <p className="text-xs text-aahar-body">We'll verify availability and confirm your booking</p>
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -172,7 +188,7 @@ export function EnquiryForm({ hotelId, hotelSlug, roomTypes }: EnquiryFormProps)
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-wider text-aahar-body">Room Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="py-6 rounded-xl border-aahar-border">
                       <div className="flex items-center gap-2">
@@ -206,7 +222,7 @@ export function EnquiryForm({ hotelId, hotelSlug, roomTypes }: EnquiryFormProps)
             disabled={loading}
             className="w-full bg-aahar-teal hover:bg-aahar-teal/90 text-white rounded-full py-6 font-bold text-lg shadow-lg shadow-aahar-teal/20"
           >
-            {loading ? "Sending..." : "Send enquiry"}
+            {loading ? "Booking..." : "Book Now"}
           </Button>
         </form>
       </Form>

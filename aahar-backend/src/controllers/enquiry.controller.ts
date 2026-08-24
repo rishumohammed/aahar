@@ -28,6 +28,30 @@ export const createEnquiry = async (req: any, res: any) => {
     });
     if (!hotel) return notFound(res, "Hotel not found");
 
+    if (roomTypeId) {
+      const roomType = await prisma.roomType.findUnique({ where: { id: roomTypeId } });
+      if (!roomType) return notFound(res, "Room type not found");
+
+      const overlappingBookings = await prisma.enquiry.count({
+        where: {
+          roomTypeId,
+          status: {
+            in: ["sent", "viewed", "quoted", "confirmed"]
+          },
+          checkIn: {
+            lt: new Date(checkOut)
+          },
+          checkOut: {
+            gt: new Date(checkIn)
+          }
+        }
+      });
+
+      if (overlappingBookings >= roomType.totalRooms) {
+        return badRequest(res, "Sorry, this room is fully booked for the selected dates.");
+      }
+    }
+
     // Auto-expire after 72 hours
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 72);
@@ -48,7 +72,7 @@ export const createEnquiry = async (req: any, res: any) => {
       },
       include: {
         guest:    { select:{ id:true, name:true, email:true, phone:true } },
-        hotel:    { select:{ id:true, name:true, city:true, slug:true } },
+        hotel:    { select:{ id:true, name:true, city:true, slug:true, approvalPreference:true } },
         roomType: { select:{ id:true, name:true, bedConfig:true } },
         messages: true,
       }
@@ -60,7 +84,7 @@ export const createEnquiry = async (req: any, res: any) => {
       enquiry,
       type: hotel.approvalPreference === "manual_30m" ? "review_required_30m" : "instant_approved",
       message: hotel.approvalPreference === "manual_30m" 
-        ? `ACTION REQUIRED: You have 30 minutes to review a new booking from ${enquiry.guest.name} for ${new Date(checkIn).toLocaleDateString("en-IN")} before it is auto-verified.`
+        ? `ACTION REQUIRED: You have 30 minutes to review a new booking from ${enquiry.guest.name} for ${new Date(checkIn).toLocaleDateString("en-IN")} before it is auto-cancelled.`
         : `New auto-verified booking from ${enquiry.guest.name} for ${new Date(checkIn).toLocaleDateString("en-IN")}`,
     });
 
@@ -75,7 +99,7 @@ export const createEnquiry = async (req: any, res: any) => {
           type:      "new_enquiry",
           title:     hotel.approvalPreference === "manual_30m" ? "Urgent: 30-Min Booking Review" : "New Verified Booking",
           message:   hotel.approvalPreference === "manual_30m"
-            ? `${enquiry.guest.name} booked for ${new Date(checkIn).toLocaleDateString("en-IN")}. You have 30 mins to cancel before auto-verification.`
+            ? `${enquiry.guest.name} booked for ${new Date(checkIn).toLocaleDateString("en-IN")}. You have 30 mins to review before auto-cancellation.`
             : `${enquiry.guest.name} booked for ${new Date(checkIn).toLocaleDateString("en-IN")}. Automatically verified.`,
           actionUrl: `/hotel-manager/enquiries/${enquiry.id}`,
         }
@@ -121,7 +145,7 @@ export const createEnquiry = async (req: any, res: any) => {
 export const listEnquiries = async (req: any, res: any) => {
   try {
     const {
-      status, hotelId, upcoming,
+      status, hotelId, upcoming, startDate, endDate, roomTypeId,
       page = 1, limit = 20
     } = req.query;
 
@@ -151,7 +175,23 @@ export const listEnquiries = async (req: any, res: any) => {
       return forbidden(res, "Not authorized to view enquiries");
     }
 
-    if (status) where.status = status;
+    if (status) {
+      if (status.includes(",")) {
+        where.status = { in: status.split(",") };
+      } else {
+        where.status = status;
+      }
+    }
+    if (roomTypeId) where.roomTypeId = roomTypeId;
+    
+    if (startDate && endDate) {
+      where.checkIn = { lte: new Date(endDate) };
+      where.checkOut = { gte: new Date(startDate) };
+    } else if (startDate) {
+      where.checkOut = { gte: new Date(startDate) };
+    } else if (endDate) {
+      where.checkIn = { lte: new Date(endDate) };
+    }
 
     if (upcoming === "true") {
       const today = new Date();
@@ -169,7 +209,7 @@ export const listEnquiries = async (req: any, res: any) => {
         orderBy:  orderBy as any,
         include: {
           guest:    { select:{ id:true, name:true, email:true, phone:true } },
-          hotel:    { select:{ id:true, name:true, city:true, slug:true } },
+          hotel:    { select:{ id:true, name:true, city:true, slug:true, approvalPreference:true } },
           roomType: { select:{ id:true, name:true, bedConfig:true } },
           messages: { orderBy:{ sentAt:"asc" }, include:{ sender:{ select:{ id:true, name:true, role:true } } } },
         }
@@ -177,8 +217,13 @@ export const listEnquiries = async (req: any, res: any) => {
       prisma.enquiry.count({ where }),
     ]);
 
+    const processedItems = items.map(enquiry => {
+      const unreadCount = enquiry.messages?.filter((m: any) => m.senderId !== req.user.id && !m.isRead).length || 0;
+      return { ...enquiry, unreadCount };
+    });
+
     return ok(res, {
-      items, total,
+      items: processedItems, total,
       page:       Number(page),
       pageSize:   Number(limit),
       totalPages: Math.ceil(total / Number(limit))
@@ -215,8 +260,19 @@ export const getEnquiry = async (req: any, res: any) => {
       isManager = hotel?.managerId === req.user.id;
     }
 
-    if (!isGuest && !isAdmin && !isManager)
+    if (!isGuest && !isManager && !isAdmin) {
       return forbidden(res, "Not authorized to view this enquiry");
+    }
+
+    // Mark unread messages as read
+    await prisma.enquiryMessage.updateMany({
+      where: {
+        enquiryId: req.params.id,
+        senderId: { not: req.user.id },
+        isRead: false
+      },
+      data: { isRead: true }
+    });
 
     // Mark as viewed if hotel manager opens it
     if (isManager && enquiry.status === "sent") {
@@ -234,7 +290,14 @@ export const getEnquiry = async (req: any, res: any) => {
       });
     }
 
-    return ok(res, enquiry);
+    const processedMessages = enquiry.messages.map(m => {
+      if (m.senderId !== req.user.id && !m.isRead) {
+        return { ...m, isRead: true };
+      }
+      return m;
+    });
+
+    return ok(res, { ...enquiry, messages: processedMessages });
   } catch (e) { return serverError(res, e); }
 };
 
@@ -250,8 +313,8 @@ export const sendMessage = async (req: any, res: any) => {
     });
     if (!enquiry) return notFound(res, "Enquiry not found");
 
-    if (["confirmed","declined","expired"].includes(enquiry.status))
-      return badRequest(res, "Cannot send messages on a closed enquiry");
+    if (["declined","expired"].includes(enquiry.status))
+      return badRequest(res, "Cannot send messages on a closed booking");
 
     const message = await prisma.enquiryMessage.create({
       data: {
@@ -286,7 +349,7 @@ export const updateEnquiryStatus = async (req: any, res: any) => {
   try {
     const { status, quoteAmount, bookingLink, reason } = req.body;
 
-    const validStatuses = ["viewed","quoted","confirmed","declined"];
+    const validStatuses = ["viewed","quoted","confirmed","checked_in","checked_out","declined"];
     if (!validStatuses.includes(status))
       return badRequest(res, "Invalid status");
 

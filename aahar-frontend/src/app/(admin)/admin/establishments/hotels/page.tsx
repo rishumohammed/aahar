@@ -44,7 +44,7 @@ export default function HotelsManagementPage() {
       await hotelApi.delete(id);
       fetchData();
     } catch (err) {
-      alert("Failed to delete");
+      toast.error("Failed to delete");
     }
   };
 

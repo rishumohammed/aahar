@@ -67,10 +67,10 @@ export default function OwnerDashboardPage() {
  icon: Calendar, color:"text-amber-600", bg:"bg-amber-50"
  },
  { 
- label:"Enquiries", 
- value: realStats.enquiries ||"0", 
- sub:"Customer requests", 
- icon: MessageSquare, color:"text-blue-500", bg:"bg-blue-50"
+  label:"Bookings", 
+  value: realStats.enquiries ||"0", 
+  sub:"Customer requests", 
+  icon: MessageSquare, color:"text-purple-600", bg:"bg-purple-50"
  },
  { 
  label:"Certification", 

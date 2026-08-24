@@ -102,7 +102,14 @@ export default function ConsumerEnquiriesPage() {
                         {e.status.toUpperCase()}
                       </Badge>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-aahar-body/30 group-hover:text-aahar-teal group-hover:translate-x-1 transition-all" />
+                    <div className="flex items-center gap-3">
+                      {(e as any).unreadCount > 0 && (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
+                          {(e as any).unreadCount}
+                        </span>
+                      )}
+                      <ChevronRight className="h-5 w-5 text-aahar-body/30 group-hover:text-aahar-teal group-hover:translate-x-1 transition-all" />
+                    </div>
                   </div>
                 </div>
                 

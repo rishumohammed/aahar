@@ -7,7 +7,7 @@ const SAFE_SELECT = {
   cuisineType:true, dietary:true, priceRange:true, address:true,
   city:true, area:true, lat:true, lng:true, phone:true, email:true,
   website:true, openingHours:true, amenities:true, photos:true,
-  googleRating:true, isVerified:true, isActive:true, isFeatured:true,
+  googleRating:true, googleLocationLink: true, isVerified:true, isActive:true, isFeatured:true,
   isSponsored:true, createdAt:true,
   ownerId: true,
   managerId: true,

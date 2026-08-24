@@ -258,19 +258,12 @@ export default function Navbar() {
 
           {/* Left: Logo */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-            {branding?.logoLight ? (
+            {branding?.logoLight && (
               <img 
                 src={getImageUrl(branding.logoLight)} 
                 alt="AAHAR" 
                 className="h-9 max-w-[170px] object-contain" 
               />
-            ) : (
-              <>
-                <div className="w-9 h-9 bg-aahar-dark rounded-xl flex items-center justify-center shadow-sm group-hover:bg-aahar-teal transition-colors duration-300">
-                  <span className="text-white font-bold text-base leading-none">A</span>
-                </div>
-                <span className="text-[15px] font-bold tracking-widest text-aahar-dark uppercase">AAHAR</span>
-              </>
             )}
           </Link>
 

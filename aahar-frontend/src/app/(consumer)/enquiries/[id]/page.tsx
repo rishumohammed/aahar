@@ -1,4 +1,5 @@
 "use client";
+import { toast } from "sonner";
 import { useState, useEffect, useRef } from "react";
 import { enquiryApi } from "@/lib/api";
 import { getSocket }    from "@/lib/socket";
@@ -39,8 +40,8 @@ export default function EnquiryDetailPage({ params }: { params: { id: string } }
     const socket = getSocket();
     socket.emit("join_enquiry", params.id);
     
-    socket.on("new_message", (msg: EnquiryMessage) => {
-      setMessages(prev => [...prev, msg]);
+    socket.on("new_message", (data: any) => {
+      setMessages(prev => [...prev, data.message || data]);
     });
 
     socket.on("enquiry_updated", (updated: Enquiry) => {
@@ -54,7 +55,9 @@ export default function EnquiryDetailPage({ params }: { params: { id: string } }
   }, [params.id]);
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
   }, [messages]);
 
   const fetchEnquiry = async () => {
@@ -76,12 +79,12 @@ export default function EnquiryDetailPage({ params }: { params: { id: string } }
       const { checkoutUrl, paymentId } = res.data.data;
       if (confirm(`Redirecting to payment gateway... (Amount: ₹${enquiry?.quoteAmount?.toLocaleString()})\n\nSimulate successful payment?`)) {
         await paymentApi.verify(paymentId, true);
-        alert("Payment successful! Your booking is confirmed.");
+        toast.success("Payment successful! Your booking is confirmed.");
         fetchEnquiry();
       }
     } catch (e) {
       console.error(e);
-      alert("Payment failed");
+      toast.error("Payment failed");
     } finally {
       setPaying(false);
     }
@@ -91,10 +94,12 @@ export default function EnquiryDetailPage({ params }: { params: { id: string } }
     e.preventDefault();
     if (!newMsg.trim()) return;
     try {
-      await enquiryApi.sendMessage(params.id, newMsg);
+      const res = await enquiryApi.sendMessage(params.id, newMsg);
+      setMessages(prev => [...prev, res.data.data]);
       setNewMsg("");
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      toast.error(e?.response?.data?.message || "Failed to send message");
     }
   };
 
@@ -104,14 +109,14 @@ export default function EnquiryDetailPage({ params }: { params: { id: string } }
   return (
     <div className="container mx-auto max-w-5xl px-4 py-8 flex flex-col h-[calc(100-80px)]">
       <div className="mb-6">
-        <Link href="/enquiries" className="text-sm font-bold text-aahar-teal flex items-center gap-1 hover:underline">
-          <ArrowLeft className="h-4 w-4" /> Back to Enquiries
+        <Link href="/account" className="text-sm font-bold text-aahar-teal flex items-center gap-1 hover:underline">
+          <ArrowLeft className="h-4 w-4" /> Back to Account
         </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1 min-h-0">
         {/* Left: Chat */}
-        <div className="lg:col-span-2 flex flex-col h-full min-h-[500px]">
+        <div className="lg:col-span-2 flex flex-col h-[600px] max-h-[80vh]">
           <Card className="flex-1 flex flex-col border-aahar-border overflow-hidden rounded-2xl">
             <div className="p-4 border-b border-aahar-border bg-aahar-wash/30 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -125,7 +130,7 @@ export default function EnquiryDetailPage({ params }: { params: { id: string } }
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4">
               {messages.map((m) => (
                 <div key={m.id} className={`flex ${m.senderId === user?.id ? "justify-end" : "justify-start"}`}>
                   <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${
@@ -140,7 +145,6 @@ export default function EnquiryDetailPage({ params }: { params: { id: string } }
                   </div>
                 </div>
               ))}
-              <div ref={scrollRef} />
             </div>
 
             <form onSubmit={handleSend} className="p-4 border-t border-aahar-border flex gap-2">
@@ -160,7 +164,7 @@ export default function EnquiryDetailPage({ params }: { params: { id: string } }
         {/* Right: Info */}
         <div className="space-y-6">
           <Card className="p-6 border-aahar-border rounded-2xl">
-            <h4 className="font-bold text-aahar-dark mb-4">Enquiry Details</h4>
+            <h4 className="font-bold text-aahar-dark mb-4">Booking Details</h4>
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <Calendar className="h-5 w-5 text-aahar-teal shrink-0" />
@@ -175,7 +179,7 @@ export default function EnquiryDetailPage({ params }: { params: { id: string } }
                 <Users className="h-5 w-5 text-aahar-teal shrink-0" />
                 <div>
                   <p className="text-[10px] uppercase font-bold text-aahar-body tracking-widest">Guests</p>
-                  <p className="text-sm font-bold text-aahar-dark">{enquiry.guests.adults} Adults, {enquiry.guests.children} Children</p>
+                  <p className="text-sm font-bold text-aahar-dark">{enquiry.adults} Adults, {enquiry.children} Children</p>
                 </div>
               </div>
               <div className="pt-4 border-t border-aahar-border">

@@ -7,7 +7,7 @@ const HOTEL_SELECT = {
   starRating:true, address:true, city:true, area:true, lat:true, lng:true,
   phone:true, email:true, website:true, checkInTime:true, checkOutTime:true,
   cancellationPolicy:true, mealPlans:true, amenities:true, photos:true,
-  googleRating:true, isVerified:true, isActive:true, isFeatured:true,
+  googleRating:true, googleLocationLink: true, isVerified:true, isActive:true, isFeatured:true,
   isSponsored:true, createdAt:true, approvalPreference:true,
   ownerId:true,
   managerId:true,
@@ -106,6 +106,7 @@ export const createHotel = async (req: any, res: any) => {
             priceNote: r.priceNote,
             totalRooms: Number(r.totalRooms) || 1,
             amenities: r.amenities || [],
+            photos: r.photos || [],
             isPopular: r.isPopular === true,
             order: r.order || 0
           }))
@@ -163,6 +164,7 @@ export const updateHotel = async (req: any, res: any) => {
               priceNote: r.priceNote,
               totalRooms: Number(r.totalRooms) || 1,
               amenities: r.amenities || [],
+              photos: r.photos || [],
               isPopular: r.isPopular === true,
               order: r.order || 0
             }

@@ -84,7 +84,7 @@ export const startCronJobs = () => {
 
       await prisma.enquiry.updateMany({
         where: { id: { in: toVerify.map(e => e.id) } },
-        data: { status: "confirmed" as any }
+        data: { status: "declined" as any } // Using 'declined' to mean auto-cancelled
       });
 
       const io = getIO();
@@ -92,15 +92,15 @@ export const startCronJobs = () => {
         // Notify guest
         io.to(`user_${e.guestId}`).emit("enquiry_status_changed", {
           enquiryId: e.id,
-          status: "confirmed",
-          message: `Your booking at ${e.hotel.name} was automatically verified.`
+          status: "declined",
+          message: `Your booking at ${e.hotel.name} was automatically cancelled because the property did not review it in time.`
         });
         // Notify manager
         io.to(`hotel_${e.hotelId}`).emit("new_enquiry", {
-          type: "auto_verified",
-          message: `Booking from ${e.guest.name} was auto-verified (30 min window expired).`
+          type: "auto_cancelled",
+          message: `Booking from ${e.guest.name} was auto-cancelled (30 min window expired).`
         });
-        console.log(`Enquiry ${e.id} auto-verified after 30m`);
+        console.log(`Enquiry ${e.id} auto-cancelled after 30m`);
       }
     } catch (err) {
       console.error("Auto-verify cron error:", err);

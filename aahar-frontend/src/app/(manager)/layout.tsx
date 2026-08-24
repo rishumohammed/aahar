@@ -29,11 +29,11 @@ import { FloatingSupportChat } from "@/components/shared/FloatingSupportChat";
 
 const NAV_ITEMS = [
  { label:"Overview", href:"/manager/dashboard", icon: Calendar },
- { label:"Enquiries", href:"/manager/enquiries", icon: Inbox },
+ { label: "Bookings", href: "/manager/enquiries", icon: Inbox },
+ { label: "Ledger", href: "/manager/ledger", icon: BookOpen },
  { label: "Application", href: "/manager/application", icon: ShieldCheck },
  { label: "Compliance", href: "/manager/compliance", icon: ShieldCheck },
  { label: "Photos", href: "/manager/photos", icon: ImageIcon },
- { label: "Ledger", href: "/manager/ledger", icon: BookOpen },
  { label: "Profile", href: "/manager/profile", icon: Settings },
 ];
 
@@ -55,7 +55,7 @@ export default function HotelManagerLayout({ children }: { children: React.React
 
  useEffect(() => {
  if (mounted) {
- if (!isAuthenticated || !user || (user.role !=="hotel_manager"&& user.role !=="super_admin"&& user.role !=="admin")) {
+ if (!isAuthenticated || !user || (user.role !=="manager"&& user.role !=="super_admin"&& user.role !=="admin")) {
  router.push("/auth/login");
  return;
  }
@@ -104,25 +104,13 @@ export default function HotelManagerLayout({ children }: { children: React.React
  {/* Material Drawer (Sidebar) */}
  <aside className="w-64 bg-white flex flex-col shrink-0 border-r border-slate-200 z-10 shadow-sm">
   <div className="p-6 border-b border-slate-100 flex items-center gap-3">
-  {branding?.logoLight ? (
+  {branding?.logoLight && (
     <div className="flex flex-col gap-0.5">
       <img src={getImageUrl(branding.logoLight)} alt="AAHAR" className="h-8 max-w-[150px] object-contain object-left" />
       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-0.5 mt-1">
         Manager Portal
       </p>
     </div>
-  ) : (
-    <>
-      <div className="w-10 h-10 rounded-full bg-admin-primary flex items-center justify-center shadow-md transition-colors duration-300">
-        <Building2 className="h-5 w-5 text-white"/>
-      </div>
-      <div>
-        <span className="text-xl font-bold text-slate-800 tracking-tight">AAHAR</span>
-        <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
-          Manager Portal
-        </p>
-      </div>
-    </>
   )}
   </div>
 

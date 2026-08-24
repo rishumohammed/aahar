@@ -30,7 +30,7 @@ import { notificationApi, adminApi } from "@/lib/api";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "Enquiries", href: "/admin/enquiries", icon: Bell },
+  { label: "Bookings", href: "/admin/enquiries", icon: Bell },
   { label: "Applications", href: "/admin/applications", icon: FileText },
   { label: "Audits", href: "/admin/audits", icon: CheckSquare },
   { 
@@ -131,25 +131,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Material Drawer (Sidebar) */}
       <aside className="w-64 bg-white flex flex-col shrink-0 border-r border-slate-200 z-10 shadow-sm">
         <div className="p-6 border-b border-slate-100 flex items-center gap-3">
-          {branding?.logoLight ? (
+          {branding?.logoLight && (
             <div className="flex flex-col gap-0.5">
               <img src={getImageUrl(branding.logoLight)} alt="AAHAR" className="h-8 max-w-[150px] object-contain object-left" />
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-0.5 mt-1">
                 {user?.role === "super_admin" ? "Super Admin" : "Admin Panel"}
               </p>
             </div>
-          ) : (
-            <>
-              <div className="w-10 h-10 rounded-full bg-admin-primary flex items-center justify-center shadow-md transition-colors duration-300">
-                <Globe className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <span className="text-xl font-bold text-slate-800 tracking-tight">AAHAR</span>
-                <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
-                  {user?.role === "super_admin" ? "Super Admin" : "Admin Panel"}
-                </p>
-              </div>
-            </>
           )}
         </div>
 

@@ -42,6 +42,7 @@ export default function HotelProfilePage({
   const [masterRoomAmenities, setMasterRoomAmenities] = useState<any[]>([]);
   const [masterPhotoCategories, setMasterPhotoCategories] = useState<any[]>([]);
   const [masterMealPlans, setMasterMealPlans] = useState<any[]>([]);
+  const [selectedRoomId, setSelectedRoomId] = useState<string>("");
 
   useEffect(() => {
     Promise.all([
@@ -105,7 +106,7 @@ export default function HotelProfilePage({
   return (
     <div className="flex flex-col min-h-screen bg-aahar-wash pb-20">
       {/* Hero Section */}
-      <section className="relative h-[550px] w-full overflow-hidden bg-slate-800 flex items-center justify-center">
+      <section className="relative h-[350px] md:h-[450px] w-full overflow-hidden bg-slate-800 flex items-center justify-center">
         {getImageUrl(hotel.photos?.cover || hotel.image) ? (
           <Image
             src={getImageUrl(hotel.photos?.cover || hotel.image)!}
@@ -240,16 +241,16 @@ export default function HotelProfilePage({
                         <span className="font-semibold text-aahar-dark flex-shrink-0">📍 Address:</span>
                         <span>{hotel.address || ""}{hotel.area ? `, ${hotel.area}` : ""}{hotel.city ? `, ${hotel.city}` : ""}</span>
                       </div>
-                      {hotel.googleLocationLink && (
-                        <div className="pt-2">
-                          <a
-                            href={hotel.googleLocationLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 bg-white border-2 border-aahar-rose/30 text-aahar-rose font-black text-xs uppercase tracking-widest px-5 py-2.5 rounded-xl hover:bg-aahar-rose hover:text-white transition-all shadow-sm"
-                          >
-                            🗺️ Open in Google Maps
-                          </a>
+                      {hotel.lat && hotel.lng && (
+                        <div className="pt-4 overflow-hidden rounded-xl shadow-sm border border-slate-200">
+                          <iframe
+                            width="100%"
+                            height="200"
+                            style={{ border: 0 }}
+                            loading="lazy"
+                            allowFullScreen
+                            src={`https://maps.google.com/maps?q=${hotel.lat},${hotel.lng}&z=15&output=embed`}
+                          ></iframe>
                         </div>
                       )}
                     </div>
@@ -380,9 +381,20 @@ export default function HotelProfilePage({
                             <h3 className="text-xl font-bold text-aahar-dark tracking-tight">{room.name}</h3>
                             <p className="text-sm text-aahar-body leading-relaxed line-clamp-2">{room.description}</p>
                           </div>
-                          <div className="text-right flex-shrink-0">
-                            <span className="text-xl font-black text-aahar-teal">₹{room.priceFrom ?? room.pricePerNight ?? room.price ?? 0}</span>
-                            <span className="text-[10px] text-aahar-body/50 block font-semibold">/ night</span>
+                          <div className="text-right flex-shrink-0 flex flex-col items-end gap-2">
+                            <div>
+                              <span className="text-xl font-black text-aahar-teal">₹{room.priceFrom ?? room.pricePerNight ?? room.price ?? 0}</span>
+                              <span className="text-[10px] text-aahar-body/50 block font-semibold">/ night</span>
+                            </div>
+                            <Button 
+                              onClick={() => {
+                                setSelectedRoomId(room.id);
+                                document.getElementById("booking-form")?.scrollIntoView({ behavior: "smooth" });
+                              }}
+                              className="bg-aahar-teal hover:bg-aahar-teal/90 text-white font-bold h-8 text-xs px-6 rounded-full"
+                            >
+                              Book Now
+                            </Button>
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-3 text-xs font-bold text-aahar-body">
@@ -568,6 +580,7 @@ export default function HotelProfilePage({
               hotelId={hotel.id}
               hotelSlug={hotel.slug}
               roomTypes={hotel.roomTypes?.map((rt: any) => ({ id: rt.id, name: rt.name })) || []}
+              defaultRoomType={selectedRoomId}
             />
 
             {/* AAHAR Certification Side Widget */}

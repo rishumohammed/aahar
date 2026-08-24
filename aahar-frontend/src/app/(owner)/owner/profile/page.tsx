@@ -80,7 +80,7 @@ export default function OwnerProfilePage() {
       setEstablishment((prev: any) => ({ ...prev, isActive: newStatus }));
     } catch (err) {
       console.error("Failed to update status:", err);
-      alert("Failed to change establishment status.");
+      toast.error("Failed to change establishment status.");
     } finally {
       setUpdatingStatus(false);
     }
@@ -112,7 +112,7 @@ export default function OwnerProfilePage() {
       }));
     } catch (err: any) {
       console.error("Cover upload failed", err);
-      alert(err.message || "Failed to upload cover photo");
+      toast.error(err.message || "Failed to upload cover photo");
     } finally {
       setUploadingCover(false);
     }
@@ -147,9 +147,9 @@ export default function OwnerProfilePage() {
           <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel Editing</Button>
         </div>
         {establishment.type === "restaurant" ? (
-          <RestaurantForm initialData={establishment} isEditing={true} isOwnerPortal={true} onSuccess={() => { setIsEditing(false); fetchEstablishment(); }} onCancel={() => setIsEditing(false)} />
+          <RestaurantForm initialData={establishment} isEditing={true} isOwnerPortal={true} onSuccess={() => { fetchEstablishment(); }} onCancel={() => setIsEditing(false)} />
         ) : (
-          <HotelForm initialData={establishment} isEditing={true} isOwnerPortal={true} onSuccess={() => { setIsEditing(false); fetchEstablishment(); }} onCancel={() => setIsEditing(false)} />
+          <HotelForm initialData={establishment} isEditing={true} isOwnerPortal={true} onSuccess={() => { fetchEstablishment(); }} onCancel={() => setIsEditing(false)} />
         )}
       </div>
     );

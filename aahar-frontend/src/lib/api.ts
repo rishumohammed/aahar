@@ -33,9 +33,12 @@ api.interceptors.response.use(
   (res) => res,
   (error: AxiosError<ApiResponse<null>>) => {
     if (error.response?.status === 401) {
-      // Clear auth and redirect to login
-      localStorage.removeItem("aahar-auth");
-      window.location.href = "/auth/login";
+      // Skip redirect if the failing request is the login itself
+      if (error.config?.url !== "/auth/login") {
+        // Clear auth and redirect to login
+        localStorage.removeItem("aahar-auth");
+        window.location.href = "/auth/login";
+      }
     }
     return Promise.reject(error);
   }
@@ -222,6 +225,7 @@ export const ownerApi = {
   managers: () => api.get(`/owner/managers`),
   createManager: (data: any) => api.post(`/owner/managers`, data),
   deleteManager: (id: string) => api.delete(`/owner/managers/${id}`),
+  resetManagerPassword: (id: string, password: string) => api.post(`/owner/managers/${id}/reset-password`, { password }),
   establishments: () => api.get(`/owner/establishments`),
   downloadAuditReport: (id: string) => api.get(`/audits/${id}/report`, { responseType: 'blob', timeout: 30000 })
 };

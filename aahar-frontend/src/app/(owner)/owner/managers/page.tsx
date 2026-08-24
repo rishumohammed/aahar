@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ownerApi } from "@/lib/api";
-import { Plus, Search, Trash2, Edit, AlertCircle, Building2, Store } from "lucide-react";
+import { Plus, Search, Trash2, Edit, AlertCircle, Building2, Store, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -74,6 +74,22 @@ export default function OwnerManagersPage() {
       fetchData();
     } catch (err) {
       toast.error("Failed to remove manager");
+    }
+  };
+
+  const handleResetPassword = async (id: string) => {
+    const newPassword = prompt("Enter a new password for this manager (min 6 characters):");
+    if (!newPassword) return;
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters long");
+      return;
+    }
+    
+    try {
+      await ownerApi.resetManagerPassword(id, newPassword);
+      toast.success("Manager password reset successfully");
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || "Failed to reset password");
     }
   };
 
@@ -157,9 +173,14 @@ export default function OwnerManagersPage() {
                 <div className="h-12 w-12 rounded-full bg-aahar-teal/10 flex items-center justify-center text-aahar-teal font-bold text-xl">
                   {manager.name.charAt(0)}
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => handleDelete(manager.id)} className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full h-8 w-8">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" onClick={() => handleResetPassword(manager.id)} className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-full h-8 w-8" title="Reset Password">
+                    <Key className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(manager.id)} className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full h-8 w-8" title="Remove Manager">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               
               <h3 className="text-lg font-bold text-slate-800">{manager.name}</h3>

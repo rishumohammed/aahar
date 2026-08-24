@@ -104,7 +104,36 @@ export const deleteManager = async (req: any, res: any) => {
       return ok(res, null, "Manager deleted successfully");
     }
 
-    return forbidden(res, "Manager not found in your establishments");
+    return forbidden(res, "Not authorized to delete this manager");
+  } catch (e) {
+    return serverError(res, e);
+  }
+};
+
+export const resetManagerPassword = async (req: any, res: any) => {
+  try {
+    const managerId = req.params.id;
+    const ownerId = req.user.id;
+    const newPassword = req.body?.password?.trim();
+
+    if (!newPassword || newPassword.length < 6) {
+      return badRequest(res, "Password must be at least 6 characters long");
+    }
+
+    const rest = await prisma.restaurant.findFirst({ where: { managerId, ownerId } });
+    const hot = await prisma.hotel.findFirst({ where: { managerId, ownerId } });
+
+    if (!rest && !hot) {
+      return forbidden(res, "Not authorized to modify this manager");
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: managerId },
+      data: { passwordHash }
+    });
+
+    return ok(res, null, "Manager password reset successfully");
   } catch (e) {
     return serverError(res, e);
   }

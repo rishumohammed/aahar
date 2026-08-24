@@ -51,7 +51,7 @@ export default function AccountPage() {
   const [loadingStays, setLoadingStays] = useState(true);
   const [updatingProfile, setUpdatingProfile] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [activeTab, setActiveTab] = useState<"profile" | "restaurant-orders" | "stay-history">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "restaurant-orders" | "hotel-bookings">("profile");
 
   // Stay cancellation state
   const [stayToCancel, setStayToCancel] = useState<any | null>(null);
@@ -249,15 +249,15 @@ export default function AccountPage() {
             </button>
 
             <button
-              onClick={() => setActiveTab("stay-history")}
+              onClick={() => setActiveTab("hotel-bookings")}
               className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-1.5 ${
-                activeTab === "stay-history" 
+                activeTab === "hotel-bookings" 
                   ? "bg-aahar-teal text-white shadow-md shadow-aahar-teal/20" 
                   : "bg-white text-aahar-body border border-aahar-border/50 hover:bg-aahar-wash"
               }`}
             >
               <Hotel className="h-3.5 w-3.5" />
-              Stay History ({stays.length})
+              Hotel Bookings ({stays.length})
             </button>
           </div>
         </div>
@@ -594,17 +594,17 @@ export default function AccountPage() {
           </Card>
         )}
 
-        {/* Tab 3: Stay History (Hotels) */}
-        {activeTab === "stay-history" && (
+        {/* Tab 3: Hotel Bookings */}
+        {activeTab === "hotel-bookings" && (
           <Card className="bg-white border-aahar-border/60 rounded-xl p-6 md:p-8 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-aahar-wash pb-4 mb-6">
               <div>
                 <h2 className="text-lg font-black uppercase tracking-wider text-aahar-dark flex items-center gap-2">
                   <Hotel className="h-5 w-5 text-aahar-teal" />
-                  Hotel Stay History & Bookings
+                  Hotel Bookings
                 </h2>
                 <p className="text-xs text-aahar-body font-medium mt-0.5">
-                  Track your hotel room booking requests, quotations, and verified stays
+                  Track your hotel room bookings and verified stays
                 </p>
               </div>
               <span className="text-xs font-bold text-aahar-body/60 bg-aahar-wash px-3 py-1 rounded-xl border border-aahar-border/40 w-fit">
@@ -615,7 +615,7 @@ export default function AccountPage() {
             {loadingStays ? (
               <div className="flex flex-col items-center justify-center py-20 space-y-4">
                 <Loader2 className="h-8 w-8 text-aahar-teal animate-spin" />
-                <p className="text-xs text-aahar-body font-bold uppercase tracking-widest animate-pulse">Loading stay history...</p>
+                <p className="text-xs text-aahar-body font-bold uppercase tracking-widest animate-pulse">Loading bookings...</p>
               </div>
             ) : stays.length === 0 ? (
               <div className="text-center py-16 space-y-4 max-w-md mx-auto">

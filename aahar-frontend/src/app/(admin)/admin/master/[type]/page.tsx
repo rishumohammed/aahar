@@ -1,4 +1,5 @@
 "use client";
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { masterApi } from "@/lib/api";
 import { 
@@ -73,7 +74,7 @@ export default function MasterDataInnerPage({ params }: { params: { type: string
       fetchData();
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.message || "Failed to save item");
+      toast.error(err.response?.data?.message || "Failed to save item");
     } finally {
       setSaving(false);
     }
@@ -85,7 +86,7 @@ export default function MasterDataInnerPage({ params }: { params: { type: string
       await masterApi.delete(id);
       fetchData();
     } catch (err) {
-      alert("Failed to delete item");
+      toast.error("Failed to delete item");
     }
   };
 

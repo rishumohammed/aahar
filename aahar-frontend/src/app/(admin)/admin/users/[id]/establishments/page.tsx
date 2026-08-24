@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { adminApi, restaurantApi, hotelApi } from "@/lib/api";
 import { 
@@ -48,7 +49,7 @@ export default function UserEstablishmentsPage() {
       setItems(merged);
     } catch (err) {
       console.error(err);
-      alert("Failed to load user establishments");
+      toast.error("Failed to load user establishments");
     } finally {
       setLoading(false);
     }
@@ -68,7 +69,7 @@ export default function UserEstablishmentsPage() {
       }
       fetchData();
     } catch (err) {
-      alert("Failed to delete establishment");
+      toast.error("Failed to delete establishment");
     }
   };
 
