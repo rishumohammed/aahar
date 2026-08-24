@@ -196,6 +196,20 @@ export const assignAudit = async (req: any, res: any) => {
       }));
     }
 
+    const existingAudit = await prisma.audit.findUnique({ where: { applicationId } });
+    let updateData: any = {
+      auditorId,
+      scheduledAt: new Date(scheduledAt),
+      status: "scheduled"
+    };
+
+    if (existingAudit && checklist.length > 0) {
+      const existingChecklist: any = existingAudit.checklist || [];
+      if (existingChecklist.length === 0 || existingAudit.status === "scheduled") {
+        updateData.checklist = checklist;
+      }
+    }
+
     // Create or update audit
     const audit = await prisma.audit.upsert({
       where: { applicationId },
@@ -207,11 +221,7 @@ export const assignAudit = async (req: any, res: any) => {
         scheduledAt: new Date(scheduledAt),
         status: "scheduled"
       },
-      update: {
-        auditorId,
-        scheduledAt: new Date(scheduledAt),
-        status: "scheduled"
-      }
+      update: updateData
     });
 
     // Update application status
