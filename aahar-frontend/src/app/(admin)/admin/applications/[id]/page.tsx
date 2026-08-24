@@ -32,7 +32,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ApplicationChatDialog } from "@/components/shared/ApplicationChatDialog";
+
 import { CertificateWidget } from "@/components/shared/CertificateWidget";
 import { toast } from "sonner";
 import { format } from "date-fns";
