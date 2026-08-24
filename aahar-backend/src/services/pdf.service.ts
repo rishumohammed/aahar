@@ -9,8 +9,8 @@ interface CertData {
   entityCity:    string;
   issuedAt:      Date;
   expiresAt:     Date;
-  hygieneScore?: number;
-  starRating?:   number;
+  hygieneScore?: number | null;
+  starRating?:   number | null;
   qrCodeDataUrl: string;
   auditorName:   string;
 }
@@ -149,7 +149,7 @@ export const generateCertPDF = async (data: CertData): Promise<Buffer> => {
     z-index: 1;
     line-height: 1;
   }
-  ${scoreLine ? `
+  ${ratingLine ? `
   .score-box {
     display: inline-flex; align-items: center; gap: 12px;
     background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 100px;
@@ -202,7 +202,7 @@ export const generateCertPDF = async (data: CertData): Promise<Buffer> => {
         <br/>
         <span style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px;">Audited By: ${data.auditorName}</span>
       </div>
-      ${scoreLine}
+      ${ratingLine}
     </div>
 
     <div class="qr-wrap">

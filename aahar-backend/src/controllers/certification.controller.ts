@@ -306,8 +306,8 @@ export const downloadCertPDF = async (req: any, res: any) => {
       entityCity:    entity.city,
       issuedAt:      cert.issuedAt,
       expiresAt:     cert.expiresAt,
-      hygieneScore:  cert.hygieneScore ?? undefined,
-      starRating:    cert.hotel ? (cert.hotel as any).starRating ?? undefined : undefined,
+      hygieneScore:  cert.hygieneScore ?? null,
+      starRating:    cert.hotel ? (cert.hotel as any).starRating ?? null : null,
       qrCodeDataUrl,
       auditorName:   cert.application?.audit?.auditor?.name ?? "AAHAR Inspector",
     });
