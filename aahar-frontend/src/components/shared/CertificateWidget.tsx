@@ -42,8 +42,8 @@ export function CertificateWidget({
     // Prefer calling the API endpoint so the PDF is always freshly generated
     if (certification.id) {
       try {
-        const { api } = await import("@/lib/api");
-        const response = await api.get(`/certifications/${certification.id}/pdf`, {
+        const { default: api } = await import("@/lib/api");
+        const response = await api.get(`/certifications/${certification.id}/pdf?t=${Date.now()}`, {
           responseType: "blob",
           timeout: 30000,
         });
