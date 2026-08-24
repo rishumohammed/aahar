@@ -143,6 +143,19 @@ export const submitAudit = async (req: any, res: any) => {
       data:  { status: newStatus } as any
     });
 
+    // If a certification already exists for this application, update its hygiene score
+    if (recommendation === "approve") {
+      const existingCert = await prisma.certification.findFirst({
+        where: { applicationId: audit.applicationId }
+      });
+      if (existingCert) {
+        await prisma.certification.update({
+          where: { id: existingCert.id },
+          data: { hygieneScore: totalScore }
+        });
+      }
+    }
+
     // Notify Admins
     const admins = await prisma.user.findMany({ where: { role: { in: ["admin", "super_admin"] } } });
     if (admins.length > 0) {

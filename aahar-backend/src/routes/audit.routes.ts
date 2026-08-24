@@ -8,7 +8,7 @@ const router = Router();
 router.post(  "/",           verifyToken, requireRole("admin","super_admin"), createAudit);
 router.get(   "/",           verifyToken, listAudits);
 router.get(   "/:id",        verifyToken, getAudit);
-router.patch( "/:id/submit", verifyToken, requireRole("auditor"), submitAudit);
+router.patch( "/:id/submit", verifyToken, requireRole("auditor", "admin", "super_admin"), submitAudit);
 router.get(   "/:id/report", verifyToken, downloadAuditReport);
 
 export default router;

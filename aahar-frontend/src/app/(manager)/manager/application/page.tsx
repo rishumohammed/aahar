@@ -184,11 +184,25 @@ export default function HotelDocumentUploadPage() {
     setDocStatus(prev => ({ ...prev, [id]: "pending" }));
   };
 
-  const updateExpiry = (id: string, date: string) => {
+  const updateExpiry = async (id: string, date: string) => {
+    const doc = docUrls[id];
+    const docIdToUpdate = doc?.documentId;
+    
     setDocUrls(prev => ({
       ...prev,
       [id]: prev[id] ? { ...prev[id]!, expiryDate: date } : null
     }));
+    
+    // Save to backend automatically
+    if (applicationId && docIdToUpdate) {
+      try {
+        await applicationApi.updateDocument(applicationId, docIdToUpdate, { expiresAt: date || null });
+        showToast("Expiry date saved", "success");
+      } catch (err) {
+        console.error("Failed to save expiry date", err);
+        showToast("Failed to save expiry date. Please try again.", "error");
+      }
+    }
   };
 
   const getStatus = (id: string) => {
@@ -396,38 +410,38 @@ export default function HotelDocumentUploadPage() {
 
  {/* Form Action Footer */}
  <div className="mt-12 pt-8 flex justify-end border-t border-slate-200">
- {applicationStatus === "audit_scheduled" ? (
- <Button 
- disabled
- className="bg-admin-primary/70 text-white rounded-md px-10 h-14 font-bold shadow-md flex items-center gap-3"
- >
- <RefreshCw className="h-5 w-5"/>
- Updates Saved Automatically
- </Button>
- ) : isReadOnly ? (
- <Button 
- disabled
- className="bg-admin-primary text-white rounded-md px-10 h-14 font-bold shadow-md flex items-center gap-3"
- >
- <CheckCircle2 className="h-5 w-5"/>
- Application Submitted
- </Button>
- ) : (
- <Button 
- onClick={handleProceed} 
- disabled={!isComplete || isSubmitting}
- className="bg-admin-primary text-white rounded-md px-10 h-14 font-bold shadow-md hover:bg-admin-primary-hover transition-all disabled:opacity-50 flex items-center gap-3"
- >
- {isSubmitting ? (
- <RefreshCw className="h-5 w-5 animate-spin"/>
- ) : isComplete ? (
- <CheckCircle2 className="h-5 w-5"/>
- ) : (
- <Clock className="h-5 w-5"/>
- )}
- Proceed with Application
- </Button>
- )}
+  {applicationStatus === "audit_scheduled" ? (
+  <Button 
+  disabled
+  className="bg-[#0A7B7B]/70 text-white rounded-md px-10 h-14 font-bold shadow-md flex items-center gap-3"
+  >
+  <RefreshCw className="h-5 w-5"/>
+  Updates Saved Automatically
+  </Button>
+  ) : isReadOnly ? (
+  <Button 
+  disabled
+  className="bg-[#0A7B7B] text-white rounded-md px-10 h-14 font-bold shadow-md flex items-center gap-3"
+  >
+  <CheckCircle2 className="h-5 w-5"/>
+  Application Submitted
+  </Button>
+  ) : (
+  <Button 
+  onClick={handleProceed} 
+  disabled={!isComplete || isSubmitting}
+  className="bg-[#0A7B7B] text-white rounded-md px-10 h-14 font-bold shadow-md hover:bg-[#0A7B7B]/90 transition-all disabled:opacity-50 flex items-center gap-3"
+  >
+  {isSubmitting ? (
+  <RefreshCw className="h-5 w-5 animate-spin"/>
+  ) : isComplete ? (
+  <CheckCircle2 className="h-5 w-5"/>
+  ) : (
+  <Clock className="h-5 w-5"/>
+  )}
+  Proceed with Application
+  </Button>
+  )}
  </div>
 
  {/* Toasts */}

@@ -22,6 +22,7 @@ import { Card } from"@/components/ui/card";
 import { Badge } from"@/components/ui/badge";
 import { cn } from"@/lib/utils";
 import { ComplianceChatDialog } from "@/components/shared/ComplianceChatDialog";
+import { CertificateWidget } from "@/components/shared/CertificateWidget";
 import { useBrandingStore } from "@/store/brandingStore";
 import { getImageUrl } from "@/lib/utils";
 
@@ -36,17 +37,17 @@ export default function ComplianceDashboard() {
  const [ringOffset, setRingOffset] = useState(CIRCUMFERENCE);
  const [barVisible, setBarVisible] = useState(false);
  const [scores, setScores] = useState({
- overall: 0,
- kitchen: 0,
- foodStorage: 0,
- staffStandards: 0,
- documentation: 0
- });
+  overall: 0,
+  sections: [] as { label: string; score: number }[]
+  });
  const [certification, setCertification] = useState<any>(null);
  const [restaurantName, setRestaurantName] = useState("Your Restaurant");
  const [applicationId, setApplicationId] = useState<string | null>(null);
  const [auditId, setAuditId] = useState<string | null>(null);
  const [loading, setLoading] = useState(true);
+ const [restaurantId, setRestaurantId] = useState<string | null>(null);
+ const [hotelId, setHotelId] = useState<string | null>(null);
+ const [reapplying, setReapplying] = useState(false);
  const [downloadingReport, setDownloadingReport] = useState(false);
  const [handbookUrl, setHandbookUrl] = useState<string | null>(null);
  const { branding, fetchBranding } = useBrandingStore();
@@ -73,6 +74,8 @@ export default function ComplianceDashboard() {
  setRestaurantName(statsRes.data?.data?.restaurantName || "Your Restaurant");
  setApplicationId(statsRes.data?.data?.applicationId || null);
  setAuditId(statsRes.data?.data?.auditId || null);
+ setRestaurantId(statsRes.data?.data?.restaurantId || null);
+ setHotelId(statsRes.data?.data?.hotelId || null);
 
  try {
   const { settingsApi } = await import("@/lib/api");
@@ -129,8 +132,8 @@ export default function ComplianceDashboard() {
  // ── Computations ──────────────────────────────────────────
  const daysRemaining = certification ? Math.ceil((new Date(certification.expiresAt).getTime() - new Date().getTime()) / 86400000) : 0;
  
- const countdownColor = daysRemaining > 60 ?"text-emerald-500": daysRemaining > 30 ?"text-amber-500":"text-rose-500";
- const countdownBg = daysRemaining > 60 ?"bg-emerald-50": daysRemaining > 30 ?"bg-amber-50":"bg-rose-50";
+ const countdownColor = daysRemaining > 60 ?"text-[#0A7B7B]": daysRemaining > 30 ?"text-amber-500":"text-rose-500";
+ const countdownBg = daysRemaining > 60 ?"bg-[#0A7B7B]/10": daysRemaining > 30 ?"bg-amber-50":"bg-rose-50";
 
  const sortedActions = useMemo(() => {
  return [...correctiveActions].sort((a, b) => Number(a.resolved) - Number(b.resolved));
@@ -194,13 +197,8 @@ export default function ComplianceDashboard() {
 
  {/* Breakdown Bars */}
  <div className="flex-1 w-full space-y-6">
- {[
- { label:"Kitchen", score: scores.kitchen },
- { label:"Food Storage", score: scores.foodStorage },
- { label:"Staff Standards", score: scores.staffStandards },
- { label:"Documentation", score: scores.documentation },
- ].map((item, i) => (
- <div key={item.label} className="flex items-center gap-4">
+  {scores.sections.map((item, i) => (
+  <div key={item.label} className="flex items-center gap-4">
  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500/60 w-32">{item.label}</span>
  <div className="flex-1 h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-200/50">
  <div 
@@ -340,32 +338,7 @@ export default function ComplianceDashboard() {
  
   {/* Certificate Widget */}
   {certification?.status === "active" && (
-    <div className="p-8 rounded-xl border-2 border-[#D98E73] bg-white relative overflow-hidden group shadow-xl">
-      <div className="space-y-6 relative z-10">
-        <div className="w-16 h-16 rounded-xl bg-[#D98E73]/10 flex items-center justify-center text-[#D98E73]">
-          {mounted && branding.certificateLogo ? (
-            <img src={getImageUrl(branding.certificateLogo)} alt="Certificate" className="w-12 h-12 object-contain" />
-          ) : (
-            <ShieldCheck className="h-8 w-8" />
-          )}
-        </div>
-        <div className="space-y-1">
-          <h4 className="font-bold text-slate-900 text-xl tracking-tight">
-            CERTIFIED {certification.track === "restaurant" ? "DINING" : "STAY"}
-          </h4>
-          <p className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em]">Regional Compliance Passed</p>
-        </div>
-        <div className="bg-slate-50 rounded-xl p-6 border border-slate-200 space-y-4">
-          <div className="space-y-1">
-            <div className="text-[10px] uppercase font-black text-slate-500 tracking-widest">Certificate ID</div>
-            <div className="text-sm font-mono font-bold text-slate-900">{certification.certNumber || "N/A"}</div>
-            <div className="text-[10px] uppercase font-black text-slate-500 tracking-widest mt-4">
-              EXPIRES: {format(parseISO(certification.expiresAt),"M/d/yyyy")}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <CertificateWidget certification={certification} mode="owner" />
   )}
 
  {/* Renewal Countdown */}
@@ -383,10 +356,22 @@ export default function ComplianceDashboard() {
   <p className="text-sm font-bold text-slate-800">{format(parseISO(certification.expiresAt),"dd MMM yyyy")}</p>
   </div>
 
-  {certification.pdfUrl && (
+  {certification?.id && (
     <Button 
-      onClick={() => window.open(certification.pdfUrl, "_blank")}
-      className="w-full bg-admin-primary text-white hover:bg-admin-primary/90 border-admin-primary shadow-sm uppercase font-bold tracking-wider rounded-md py-6"
+      onClick={async () => {
+        try {
+          const { default: api } = await import("@/lib/api");
+          const response = await api.get(`/certifications/${certification.id}/pdf?t=${Date.now()}`, { responseType: "blob", timeout: 30000 });
+          const blob = new Blob([response.data], { type: "application/pdf" });
+          const url  = URL.createObjectURL(blob);
+          const a    = document.createElement("a");
+          a.href     = url;
+          a.download = `${certification.certNumber}.pdf`;
+          a.click();
+          URL.revokeObjectURL(url);
+        } catch { if (certification.pdfUrl) window.open(certification.pdfUrl, "_blank"); }
+      }}
+      className="w-full bg-[#0A7B7B] text-white hover:bg-[#0A7B7B]/90 shadow-sm uppercase font-bold tracking-wider rounded-md py-6"
     >
       Download Certificate
     </Button>
@@ -397,7 +382,7 @@ export default function ComplianceDashboard() {
       onClick={handleDownloadAuditReport}
       disabled={downloadingReport}
       variant="outline"
-      className="w-full border-admin-primary text-admin-primary hover:bg-admin-primary/10 shadow-sm uppercase font-bold tracking-wider rounded-md py-6 flex items-center justify-center gap-2"
+      className="w-full border-[#0A7B7B] text-[#0A7B7B] hover:bg-[#0A7B7B]/10 bg-transparent shadow-sm uppercase font-bold tracking-wider rounded-md py-6 flex items-center justify-center gap-2"
     >
       {downloadingReport ? (
         <>
@@ -414,17 +399,17 @@ export default function ComplianceDashboard() {
   )}
 
   {daysRemaining < 30 ? (
-  <Button type="button" className="w-full bg-rose-500 text-white rounded-md py-7 font-bold uppercase tracking-wider shadow-xl shadow-rose-500/20 hover:scale-105 active:scale-95 transition-all">
+  <Button type="button" className="w-full bg-[#0A7B7B] text-white rounded-md py-7 font-bold uppercase tracking-wider shadow-xl shadow-[#0A7B7B]/20 hover:scale-105 active:scale-95 transition-all">
   Start Renewal Now
   </Button>
   ) : (
   <div className="p-4 flex items-center gap-3 text-left">
-  <div className="p-2 bg-emerald-500/10 rounded-md">
-  <CheckCircle2 className="h-5 w-5 text-emerald-500"/>
+  <div className="p-2 bg-[#0A7B7B]/20 rounded-md">
+  <CheckCircle2 className="h-5 w-5 text-[#0A7B7B]"/>
   </div>
   <div>
-  <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">Status Safe</p>
-  <p className="text-xs font-semibold text-slate-500/60 mt-0.5">Maintain standards for next audit.</p>
+  <p className="text-sm font-bold text-[#0A7B7B] uppercase tracking-wider">Status Safe</p>
+  <p className="text-xs font-semibold text-slate-500/80">Maintain standards for next audit.</p>
   </div>
   </div>
   )}
@@ -439,35 +424,66 @@ export default function ComplianceDashboard() {
   <p className="text-[10px] font-bold text-rose-500/40 uppercase tracking-wider">Reason</p>
   <p className="text-sm font-bold text-rose-800">{certification.revokedReason || "Non-compliance"}</p>
   </div>
-  <div className="p-4 flex items-center gap-3 text-left">
-  <div className="p-2 bg-rose-200/50 rounded-md">
-  <AlertCircle className="h-5 w-5 text-rose-600"/>
-  </div>
-  <div>
-  <p className="text-xs font-semibold uppercase tracking-wider text-rose-700">Re-audit Required</p>
-  <p className="text-xs font-semibold text-rose-600/70 mt-0.5">Contact administration.</p>
-  </div>
-  </div>
+  <Button
+  disabled={reapplying}
+  onClick={async () => {
+    try {
+      setReapplying(true);
+      const { applicationApi } = await import("@/lib/api");
+      await applicationApi.submit({
+        businessType: hotelId ? "accommodation" : "fnb",
+        ...(restaurantId ? { restaurantId } : {}),
+        ...(hotelId ? { hotelId } : {}),
+        status: "submitted"
+      });
+      toast.success("Re-certification application submitted! Admin will review and schedule an audit.");
+      window.location.reload();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || "Failed to submit application");
+    } finally {
+      setReapplying(false);
+    }
+  }}
+  className="w-full bg-rose-600 text-white hover:bg-rose-700 rounded-md py-7 font-bold uppercase tracking-wider shadow-xl shadow-rose-600/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+  >
+  {reapplying ? <><RefreshCcw className="h-4 w-4 animate-spin" /> Submitting...</> : <>Apply for Re-Certification</>}
+  </Button>
+  <p className="text-[10px] text-rose-400/70 font-medium">A new audit will be scheduled after review.</p>
   </Card>
   ) : (
   <Card className="p-8 rounded-xl border-slate-200 shadow-xl text-center space-y-6 bg-slate-50 hover:shadow-2xl transition-shadow duration-300">
   <div className="space-y-2">
-  <h3 className="text-4xl font-bold tracking-tighter text-slate-400">PENDING</h3>
+  <h3 className="text-4xl font-bold tracking-tighter text-slate-400">NOT CERTIFIED</h3>
   <p className="text-xs font-semibold uppercase tracking-wider text-slate-500/60">Certification Status</p>
   </div>
   <div className="p-4 bg-white/60 rounded-md border border-white space-y-1">
-  <p className="text-[10px] font-bold text-slate-500/40 uppercase tracking-wider">Audit Not Completed</p>
-  <p className="text-sm font-bold text-slate-800">No active certificate</p>
+  <p className="text-[10px] font-bold text-slate-500/40 uppercase tracking-wider">Action Required</p>
+  <p className="text-sm font-bold text-slate-800">Submit a certification application to get started</p>
   </div>
-  <div className="p-4 flex items-center gap-3 text-left">
-  <div className="p-2 bg-slate-200/50 rounded-md">
-  <AlertCircle className="h-5 w-5 text-slate-400"/>
-  </div>
-  <div>
-  <p className="text-xs font-semibold uppercase tracking-wider text-slate-600">Action Required</p>
-  <p className="text-xs font-semibold text-slate-500/60 mt-0.5">Please complete an audit.</p>
-  </div>
-  </div>
+  <Button
+  disabled={reapplying}
+  onClick={async () => {
+    try {
+      setReapplying(true);
+      const { applicationApi } = await import("@/lib/api");
+      await applicationApi.submit({
+        businessType: hotelId ? "accommodation" : "fnb",
+        ...(restaurantId ? { restaurantId } : {}),
+        ...(hotelId ? { hotelId } : {}),
+        status: "submitted"
+      });
+      toast.success("Application submitted! Admin will review and schedule an audit.");
+      window.location.reload();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || "Failed to submit application");
+    } finally {
+      setReapplying(false);
+    }
+  }}
+  className="w-full bg-[#0A7B7B] text-white hover:bg-[#0A7B7B]/90 rounded-md py-7 font-bold uppercase tracking-wider shadow-xl shadow-[#0A7B7B]/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+  >
+  {reapplying ? <><RefreshCcw className="h-4 w-4 animate-spin" /> Submitting...</> : <>Apply for Certification</>}
+  </Button>
   </Card>
   )}
 

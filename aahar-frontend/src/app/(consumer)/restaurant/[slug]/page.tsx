@@ -30,6 +30,7 @@ import { restaurantApi, orderApi } from "@/lib/api";
 import { HygieneScore } from "@/components/shared/HygieneScore";
 import AaharBadge from "@/components/shared/AaharBadge";
 import BookingCard from "@/components/restaurant/BookingCard";
+import { CertificateWidget } from "@/components/shared/CertificateWidget";
 import { cn, getImageUrl } from "@/lib/utils";
 import { notFound, useSearchParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -108,7 +109,6 @@ function RestaurantProfilePageContent({
     { id: "menu", label: "Menu", icon: UtensilsCrossed },
     { id: "photos", label: "Photos", icon: ImageIcon },
     { id: "reviews", label: "Reviews", icon: MessageSquare },
-    { id: "hygiene", label: "Hygiene", icon: ClipboardCheck },
   ];
 
   // Cart operations
@@ -540,72 +540,14 @@ function RestaurantProfilePageContent({
               </div>
             )}
 
-            {/* Hygiene Report tab */}
-            {activeTab === "hygiene" && (
-              <div className="py-4 animate-in fade-in duration-500">
-                {restaurant.certification ? (
-                  <div className="space-y-10">
-                    <div className="flex flex-col md:flex-row items-center gap-10 p-10 bg-aahar-teal/5 border-2 border-aahar-teal/20 rounded-xl shadow-sm">
-                      <div className="text-center w-32">
-                        <div className="text-4xl font-bold text-aahar-teal tracking-tight">
-                          {restaurant.certification.hygieneScore?.toFixed(1) ?? "—"}
-                        </div>
-                        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-aahar-teal mt-2">Trust Index</div>
-                      </div>
-                      <div className="flex-1 space-y-4">
-                        <h4 className="text-lg font-bold text-aahar-dark uppercase tracking-tight">Hygiene Audit Report</h4>
-                        <p className="text-sm text-aahar-body font-medium leading-relaxed">
-                          This score represents a comprehensive on-site evaluation of {restaurant.name}'s operational standards. Audits are conducted every 6 months by independent AAHAR regional inspectors.
-                        </p>
-                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-aahar-teal/60">
-                          <ClipboardCheck className="h-4 w-4" />
-                          Last verified: {new Date(restaurant.certification.issuedAt).toLocaleDateString("en-IN", { month:"long", year:"numeric", day:"numeric" })}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-8 px-4">
-                      {(restaurant.certification.application?.audit?.checklist || [
-                        { section:"Kitchen hygiene",  score: 4.8 },
-                        { section:"Food storage",     score: 4.5 },
-                        { section:"Staff standards",  score: 3.9 },
-                        { section:"Documentation",    score: 4.7 },
-                        { section:"Waste Management", score: 4.3 },
-                      ]).map((item: any) => (
-                        <div key={item.section} className="space-y-3">
-                          <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest">
-                            <span className="text-aahar-dark">{item.section || item.criterion}</span>
-                            <span className="text-aahar-teal">{item.score?.toFixed(1) || "—"} / 5.0</span>
-                          </div>
-                          <div className="h-2.5 w-full bg-aahar-wash rounded-full overflow-hidden border border-aahar-border shadow-inner">
-                            <div className="h-full bg-aahar-teal shadow-[0_0_10px_rgba(45,212,191,0.5)] transition-all duration-1000" style={{ width:`${((item.score || 0)/5)*100}%` }} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="p-8 bg-aahar-dark text-white rounded-xl shadow-2xl space-y-6 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[80px] -mr-32 -mt-32" />
-                      <div className="flex items-center gap-4 relative z-10">
-                        <CheckCircle2 className="h-10 w-10 text-aahar-teal" />
-                        <div>
-                          <h4 className="text-lg font-black tracking-tight uppercase">License #{restaurant.certification.certNumber}</h4>
-                          <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest">Digital Trust Hash Verified</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-20 bg-aahar-wash/30 rounded-xl border-2 border-dashed border-aahar-border">
-                    <p className="text-aahar-body font-bold">This restaurant has not been AAHAR certified yet.</p>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Sidebar Column */}
           <aside className="lg:col-span-4 space-y-10">
+            {restaurant.certification && (
+              <CertificateWidget certification={restaurant.certification} mode="consumer" />
+            )}
+            
             <BookingCard restaurant={restaurant} />
 
             {/* Dine-in Table Ordering Card */}

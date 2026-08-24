@@ -274,19 +274,52 @@ export const updateCertStatus = async (req: any, res: any) => {
   } catch (e) { return serverError(res, e); }
 };
 
-// GET /api/certifications/:id/pdf  (stream PDF download)
+// GET /api/certifications/:id/pdf  (regenerate & stream PDF download)
 export const downloadCertPDF = async (req: any, res: any) => {
   try {
     const cert = await prisma.certification.findUnique({
-      where: { id: req.params.id }
+      where: { id: req.params.id },
+      include: {
+        restaurant: true,
+        hotel: true,
+        application: {
+          include: {
+            audit: { include: { auditor: { select: { name: true } } } }
+          }
+        }
+      }
     });
-    if (!cert || !cert.pdfUrl) return notFound(res, "Certificate PDF not found");
+    if (!cert) return notFound(res, "Certificate not found");
 
-    const pdfPath = path.join(process.cwd(), cert.pdfUrl);
-    if (!fs.existsSync(pdfPath)) return notFound(res, "PDF file not found on server");
+    const entity = cert.restaurant ?? cert.hotel;
+    if (!entity) return notFound(res, "No entity linked to this certificate");
+
+    // Regenerate QR code
+    const qrCodeDataUrl = await generateQRCode(cert.certNumber);
+
+    // Regenerate PDF with latest template
+    const pdfBuffer = await generateCertPDF({
+      certNumber:    cert.certNumber,
+      type:          cert.type as "fnb" | "accommodation",
+      entityName:    entity.name,
+      entityAddress: entity.address,
+      entityCity:    entity.city,
+      issuedAt:      cert.issuedAt,
+      expiresAt:     cert.expiresAt,
+      hygieneScore:  cert.hygieneScore ?? undefined,
+      starRating:    cert.hotel ? (cert.hotel as any).starRating ?? undefined : undefined,
+      qrCodeDataUrl,
+      auditorName:   cert.application?.audit?.auditor?.name ?? "AAHAR Inspector",
+    });
+
+    // Also overwrite the stored file so future static URLs are also fresh
+    const pdfDir = path.join(process.cwd(), "uploads", "certificates");
+    if (!fs.existsSync(pdfDir)) fs.mkdirSync(pdfDir, { recursive: true });
+    fs.writeFileSync(path.join(pdfDir, `${cert.certNumber}.pdf`), pdfBuffer);
 
     res.setHeader("Content-Type",        "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${cert.certNumber}.pdf"`);
-    fs.createReadStream(pdfPath).pipe(res);
+    res.end(pdfBuffer);
   } catch (e) { return serverError(res, e); }
 };
+

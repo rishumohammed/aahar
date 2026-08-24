@@ -1,4 +1,5 @@
 import puppeteer from "puppeteer";
+import prisma from "../lib/prisma.js";
 
 interface CertData {
   certNumber:    string;
@@ -15,213 +16,198 @@ interface CertData {
 }
 
 export const generateCertPDF = async (data: CertData): Promise<Buffer> => {
-  const typeLabel  = data.type === "fnb" ? "F&B Establishment" : "Accommodation Property";
-  const badgeLabel = data.type === "fnb" ? "AAHAR CERTIFIED"   : "AAHAR ACCOMMODATION";
-  const scoreLine  = data.type === "fnb" && data.hygieneScore
-    ? `<p class="score">Hygiene Score: <strong>${data.hygieneScore}/5</strong></p>`
+  // Fetch branding config for certificate logo
+  const brandingSetting = await prisma.siteSetting.findUnique({
+    where: { key: "branding_config" }
+  });
+  
+  let certificateLogo = "";
+  if (brandingSetting && brandingSetting.value) {
+    const config = brandingSetting.value as any;
+    if (config.certificateLogo) {
+      certificateLogo = `${process.env.API_URL || "http://localhost:5000"}${config.certificateLogo}`;
+    }
+  }
+
+  const typeLabel  = data.type === "fnb" ? "Food & Beverage Establishment" : "Accommodation Property";
+  const badgeLabel = data.type === "fnb" ? "AAHAR CERTIFIED DINING" : "AAHAR CERTIFIED STAY";
+
+  const ratingLine = data.type === "fnb" && data.hygieneScore
+    ? `<div class="rating-row"><span class="rating-label">Hygiene Score</span><span class="rating-stars">${data.hygieneScore}/5</span></div>`
     : data.type === "accommodation" && data.starRating
-    ? `<p class="score">Star Rating: <strong>${"★".repeat(data.starRating)}</strong></p>`
+    ? `<div class="rating-row"><span class="rating-label">Star Rating</span><span class="rating-stars">${"★".repeat(data.starRating)}${"☆".repeat(5 - data.starRating)}</span></div>`
     : "";
+
+  const logoHtml = certificateLogo
+    ? `<img src="${certificateLogo}" alt="Logo" class="logo-img">`
+    : `<div class="logo-fallback">A</div>`;
 
   const html = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    font-family: "Helvetica Neue", "Arial", sans-serif;
-    background: #F4F7F7;
-    display: flex; align-items: center; justify-content: center;
     min-height: 100vh; padding: 40px;
   }
   .cert {
-    background: white;
-    width: 794px;
-    min-height: 560px;
-    border: 3px solid #0A7B7B;
-    border-radius: 16px;
-    padding: 48px;
+    background: #0A7B7B;
+    width: 820px;
+    min-height: 580px;
+    border-radius: 24px;
+    padding: 56px;
     position: relative;
     overflow: hidden;
-  }
-  .cert::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 6px;
-    background: linear-gradient(90deg, #0A7B7B, #B5766A);
+    color: white;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
   }
   .header {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 36px;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 48px;
+    position: relative;
+    z-index: 10;
   }
-  .brand { display: flex; align-items: center; gap: 14px; }
   .brand-icon {
-    width: 52px; height: 52px;
-    background: #0A7B7B;
-    border-radius: 10px;
+    width: 80px; height: 80px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
     display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 22px; font-weight: 700; letter-spacing: 2px;
+  }
+  .brand-icon img {
+    max-width: 50px; max-height: 50px; object-fit: contain;
+  }
+  .brand-icon .fallback {
+    font-size: 32px; font-weight: bold; color: white;
   }
   .brand-text h1 {
-    font-size: 28px; font-weight: 700;
-    color: #0A7B7B; letter-spacing: 3px;
-  }
-  .brand-text p {
-    font-size: 11px; color: #4A6464; letter-spacing: 1px; margin-top: 2px;
-  }
-  .badge-pill {
-    background: #E6F4F4;
-    border: 1.5px solid #0A7B7B;
-    border-radius: 8px;
-    padding: 8px 16px;
-    text-align: center;
-  }
-  .badge-pill span {
-    display: block; font-size: 11px;
-    font-weight: 700; color: #0A7B7B;
-    letter-spacing: 2px;
-  }
-  .badge-pill small { font-size: 10px; color: #4A6464; }
-  .divider {
-    border: none; border-top: 1px solid #DDE8E8;
-    margin: 24px 0;
-  }
-  .certifies {
-    font-size: 13px; color: #4A6464;
-    text-align: center; margin-bottom: 8px;
-    letter-spacing: 0.5px;
-  }
-  .entity-name {
-    font-size: 30px; font-weight: 700;
-    color: #1A2E2E; text-align: center;
+    font-size: 32px; font-weight: 800;
+    color: white; letter-spacing: -0.5px;
     margin-bottom: 4px;
   }
-  .entity-sub {
-    font-size: 13px; color: #4A6464;
-    text-align: center; margin-bottom: 24px;
+  .brand-text p {
+    font-size: 14px; color: rgba(255,255,255,0.8); font-weight: 500;
   }
-  .body-text {
-    font-size: 13px; color: #4A6464;
-    text-align: center; line-height: 1.7;
-    max-width: 500px; margin: 0 auto 24px;
+  .details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px 24px;
+    background: rgba(255,255,255,0.1);
+    padding: 40px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.1);
+    position: relative;
+    z-index: 10;
   }
-  .score {
-    text-align: center; font-size: 14px;
-    color: #0A7B7B; margin-bottom: 24px;
+  .detail-item {
+    display: flex; flex-direction: column; gap: 8px;
   }
-  .score strong { font-weight: 700; }
+  .detail-label {
+    font-size: 11px; font-weight: 800;
+    color: rgba(255,255,255,0.6); text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .detail-value {
+    font-size: 18px; font-weight: 700; color: white;
+  }
   .footer {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    margin-top: 32px;
+    align-items: center;
+    margin-top: 48px;
+    position: relative;
+    z-index: 10;
   }
-  .dates { font-size: 12px; color: #4A6464; }
-  .dates p { margin-bottom: 4px; }
-  .dates strong { color: #1A2E2E; }
-  .cert-id {
-    text-align: center;
-    font-size: 11px; color: #4A6464;
+  .entity-info {
+    flex: 1;
   }
-  .cert-id strong {
-    display: block; font-size: 13px;
-    font-weight: 700; color: #B5766A;
-    font-family: monospace; letter-spacing: 1px;
+  .entity-name {
+    font-size: 24px; font-weight: 800; color: white; margin-bottom: 8px;
   }
-  .qr-wrap { text-align: right; }
-  .qr-wrap img { width: 90px; height: 90px; border: 1px solid #DDE8E8; border-radius: 6px; }
-  .qr-wrap p { font-size: 9px; color: #4A6464; margin-top: 4px; text-align: center; }
-  .seal {
-    position: absolute;
-    bottom: 48px; left: 48px;
-    width: 80px; height: 80px;
-    border: 2px solid #0A7B7B;
-    border-radius: 50%;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
+  .entity-address {
+    font-size: 14px; color: rgba(255,255,255,0.8); line-height: 1.5;
   }
-  .seal span { font-size: 8px; font-weight: 700; color: #0A7B7B; letter-spacing: 1px; text-align: center; }
-  .auditor-line {
-    margin-top: 16px; font-size: 11px; color: #4A6464;
+  .qr-wrap {
+    text-align: right;
+    background: white;
+    padding: 12px;
+    border-radius: 12px;
   }
-  .auditor-line strong { color: #1A2E2E; }
+  .qr-wrap img { width: 80px; height: 80px; }
+  .qr-wrap p { font-size: 9px; color: #0A7B7B; margin-top: 8px; text-align: center; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;}
   .watermark {
     position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%) rotate(-30deg);
-    font-size: 80px; font-weight: 900;
-    color: rgba(10,123,123,0.04);
-    letter-spacing: 8px;
+    bottom: -50px; right: -50px;
+    font-size: 300px; font-weight: 900;
+    color: rgba(255,255,255,0.03);
     pointer-events: none;
     user-select: none;
+    z-index: 1;
+    line-height: 1;
   }
+  ${scoreLine ? `
+  .score-box {
+    display: inline-flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 100px;
+    margin-top: 24px;
+  }
+  .score-label { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 1px; }
+  .score-value { font-size: 16px; font-weight: 800; color: white; }
+  ` : ''}
 </style>
 </head>
 <body>
 <div class="cert">
-  <div class="watermark">AAHAR</div>
+  <div class="watermark">A</div>
 
   <div class="header">
-    <div class="brand">
-      <div class="brand-icon">A</div>
-      <div class="brand-text">
-        <h1>AAHAR</h1>
-        <p>HOSPITALITY TRUST PLATFORM</p>
-      </div>
+    <div class="brand-icon">
+      ${certificateLogo ? `<img src="${certificateLogo}" alt="Logo">` : `<span class="fallback">A</span>`}
     </div>
-    <div class="badge-pill">
-      <span>${badgeLabel}</span>
-      <small>${typeLabel}</small>
+    <div class="brand-text">
+      <h1>Official Certification Issued</h1>
+      <p>AAHAR Trust Standard Verified &mdash; ${badgeLabel}</p>
     </div>
   </div>
 
-  <hr class="divider">
-
-  <p class="certifies">This certifies that</p>
-  <h2 class="entity-name">${data.entityName}</h2>
-  <p class="entity-sub">${data.entityAddress}, ${data.entityCity}</p>
-
-  <p class="body-text">
-    has successfully met the AAHAR accreditation standards for hygiene,
-    food safety, staff training, and operational compliance following an
-    independent on-site audit by a certified AAHAR inspector.
-  </p>
-
-  ${scoreLine}
-
-  <hr class="divider">
+  <div class="details-grid">
+    <div class="detail-item">
+      <span class="detail-label">License No.</span>
+      <span class="detail-value">${data.certNumber}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Issue Date</span>
+      <span class="detail-value">${data.issuedAt.toLocaleDateString("en-IN", { day:"2-digit", month:"short", year:"numeric" })}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Expiry Date</span>
+      <span class="detail-value">${data.expiresAt.toLocaleDateString("en-IN", { day:"2-digit", month:"short", year:"numeric" })}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Global Status</span>
+      <span class="detail-value" style="text-transform: capitalize;">active</span>
+    </div>
+  </div>
 
   <div class="footer">
-    <div>
-      <div class="seal">
-        <span>AAHAR</span>
-        <span>OFFICIAL</span>
-        <span>SEAL</span>
+    <div class="entity-info">
+      <div class="entity-name">${data.entityName}</div>
+      <div class="entity-address">
+        ${data.entityAddress}<br/>
+        ${data.entityCity}<br/>
+        <br/>
+        <span style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px;">Audited By: ${data.auditorName}</span>
       </div>
-      <p class="auditor-line">
-        Verified by <strong>${data.auditorName}</strong><br>
-        AAHAR Certified Inspector
-      </p>
+      ${scoreLine}
     </div>
 
-    <div class="cert-id">
-      <strong>${data.certNumber}</strong>
-      Certificate Number
-    </div>
-
-    <div>
-      <div class="dates">
-        <p>Issue date: <strong>${data.issuedAt.toLocaleDateString("en-IN", { day:"2-digit", month:"short", year:"numeric" })}</strong></p>
-        <p>Valid until: <strong>${data.expiresAt.toLocaleDateString("en-IN", { day:"2-digit", month:"short", year:"numeric" })}</strong></p>
-      </div>
-      <div class="qr-wrap">
-        <img src="${data.qrCodeDataUrl}" alt="QR Code">
-        <p>Scan to verify</p>
-      </div>
+    <div class="qr-wrap">
+      <img src="${data.qrCodeDataUrl}" alt="QR Code">
+      <p>Scan to verify</p>
     </div>
   </div>
 </div>

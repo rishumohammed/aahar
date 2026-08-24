@@ -21,6 +21,7 @@ import { Card } from"@/components/ui/card";
 import { Badge } from"@/components/ui/badge";
 import { cn } from"@/lib/utils";
 import { ComplianceChatDialog } from "@/components/shared/ComplianceChatDialog";
+import { CertificateWidget } from "@/components/shared/CertificateWidget";
 import { useBrandingStore } from "@/store/brandingStore";
 import { getImageUrl } from "@/lib/utils";
 
@@ -34,14 +35,9 @@ export default function HotelComplianceDashboard() {
  const [ringOffset, setRingOffset] = useState(CIRCUMFERENCE);
  const [barVisible, setBarVisible] = useState(false);
  const [scores, setScores] = useState({
- overall: 0,
- housekeeping: 0,
- roomSafety: 0,
- guestFacilities: 0,
- staffStandards: 0,
- accessibility: 0,
- guestExperience: 0
- });
+  overall: 0,
+  sections: [] as { label: string; score: number }[]
+  });
  const [certification, setCertification] = useState<any>(null);
  const [hotelName, setHotelName] = useState("Your Hotel");
  const [applicationId, setApplicationId] = useState<string | null>(null);
@@ -90,8 +86,8 @@ export default function HotelComplianceDashboard() {
  // ── Computations ──────────────────────────────────────────
  const daysRemaining = certification ? Math.ceil((new Date(certification.expiresAt).getTime() - new Date().getTime()) / 86400000) : 0;
  
- const countdownColor = daysRemaining > 60 ?"text-emerald-500": daysRemaining > 30 ?"text-amber-500":"text-rose-500";
- const countdownBg = daysRemaining > 60 ?"bg-emerald-50": daysRemaining > 30 ?"bg-amber-50":"bg-rose-50";
+ const countdownColor = daysRemaining > 60 ?"text-[#0A7B7B]": daysRemaining > 30 ?"text-amber-500":"text-rose-500";
+ const countdownBg = daysRemaining > 60 ?"bg-[#0A7B7B]/10": daysRemaining > 30 ?"bg-amber-50":"bg-rose-50";
 
  const sortedActions = useMemo(() => {
  return [...correctiveActions].sort((a, b) => Number(a.resolved) - Number(b.resolved));
@@ -162,15 +158,8 @@ export default function HotelComplianceDashboard() {
 
  {/* Breakdown Bars */}
  <div className="flex-1 w-full space-y-4">
- {[
- { label:"Housekeeping", score: scores.housekeeping },
- { label:"Room Safety", score: scores.roomSafety },
- { label:"Guest Facilities", score: scores.guestFacilities },
- { label:"Staff Standards", score: scores.staffStandards },
- { label:"Accessibility", score: scores.accessibility },
- { label:"Guest Experience", score: scores.guestExperience },
- ].map((item, i) => (
- <div key={item.label} className="flex items-center gap-4">
+  {scores.sections.map((item, i) => (
+  <div key={item.label} className="flex items-center gap-4">
  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500/60 w-36">{item.label}</span>
  <div className="flex-1 h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-200/50">
  <div 
@@ -322,30 +311,7 @@ export default function HotelComplianceDashboard() {
  
   {/* Certificate Widget */}
   {certification?.status === "active" && (
-    <div className="p-8 rounded-xl border-2 border-[#D98E73] bg-white relative overflow-hidden group shadow-xl">
-      <div className="space-y-6 relative z-10">
-        <div className="w-16 h-16 rounded-xl bg-[#D98E73]/10 flex items-center justify-center text-[#D98E73]">
-          {mounted && branding.certificateLogo ? (
-            <img src={getImageUrl(branding.certificateLogo)} alt="Certificate" className="w-12 h-12 object-contain" />
-          ) : (
-            <ShieldCheck className="h-8 w-8" />
-          )}
-        </div>
-        <div className="space-y-1">
-          <h4 className="font-bold text-slate-900 text-xl tracking-tight">CERTIFIED STAY</h4>
-          <p className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em]">Regional Compliance Passed</p>
-        </div>
-        <div className="bg-slate-50 rounded-xl p-6 border border-slate-200 space-y-4">
-          <div className="space-y-1">
-            <div className="text-[10px] uppercase font-black text-slate-500 tracking-widest">Certificate ID</div>
-            <div className="text-sm font-mono font-bold text-slate-900">{certification.certNumber || "N/A"}</div>
-            <div className="text-[10px] uppercase font-black text-slate-500 tracking-widest mt-4">
-              EXPIRES: {format(parseISO(certification.expiresAt),"M/d/yyyy")}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <CertificateWidget certification={certification} mode="owner" />
   )}
 
  {/* Renewal Countdown */}
@@ -363,27 +329,39 @@ export default function HotelComplianceDashboard() {
   <p className="text-sm font-bold text-slate-800">{format(parseISO(certification.expiresAt),"dd MMM yyyy")}</p>
   </div>
 
-  {certification.pdfUrl && (
+  {certification?.id && (
     <Button 
-      onClick={() => window.open(certification.pdfUrl, "_blank")}
-      className="w-full bg-admin-primary text-white hover:bg-admin-primary/90 border-admin-primary shadow-sm uppercase font-bold tracking-wider rounded-md py-6"
+      onClick={async () => {
+        try {
+          const { api } = await import("@/lib/api");
+          const response = await api.get(`/certifications/${certification.id}/pdf`, { responseType: "blob", timeout: 30000 });
+          const blob = new Blob([response.data], { type: "application/pdf" });
+          const url  = URL.createObjectURL(blob);
+          const a    = document.createElement("a");
+          a.href     = url;
+          a.download = `${certification.certNumber}.pdf`;
+          a.click();
+          URL.revokeObjectURL(url);
+        } catch { if (certification.pdfUrl) window.open(certification.pdfUrl, "_blank"); }
+      }}
+      className="w-full bg-[#0A7B7B] text-white hover:bg-[#0A7B7B]/90 shadow-sm uppercase font-bold tracking-wider rounded-md py-6"
     >
       Download Certificate
     </Button>
   )}
 
   {daysRemaining < 30 ? (
-  <Button type="button" className="w-full bg-rose-500 text-white rounded-md py-7 font-bold uppercase tracking-wider shadow-xl shadow-rose-500/20 hover:scale-105 active:scale-95 transition-all">
+  <Button type="button" className="w-full bg-[#0A7B7B] text-white rounded-md py-7 font-bold uppercase tracking-wider shadow-xl shadow-[#0A7B7B]/20 hover:scale-105 active:scale-95 transition-all">
   Start Renewal Now
   </Button>
   ) : (
   <div className="p-4 flex items-center gap-3 text-left">
-  <div className="p-2 bg-emerald-500/10 rounded-md">
-  <CheckCircle2 className="h-5 w-5 text-emerald-500"/>
+  <div className="p-2 bg-[#0A7B7B]/20 rounded-md">
+  <CheckCircle2 className="h-5 w-5 text-[#0A7B7B]"/>
   </div>
   <div>
-  <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">Status Safe</p>
-  <p className="text-xs font-semibold text-slate-500/60 mt-0.5">Maintain standards for next audit.</p>
+  <p className="text-sm font-bold text-[#0A7B7B] uppercase tracking-wider">Status Safe</p>
+  <p className="text-xs font-semibold text-slate-500/80">Maintain standards for next audit.</p>
   </div>
   </div>
   )}

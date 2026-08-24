@@ -26,7 +26,7 @@ import { hotelApi, masterApi } from "@/lib/api";
 import { EnquiryForm } from "@/components/shared/EnquiryForm";
 import AaharBadge from "@/components/shared/AaharBadge";
 import LinkedRestaurant from "@/components/profile/LinkedRestaurant";
-import { useBrandingStore } from "@/store/brandingStore";
+import { CertificateWidget } from "@/components/shared/CertificateWidget";
 import { cn, getImageUrl } from "@/lib/utils";
 import { notFound } from "next/navigation";
 
@@ -44,13 +44,6 @@ export default function HotelProfilePage({
   const [masterPhotoCategories, setMasterPhotoCategories] = useState<any[]>([]);
   const [masterMealPlans, setMasterMealPlans] = useState<any[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
-  const { branding, fetchBranding } = useBrandingStore();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    fetchBranding();
-  }, []);
 
   useEffect(() => {
     Promise.all([
@@ -306,46 +299,6 @@ export default function HotelProfilePage({
                   </div>
                 )}
 
-                {/* AAHAR Accommodation Score */}
-                {hotel.certification ? (
-                  <div className="bg-white rounded-xl p-12 border-2 border-aahar-border shadow-sm relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-aahar-rose/5 rounded-full blur-3xl -mr-32 -mt-32" />
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6 relative z-10">
-                      <div className="space-y-2">
-                        <h2 className="text-2xl font-bold text-aahar-dark tracking-tight uppercase">Trust Score</h2>
-                        <p className="text-sm text-aahar-body font-medium">Verified by AAHAR Regional Inspectors</p>
-                      </div>
-                      <div className="flex items-center gap-4 p-4 bg-aahar-rose/10 rounded-xl border border-aahar-rose/20">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-aahar-rose">{hotel.accommodationScore?.overall ? hotel.accommodationScore.overall.toFixed(1) : (hotel.starRating ? `${hotel.starRating}.0` : "—")}</div>
-                          <div className="text-[10px] uppercase font-black text-aahar-rose tracking-widest">Trust Index</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-10 relative z-10">
-                      {SCORE_METRICS.map((metric: any) => (
-                        <div key={metric.label || metric.section} className="space-y-4">
-                          <div className="flex justify-between items-center text-sm font-black uppercase tracking-widest">
-                            <span className="text-aahar-dark">{metric.label || metric.section || metric.criterion}</span>
-                            <span className="text-aahar-rose">{metric.score?.toFixed(1) || "—"} / 5</span>
-                          </div>
-                          <div className="h-2.5 w-full bg-aahar-wash rounded-full overflow-hidden border border-aahar-border">
-                            <div
-                              className="h-full bg-aahar-rose transition-all duration-1000"
-                              style={{ width: `${((metric.score || 0) / 5) * 100}%` }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-20 bg-aahar-wash/30 rounded-xl border-2 border-dashed border-aahar-border">
-                    <p className="text-aahar-body font-bold">This hotel has not been AAHAR certified yet.</p>
-                  </div>
-                )}
-
-
               </section>
             )}
 
@@ -593,30 +546,7 @@ export default function HotelProfilePage({
 
             {/* AAHAR Certification Side Widget */}
             {hotel.certification && (
-              <div className="p-8 rounded-xl border-2 border-aahar-rose bg-white relative overflow-hidden group shadow-xl">
-                <div className="space-y-6 relative z-10">
-                  <div className="w-16 h-16 rounded-xl bg-aahar-rose/10 flex items-center justify-center text-aahar-rose">
-                    {mounted && branding.certificateLogo ? (
-                      <img src={getImageUrl(branding.certificateLogo)} alt="Certificate" className="w-12 h-12 object-contain" />
-                    ) : (
-                      <ShieldCheck className="h-8 w-8" />
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="font-bold text-aahar-dark text-xl tracking-tight">CERTIFIED STAY</h4>
-                    <p className="text-[10px] text-aahar-body uppercase font-black tracking-[0.2em]">Regional Compliance Passed</p>
-                  </div>
-                  <div className="bg-aahar-wash rounded-xl p-6 border border-aahar-border space-y-4">
-                    <div className="space-y-1">
-                      <div className="text-[10px] uppercase font-black text-aahar-body tracking-widest">Certificate ID</div>
-                      <div className="text-sm font-mono font-bold text-aahar-dark">{hotel.certification.certNumber}</div>
-                    </div>
-                    <div className="text-[9px] text-aahar-body/60 font-bold uppercase tracking-widest">
-                      Expires: {new Date(hotel.certification.expiresAt).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <CertificateWidget certification={hotel.certification} mode="consumer" />
             )}
 
           </aside>

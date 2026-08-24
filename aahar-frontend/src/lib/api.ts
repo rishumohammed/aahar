@@ -139,6 +139,8 @@ export const applicationApi = {
     api.get("/applications", { params }),
   updateStatus: (id: string, status: string, notes?: string) =>
     api.patch(`/applications/${id}/status`, { status, notes }),
+  updateDocument: (id: string, documentId: string, data: any) =>
+    api.patch(`/applications/${id}/documents/${documentId}`, data),
   uploadDoc:    (id: string, formData: FormData) =>
     api.post(`/applications/${id}/documents`, formData, {
       headers: { "Content-Type": "multipart/form-data" },

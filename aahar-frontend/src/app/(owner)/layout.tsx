@@ -8,6 +8,7 @@ import {
  LayoutDashboard, 
  FileText, 
  User, 
+ Users,
  UtensilsCrossed, 
  Image as ImageIcon, 
  ShieldCheck, 
@@ -32,14 +33,14 @@ import { FloatingSupportChat } from "@/components/shared/FloatingSupportChat";
 const NAV_ITEMS = [
  { label:"Overview", href:"/owner/dashboard", icon: LayoutDashboard, requiresVerification: false },
  { label:"Application", href:"/owner/application", icon: FileText, requiresVerification: false },
+ { label: "Compliance", href: "/owner/compliance", icon: ShieldCheck, requiresVerification: false },
+ { label: "Managers", href: "/owner/managers", icon: Users, requiresVerification: true },
+ { label: "Ledger", href: "/owner/ledger", icon: BookOpen, requiresVerification: true },
  { label:"Profile", href:"/owner/profile", icon: User, requiresVerification: false },
  { label:"Menu", href:"/owner/menu", icon: UtensilsCrossed, requiresVerification: false },
  { label:"Photos", href:"/owner/photos", icon: ImageIcon, requiresVerification: false },
  { label:"Orders", href:"/owner/orders", icon: ClipboardList, requiresVerification: true },
- { label:"Tables & QR", href:"/owner/tables", icon: QrCode, requiresVerification: true },
- { label: "Compliance", href: "/owner/compliance", icon: ShieldCheck, requiresVerification: true },
- { label: "Managers", href: "/owner/managers", icon: User, requiresVerification: true },
- { label: "Ledger", href: "/owner/ledger", icon: BookOpen, requiresVerification: true },
+ { label:"Tables & QR", href:"/owner/tables", icon: QrCode, requiresVerification: true }
 ];
 
 export default function OwnerLayout({ children }: { children: React.ReactNode }) {

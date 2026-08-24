@@ -32,6 +32,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ApplicationChatDialog } from "@/components/shared/ApplicationChatDialog";
+import { CertificateWidget } from "@/components/shared/CertificateWidget";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -514,84 +516,36 @@ export default function ApplicationDetailPage() {
 
           {/* Certificate display */}
           {app.certification && (
-            <div className="mt-8 p-8 bg-admin-primary text-white rounded-2xl shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-[80px] -mr-32 -mt-32" />
-              <div className="relative z-10 space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/10 rounded-xl text-white">
-                    <ShieldCheck className="h-8 w-8" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold">Official Certification Issued</h2>
-                    <p className="text-sm text-white/70 font-medium">AAHAR Trust Standard Verified</p>
-                  </div>
+            <CertificateWidget 
+              certification={app.certification} 
+              mode="admin" 
+              onRevoke={() => { setAction("revoke"); setNotes(""); }}
+            >
+              {app.certification.status === "revoked" && !["audit_scheduled", "in_progress", "audit_complete"].includes(app.status) && (
+                <Button 
+                  className="w-full bg-amber-500 hover:bg-amber-600 text-white shadow-sm border-0 h-12"
+                  onClick={() => { setAction("require_reaudit"); }}
+                >
+                  <RefreshCcw className="h-4 w-4 mr-2" /> Require Re-Audit for Reinstatement
+                </Button>
+              )}
+              {app.certification.status === "revoked" && ["audit_scheduled", "in_progress"].includes(app.status) && (
+                <div className="w-full py-2 px-4 rounded-xl bg-amber-500/20 border border-amber-500 text-white text-sm font-bold text-center flex items-center justify-center h-12">
+                  Re-Audit in Progress...
                 </div>
-                
-                <dl className="grid grid-cols-2 gap-6 bg-white/5 p-6 rounded-xl border border-white/10">
-                  {[
-                    ["License No.", app.certification.certNumber],
-                    ["Issue Date", format(new Date(app.certification.issuedAt), "dd MMM yyyy")],
-                    ["Expiry Date", format(new Date(app.certification.expiresAt), "dd MMM yyyy")],
-                    ["Global Status", app.certification.status],
-                  ].map(([label, value]) => (
-                    <div key={label}>
-                      <dt className="text-xs text-white/50 font-bold uppercase tracking-widest mb-1">{label}</dt>
-                      <dd className="text-sm font-bold">{value}</dd>
-                    </div>
-                  ))}
-                </dl>
-
-                <div className="flex flex-col gap-4">
-                  <div className="flex gap-4">
-                    <a href={`/verify/${app.certification.certNumber}`} target="_blank" className="flex-1">
-                      <Button variant="secondary" className="w-full bg-white text-admin-primary hover:bg-white/90">
-                        View Live Badge
-                      </Button>
-                    </a>
-                    {app.certification.pdfUrl && (
-                      <a href={app.certification.pdfUrl} target="_blank" className="flex-1">
-                        <Button variant="outline" className="w-full border-white/20 bg-transparent text-white hover:bg-white/10">
-                          Download PDF
-                        </Button>
-                      </a>
-                    )}
-                  </div>
-                  {app.certification.status === "active" && (
-                    <Button 
-                      variant="destructive" 
-                      className="w-full bg-red-500 hover:bg-red-600 text-white shadow-sm border-0"
-                      onClick={() => { setAction("revoke"); setNotes(""); }}
-                    >
-                      <AlertCircle className="h-4 w-4 mr-2" /> Revoke Certificate
-                    </Button>
-                  )}
-                  {app.certification.status === "revoked" && !["audit_scheduled", "in_progress", "audit_complete"].includes(app.status) && (
-                    <Button 
-                      className="w-full bg-amber-500 hover:bg-amber-600 text-white shadow-sm border-0"
-                      onClick={() => { setAction("require_reaudit"); }}
-                    >
-                      <RefreshCcw className="h-4 w-4 mr-2" /> Require Re-Audit for Reinstatement
-                    </Button>
-                  )}
-                  {app.certification.status === "revoked" && ["audit_scheduled", "in_progress"].includes(app.status) && (
-                    <div className="w-full py-2 px-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm font-bold text-center">
-                      Re-Audit in Progress...
-                    </div>
-                  )}
-                  {app.certification.status === "revoked" && app.status === "audit_complete" && (
-                     <div className="w-full py-2 px-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-bold text-center flex flex-col gap-2">
-                       <span>Re-Audit Completed!</span>
-                       <Button 
-                          className="w-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm border-0"
-                          onClick={() => { setAction("reinstate"); }}
-                        >
-                          <CheckCircle2 className="h-4 w-4 mr-2" /> Reinstate Certificate
-                        </Button>
-                     </div>
-                  )}
+              )}
+              {app.certification.status === "revoked" && app.status === "audit_complete" && (
+                <div className="w-full py-2 px-4 rounded-xl bg-emerald-500/20 border border-emerald-500 text-white text-sm font-bold text-center flex flex-col gap-2 p-4">
+                  <span>Re-Audit Completed!</span>
+                  <Button 
+                    className="w-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm border-0 h-12"
+                    onClick={() => { setAction("reinstate"); }}
+                  >
+                    <CheckCircle2 className="h-4 w-4 mr-2" /> Reinstate Certificate
+                  </Button>
                 </div>
-              </div>
-            </div>
+              )}
+            </CertificateWidget>
           )}
         </div>
 

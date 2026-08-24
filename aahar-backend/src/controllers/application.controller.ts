@@ -218,6 +218,21 @@ export const uploadDocument = async (req: any, res: any) => {
   } catch (e) { return serverError(res, e); }
 };
 
+// PATCH /api/applications/:id/documents/:documentId
+export const updateDocument = async (req: any, res: any) => {
+  try {
+    const { documentId } = req.params;
+    const { expiresAt } = req.body;
+
+    const doc = await prisma.document.update({
+      where: { id: documentId },
+      data: { expiresAt: expiresAt ? new Date(expiresAt) : null }
+    });
+
+    return ok(res, doc, "Document updated");
+  } catch (e) { return serverError(res, e); }
+};
+
 // GET /api/applications/:id/messages
 export const getMessages = async (req: any, res: any) => {
   try {

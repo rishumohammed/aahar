@@ -77,7 +77,7 @@ export default function AdminAuditExecutePage() {
         notes: notes[item.id] ?? null,
       }));
 
-      await fetch(`${API}/audits/${id}/submit`, {
+      const res = await fetch(`${API}/audits/${id}/submit`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -91,7 +91,15 @@ export default function AdminAuditExecutePage() {
         }),
       });
 
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to submit audit");
+      }
+
+      toast.success("Executive Audit Submitted!");
       router.push("/admin/audits?submitted=true");
+    } catch (e: any) {
+      toast.error(e.message || "An error occurred");
     } finally {
       setSaving(false);
     }

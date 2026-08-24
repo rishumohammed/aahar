@@ -102,18 +102,30 @@ export const getOwnerStats = async (req: any, res: any) => {
       orderBy: { createdAt: "desc" }
     }) : null;
 
+    // Fetch the active standard for the division
+    let standardSections: string[] = [];
+    if (latestApp) {
+      const activeStandard = await prisma.standard.findFirst({
+        where: {
+          division: latestApp.businessType,
+          status: "active"
+        },
+        include: {
+          criteria: true
+        }
+      });
+      
+      if (activeStandard && activeStandard.criteria) {
+        // Extract unique sections
+        const sectionsSet = new Set(activeStandard.criteria.map(c => c.section));
+        standardSections = Array.from(sectionsSet);
+      }
+    }
+
     // Compute hygiene scores breakdown
-    let hygieneScore = {
+    let hygieneScore: { overall: number; sections: { label: string; score: number }[] } = {
       overall: 0.0,
-      kitchen: 0.0,
-      foodStorage: 0.0,
-      staffStandards: 0.0,
-      documentation: 0.0,
-      housekeeping: 0.0,
-      roomSafety: 0.0,
-      guestFacilities: 0.0,
-      accessibility: 0.0,
-      guestExperience: 0.0
+      sections: []
     };
 
     const correctiveActions: any[] = [];
@@ -132,18 +144,13 @@ export const getOwnerStats = async (req: any, res: any) => {
         return totalWeight > 0 ? Math.round((weightedSum / totalWeight) * 10) / 10 : 0;
       };
 
-      // FNB
-      hygieneScore.kitchen = calculateSectionScore("Kitchen Hygiene");
-      hygieneScore.foodStorage = calculateSectionScore("Food Storage");
-      hygieneScore.staffStandards = calculateSectionScore("Staff Standards");
-      hygieneScore.documentation = calculateSectionScore("Documentation");
-
-      // Accommodation
-      hygieneScore.housekeeping = calculateSectionScore("Housekeeping");
-      hygieneScore.roomSafety = calculateSectionScore("Room Safety");
-      hygieneScore.guestFacilities = calculateSectionScore("Guest Facilities");
-      hygieneScore.accessibility = calculateSectionScore("Accessibility");
-      hygieneScore.guestExperience = calculateSectionScore("Guest Experience");
+      // Populate dynamic sections
+      for (const sectionName of standardSections) {
+        hygieneScore.sections.push({
+          label: sectionName,
+          score: calculateSectionScore(sectionName)
+        });
+      }
 
       // Extract failed items (score < 4) for corrective actions
       const failedItems = checklist.filter(item => item.score !== undefined && item.score < 4);
@@ -202,6 +209,9 @@ export const getOwnerStats = async (req: any, res: any) => {
     }
 
     const certification = activeCert ? {
+      id: activeCert.id,
+      certNumber: activeCert.certNumber,
+      issuedAt: activeCert.issuedAt.toISOString(),
       expiresAt: activeCert.expiresAt.toISOString(),
       status: activeCert.status,
       pdfUrl: activeCert.pdfUrl
