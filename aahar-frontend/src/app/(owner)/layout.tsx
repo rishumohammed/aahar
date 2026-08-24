@@ -138,9 +138,13 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
  );
  const pageTitle = activeItem ? activeItem.label :"Owner Portal";
 
- const filteredNavItems = NAV_ITEMS.filter((item) => {
+  const filteredNavItems = NAV_ITEMS.filter((item) => {
     if (establishmentType === "hotel") {
       if (item.href === "/owner/menu" || item.href === "/owner/orders" || item.href === "/owner/tables") {
+        return false;
+      }
+    } else if (establishmentType === "restaurant") {
+      if (item.href === "/owner/managers" || item.href === "/owner/ledger") {
         return false;
       }
     }
